@@ -12,7 +12,7 @@
 
 using namespace std;
 
-inline ulong get_time()
+inline Time getTime()
 {
 #if WINDOWS
 	return GetTickCount();
@@ -25,20 +25,20 @@ inline ulong get_time()
 #endif
 }
 
-class timer
+class Timer
 {
 private:
-	ulong _last_time;
+	Time _lastTime;
 
 public:
-	inline timer() { set(); }
-	inline void set() { _last_time = get_time(); }
-	inline ulong get()
+	Timer() { set(); }
+	void set() { _lastTime = getTime(); }
+	Time get()
 	{
-		ulong cur_time = get_time();
-		if (cur_time > _last_time)
-			return cur_time - _last_time;
+		auto curTime = getTime();
+		if (curTime > _lastTime)
+			return curTime - _lastTime;
 		else
-			return ULONG_MAX - _last_time + cur_time + 1;
+			return numeric_limits<Time>::max() - _lastTime + curTime + 1;
 	}
 };

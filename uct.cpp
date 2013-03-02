@@ -249,9 +249,9 @@ Pos uct_with_time(Field* field, mt* gen, Time time)
 {
 	// Список всех возможных ходов для UCT.
 	vector<Pos> moves;
-	double best_estimate = 0;
-	Pos result = -1;
-	timer t;
+	auto best_estimate = 0;
+	auto result = -1;
+	Timer t;
 
 	generate_possible_moves(field, &moves);
 
