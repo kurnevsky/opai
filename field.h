@@ -121,7 +121,7 @@ public:
 
 private:
 	// Возвращает косое произведение векторов Pos1 и Pos2.
-	int square(const Pos pos1, const Pos pos2) const { return to_x(pos1) * to_y(pos2) - to_y(pos1) * to_x(pos2); }
+	int square(const Pos pos1, const Pos pos2) const { return toX(pos1) * toY(pos2) - toY(pos1) * toX(pos2); }
 	//  * . .   x . *   . x x   . . .
 	//  . o .   x o .   . o .   . o x
 	//  x x .   . . .   . . *   * . x
@@ -186,12 +186,12 @@ private:
 	{
 		if (captured == -1)
 		{
-			_captureCount[next_player(player)]++;
+			_captureCount[nextPlayer(player)]++;
 		}
 		else
 		{
 			_captureCount[player] += captured;
-			_captureCount[next_player(player)] -= freed;
+			_captureCount[nextPlayer(player)] -= freed;
 		}
 	}
 	// Изменяет Captured/Free в зависимости от того, захвачена или окружена точка.
@@ -226,8 +226,8 @@ private:
 	IntersectionState getIntersectionState(const Pos pos, const Pos nextPos) const
 	{
 		Point a, b;
-		to_xy(pos, a.x, a.y);
-		to_xy(nextPos, b.x, b.y);
+		toXY(pos, a.x, a.y);
+		toXY(nextPos, b.x, b.y);
 		if (b.x <= a.x)
 			switch (b.y - a.y)
 			{
@@ -251,20 +251,19 @@ public:
 	Field(const Field &orig);
 	// Деструктор.
 	~Field();
-	Score getScore(Player player) const { return _captureCount[player] - _captureCount[next_player(player)]; }
-	Score getPrevScore(Player player) const { return _changes.back().captureCount[player] - _changes.back().captureCount[next_player(player)]; }
+	Score getScore(Player player) const { return _captureCount[player] - _captureCount[nextPlayer(player)]; }
+	Score getPrevScore(Player player) const { return _changes.back().captureCount[player] - _changes.back().captureCount[nextPlayer(player)]; }
 	Player getLastPlayer() const { return getPlayer(pointsSeq.back()); }
 	Score getDScore(Player player) const { return getScore(player) - getPrevScore(player); }
 	Score getDScore() const { return getDScore(getLastPlayer()); }
 	Player getPlayer() const { return _player; }
-	Hash get_hash() const { return _hash; }
-	Hash get_hash(Pos pos) const { return _zobrist->getHash(pos); }
-	Zobrist& get_zobrist() const { return *_zobrist; };
+	Hash getHash() const { return _hash; }
+	Zobrist& getZobrist() const { return *_zobrist; };
 	Coord getWidth() const { return _width; }
 	Coord getHeight() const { return _height; }
 	Pos getLength() const { return (_width + 2) * (_height + 2); }
-	Pos min_pos() const { return to_pos(0, 0); }
-	Pos max_pos() const { return to_pos(_width - 1, _height - 1); }
+	Pos minPos() const { return to_pos(0, 0); }
+	Pos maxPos() const { return to_pos(_width - 1, _height - 1); }
 	Pos n(Pos pos) const { return pos - (_width + 2); }
 	Pos s(Pos pos) const { return pos + (_width + 2); }
 	Pos w(Pos pos) const { return pos - 1; }
@@ -274,13 +273,13 @@ public:
 	Pos sw(Pos pos) const { return pos + (_width + 2) - 1; }
 	Pos se(Pos pos) const { return pos + (_width + 2) + 1; }
 	Pos to_pos(const Coord x, const Coord y) const { return (y + 1) * (_width + 2) + x + 1; }
-	Coord to_x(const Pos pos) const { return static_cast<Coord>(pos % (_width + 2) - 1); }
-	Coord to_y(const Pos pos) const { return static_cast<Coord>(pos / (_width + 2) - 1); }
+	Coord toX(const Pos pos) const { return static_cast<Coord>(pos % (_width + 2) - 1); }
+	Coord toY(const Pos pos) const { return static_cast<Coord>(pos / (_width + 2) - 1); }
 	// Конвертация из Pos в XY.
-	void to_xy(const Pos pos, Coord &x, Coord &y) const { x = to_x(pos); y = to_y(pos); }
-	void set_player(const Player player) { _player = player; }
+	void toXY(const Pos pos, Coord &x, Coord &y) const { x = toX(pos); y = toY(pos); }
+	void setPlayer(const Player player) { _player = player; }
 	// Установить следующего игрока как текущего.
-	void set_next_player() { set_player(next_player(_player)); }
+	void set_next_player() { setPlayer(nextPlayer(_player)); }
 	// Поставить точку на поле следующего по очереди игрока.
 	bool do_step(const Pos pos)
 	{

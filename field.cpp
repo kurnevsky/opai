@@ -218,9 +218,9 @@ Field::Field(const Coord width, const Coord height, const BeginPattern begin_pat
 {
 	_width = width;
 	_height = height;
-	_player = player_red;
-	_captureCount[player_red] = 0;
-	_captureCount[player_black] = 0;
+	_player = playerRed;
+	_captureCount[playerRed] = 0;
+	_captureCount[playerBlack] = 0;
 
 	_points = new PosValue[getLength()];
 	fill_n(_points, getLength(), 0);
@@ -250,8 +250,8 @@ Field::Field(const Field &orig)
 	_width = orig._width;
 	_height = orig._height;
 	_player = orig._player;
-	_captureCount[player_red] = orig._captureCount[player_red];
-	_captureCount[player_black] = orig._captureCount[player_black];
+	_captureCount[playerRed] = orig._captureCount[playerRed];
+	_captureCount[playerBlack] = orig._captureCount[playerBlack];
 
 	_points = new PosValue[getLength()];
 	copy_n(orig._points, getLength(), _points);
@@ -397,14 +397,14 @@ void Field::check_closure(const Pos start_pos, Player player)
 		do
 		{
 			pos--;
-			while (!isEnable(pos, next_player(player) | putBit))
+			while (!isEnable(pos, nextPlayer(player) | putBit))
 				pos--;
-			inp_points_count = getInputPoints(pos, next_player(player) | putBit, inp_chain_points, inp_sur_points);
+			inp_points_count = getInputPoints(pos, nextPlayer(player) | putBit, inp_chain_points, inp_sur_points);
 			for (auto i = 0; i < inp_points_count; i++)
-				if (buildChain(pos, next_player(player) | putBit, inp_chain_points[i], chain))
+				if (buildChain(pos, nextPlayer(player) | putBit, inp_chain_points[i], chain))
 					if (is_point_inside_ring(start_pos, chain))
 					{
-						findSurround(chain, inp_sur_points[i], next_player(player));
+						findSurround(chain, inp_sur_points[i], nextPlayer(player));
 						break;
 					}
 		} while (!isCaptured(start_pos));

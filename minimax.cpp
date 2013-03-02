@@ -80,8 +80,8 @@ Score get_enemy_estimate(Field* field, Trajectories* last, size_t depth)
 	}
 	else
 	{
-		Score alpha = -cur_trajectories.get_max_score(next_player(field->getPlayer()));
-		Score beta = cur_trajectories.get_max_score(field->getPlayer());
+		auto alpha = -cur_trajectories.get_max_score(nextPlayer(field->getPlayer()));
+		auto beta = cur_trajectories.get_max_score(field->getPlayer());
 		#pragma omp parallel
 		{
 			Field* local_field = new Field(*field);
@@ -136,8 +136,8 @@ Pos minimax(Field* field, size_t depth)
 	// Для почти всех возможных точек, не входящих в траектории оценка будет такая же, как если бы игрок CurPlayer пропустил ход.
 	//int enemy_estimate = get_enemy_estimate(cur_field, Trajectories[cur_field.get_player()], Trajectories[next_player(cur_field.get_player())], depth);
 
-	Score alpha = -cur_trajectories.get_max_score(next_player(field->getPlayer()));
-	Score beta = cur_trajectories.get_max_score(field->getPlayer());
+	auto alpha = -cur_trajectories.get_max_score(nextPlayer(field->getPlayer()));
+	auto beta = cur_trajectories.get_max_score(field->getPlayer());
 	#pragma omp parallel
 	{
 		Field* local_field = new Field(*field);

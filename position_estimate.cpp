@@ -15,9 +15,9 @@ int position_estimate(Field* field, Pos pos, Player player)
 	int result;
 
 	g1 = field->number_near_groups(pos, player);
-	g2 = field->number_near_groups(pos, next_player(player));
+	g2 = field->number_near_groups(pos, nextPlayer(player));
 	c1 = cg_summa[field->number_near_points(pos, player)];
-	c2 = cg_summa[field->number_near_points(pos, next_player(player))];
+	c2 = cg_summa[field->number_near_points(pos, nextPlayer(player))];
 	result = (g1 * 3 + g2 * 2) * (5 - abs(g1 - g2)) - c1 - c2;
 	if (field->pointsSeq.size() > 0 && field->is_near(field->pointsSeq.back(), pos))
 		result += 5;
@@ -28,8 +28,8 @@ int position_estimate(Field* field, Pos pos, Player player)
 Pos position_estimate(Field* field)
 {
 	auto best_estimate = numeric_limits<int>::min();
-	Pos result = -1;
-	for (Pos i = field->min_pos(); i <= field->max_pos(); i++)
+	auto result = -1;
+	for (auto i = field->minPos(); i <= field->maxPos(); i++)
 		if (field->puttingAllow(i))
 		{
 			auto cur_estimate = position_estimate(field, i, field->getPlayer());

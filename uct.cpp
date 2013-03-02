@@ -35,10 +35,10 @@ short play_random_game(Field* field, mt* gen, vector<Pos>* possible_moves)
 			putted++;
 		}
 
-	if (field->getScore(player_red) > 0)
-		result = player_red;
-	else if (field->getScore(player_black) > 0)
-		result = player_black;
+	if (field->getScore(playerRed) > 0)
+		result = playerRed;
+	else if (field->getScore(playerBlack) > 0)
+		result = playerBlack;
 	else
 		result = -1;
 
@@ -110,13 +110,13 @@ short play_simulation(Field* field, mt* gen, vector<Pos>* possible_moves, uct_no
 		if (next == NULL)
 		{
 			n->visits = numeric_limits<ulong>::max();
-			if (field->getScore(next_player(field->getPlayer())) > 0)
+			if (field->getScore(nextPlayer(field->getPlayer())) > 0)
 				n->wins = numeric_limits<ulong>::max();
 
-			if (field->getScore(player_red) > 0)
-				return player_red;
-			else if (field->getScore(player_black) > 0)
-				return player_black;
+			if (field->getScore(playerRed) > 0)
+				return playerRed;
+			else if (field->getScore(playerBlack) > 0)
+				return playerBlack;
 			else
 				return -1;
 		}
@@ -129,7 +129,7 @@ short play_simulation(Field* field, mt* gen, vector<Pos>* possible_moves, uct_no
 	}
 
 	n->visits++;
-	if (randomresult == next_player(field->getPlayer()))
+	if (randomresult == nextPlayer(field->getPlayer()))
 		n->wins++;
 
 	return randomresult;
@@ -142,7 +142,7 @@ template<typename _Cont> void generate_possible_moves(Field* field, _Cont* possi
 	std::queue<Pos> q;
 
 	possible_moves->clear();
-	for (Pos i = field->min_pos(); i <= field->max_pos(); i++)
+	for (auto i = field->minPos(); i <= field->maxPos(); i++)
 		if (field->isPutted(i)) //TODO: Класть соседей, а не сами точки.
 			q.push(i);
 

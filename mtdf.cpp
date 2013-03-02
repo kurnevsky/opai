@@ -46,8 +46,8 @@ Pos mtdf(Field* field, size_t depth)
 	if (moves.size() == 0)
 		return -1;
 
-	Score alpha = -cur_trajectories.get_max_score(next_player(field->getPlayer()));
-	Score beta = cur_trajectories.get_max_score(field->getPlayer());
+	auto alpha = -cur_trajectories.get_max_score(nextPlayer(field->getPlayer()));
+	auto beta = cur_trajectories.get_max_score(field->getPlayer());
 
 	int* empty_board = new int[field->getLength()];
 
