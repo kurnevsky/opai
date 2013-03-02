@@ -19,80 +19,80 @@ private:
 
     // State bits and masks
 	// Бит, указывающий номер игрока.
-	static const PosValue player_bit = 0x1;
+	static const PosValue playerBit = 0x1;
 	// Бит, указывающий на наличие точки в поле.
-	static const PosValue put_bit = 0x2;
+	static const PosValue putBit = 0x2;
 	// Бит, указывающий на захваченность точки.
-	static const PosValue sur_bit = 0x4;
+	static const PosValue surBit = 0x4;
 	// Бит, указывающий на то, захватывает ли что-нибудь точка на поле.
-	static const PosValue bound_bit = 0x8;
+	static const PosValue boundBit = 0x8;
 	// Бит, указывающий на пустую базу.
-	static const PosValue empty_base_bit = 0x10;
+	static const PosValue emptyBaseBit = 0x10;
 	// Бит для временных пометок полей.
-	static const PosValue tag_bit = 0x20;
+	static const PosValue tagBit = 0x20;
 	// Бит, которым помечаются границы поля.
-	static const PosValue bad_bit = 0x40;
+	static const PosValue badBit = 0x40;
 
 	// Маски для определения условий.
-	static const PosValue enable_mask = bad_bit | sur_bit | put_bit | player_bit;
-	static const PosValue bound_mask = bad_bit | bound_bit | sur_bit | put_bit | player_bit;
+	static const PosValue enableMask = badBit | surBit | putBit | playerBit;
+	static const PosValue boundMask = badBit | boundBit | surBit | putBit | playerBit;
 
 public:
 	// Get state functions.
 	// Функции получения состояния.
 
 	// Получить по координате игрока, чья точка там поставлена.
-	inline Player get_player(const Pos pos) const { return _points[pos] & player_bit; }
+	inline Player get_player(const Pos pos) const { return _points[pos] & playerBit; }
 	// Проверить по координате, поставлена ли там точка.
-	inline bool is_putted(const Pos pos) const { return (_points[pos] & put_bit) != 0; }
+	inline bool is_putted(const Pos pos) const { return (_points[pos] & putBit) != 0; }
 	// Прверить по координате, является ли точка окружающей базу.
-	inline bool is_base_bound(const Pos pos) const { return (_points[pos] & bound_bit) != 0; }
+	inline bool is_base_bound(const Pos pos) const { return (_points[pos] & boundBit) != 0; }
 	// Проверить по координате, захвачено ли поле.
-	inline bool is_captured(const Pos pos) const { return (_points[pos] & sur_bit) != 0; }
+	inline bool is_captured(const Pos pos) const { return (_points[pos] & surBit) != 0; }
 	// Проверить по координате, лежит ли она в пустой базе.
-	inline bool is_in_empty_base(const Pos pos) const { return (_points[pos] & empty_base_bit) != 0; }
+	inline bool is_in_empty_base(const Pos pos) const { return (_points[pos] & emptyBaseBit) != 0; }
 	// Проверить по координате, помечено ли поле.
-	inline bool is_tagged(const Pos pos) const { return (_points[pos] & tag_bit) != 0; }
+	inline bool is_tagged(const Pos pos) const { return (_points[pos] & tagBit) != 0; }
 	// Получить условие по координате.
-	inline PosValue get_enable_cond(const Pos pos) const { return _points[pos] & enable_mask; }
+	inline PosValue get_enable_cond(const Pos pos) const { return _points[pos] & enableMask; }
 	// Проверка незанятости поля по условию.
-	inline bool is_enable(const Pos pos, const PosValue enable_cond) const { return (_points[pos] & enable_mask) == enable_cond; }
+	inline bool is_enable(const Pos pos, const PosValue enable_cond) const { return (_points[pos] & enableMask) == enable_cond; }
 	// Проверка занятости поля по условию.
-	inline bool is_not_enable(const Pos pos, const PosValue enable_cond) const { return (_points[pos] & enable_mask) != enable_cond; }
+	inline bool is_not_enable(const Pos pos, const PosValue enable_cond) const { return (_points[pos] & enableMask) != enable_cond; }
 	// Проверка на то, захвачено ли поле.
-	inline bool is_bound(const Pos pos, const PosValue bound_cond) const { return (_points[pos] & bound_mask) == bound_cond; }
+	inline bool is_bound(const Pos pos, const PosValue bound_cond) const { return (_points[pos] & boundMask) == bound_cond; }
 	// Проверка на то, не захвачено ли поле.
-	inline bool is_not_bound(const Pos pos, const PosValue bound_cond) const { return (_points[pos] & bound_mask) != bound_cond; }
+	inline bool is_not_bound(const Pos pos, const PosValue bound_cond) const { return (_points[pos] & boundMask) != bound_cond; }
 	// Провека на то, возможно ли поставить точку в полке.
-	inline bool putting_allow(const Pos pos) const { return !(_points[pos] & (put_bit | sur_bit | bad_bit)); }
+	inline bool putting_allow(const Pos pos) const { return !(_points[pos] & (putBit | surBit | badBit)); }
 
 	// Set state functions.
 	// Функции установки состояния.
 
 	// Пометить поле по координате как содержащее точку.
-	inline void set_putted(const Pos pos) { _points[pos] |= put_bit; }
+	inline void set_putted(const Pos pos) { _points[pos] |= putBit; }
 	// Убрать с поля по координате put_bit.
-	inline void clear_put_bit(const Pos pos) { _points[pos] &= ~put_bit; }
+	inline void clear_put_bit(const Pos pos) { _points[pos] &= ~putBit; }
 	// Пометить поле по координате как принадлежащее игроку.
-	inline void set_player(const Pos pos, const Player player) { _points[pos] = (_points[pos] & ~player_bit) | player; }
+	inline void set_player(const Pos pos, const Player player) { _points[pos] = (_points[pos] & ~playerBit) | player; }
 	// Пометить поле по координате как содержащее точку игрока.
-	inline void set_player_putted(const Pos pos, const Player player) { _points[pos] = (_points[pos] & ~player_bit) | player | put_bit; }
+	inline void set_player_putted(const Pos pos, const Player player) { _points[pos] = (_points[pos] & ~playerBit) | player | putBit; }
 	// Пометить битом SurBit (захватить).
-	inline void capture(const Pos pos) { _points[pos] |= sur_bit; }
+	inline void capture(const Pos pos) { _points[pos] |= surBit; }
 	// Убрать бит SurBit.
-	inline void free(const Pos pos) { _points[pos] &= ~sur_bit; }
+	inline void free(const Pos pos) { _points[pos] &= ~surBit; }
 	// Пометить точку как окружающую базу.
-	inline void set_base_bound(const Pos pos) { _points[pos] |= bound_bit; }
+	inline void set_base_bound(const Pos pos) { _points[pos] |= boundBit; }
 	// Пометить точку как не окружающую базу.
-	inline void clear_base_bound(const Pos pos) { _points[pos] &= ~bound_bit; }
-	inline void set_empty_base(const Pos pos) { _points[pos] |= empty_base_bit; }
-	inline void clear_empty_base(const Pos pos) { _points[pos] &= ~empty_base_bit; }
+	inline void clear_base_bound(const Pos pos) { _points[pos] &= ~boundBit; }
+	inline void set_empty_base(const Pos pos) { _points[pos] |= emptyBaseBit; }
+	inline void clear_empty_base(const Pos pos) { _points[pos] &= ~emptyBaseBit; }
 	// Установить бит TagBit.
-	inline void set_tag(const Pos pos) { _points[pos] |= tag_bit; }
+	inline void set_tag(const Pos pos) { _points[pos] |= tagBit; }
 	// Убрать бит TagBit.
-	inline void clear_tag(const Pos pos) { _points[pos] &= ~tag_bit; }
-	inline void set_bad(const Pos pos) { _points[pos] |= bad_bit; }
-	inline void clear_bad(const Pos pos) { _points[pos] &= ~bad_bit; }
+	inline void clear_tag(const Pos pos) { _points[pos] &= ~tagBit; }
+	inline void set_bad(const Pos pos) { _points[pos] |= badBit; }
+	inline void clear_bad(const Pos pos) { _points[pos] &= ~badBit; }
 
 private:
 	vector<BoardChange> _changes;
@@ -377,14 +377,14 @@ public:
 	// Проверяет, есть ли рядом с center_pos точки цвета player.
 	inline bool is_near_points(const Pos center_pos, const Player player) const
 	{
-		if (is_enable(n(center_pos), put_bit | player)  ||
-			is_enable(s(center_pos), put_bit | player)  ||
-			is_enable(w(center_pos), put_bit | player)  ||
-			is_enable(e(center_pos), put_bit | player)  ||
-			is_enable(nw(center_pos), put_bit | player) ||
-			is_enable(ne(center_pos), put_bit | player) ||
-			is_enable(sw(center_pos), put_bit | player) ||
-			is_enable(se(center_pos), put_bit | player))
+		if (is_enable(n(center_pos), putBit | player)  ||
+			is_enable(s(center_pos), putBit | player)  ||
+			is_enable(w(center_pos), putBit | player)  ||
+			is_enable(e(center_pos), putBit | player)  ||
+			is_enable(nw(center_pos), putBit | player) ||
+			is_enable(ne(center_pos), putBit | player) ||
+			is_enable(sw(center_pos), putBit | player) ||
+			is_enable(se(center_pos), putBit | player))
 			return true;
 		else
 			return false;
@@ -393,21 +393,21 @@ public:
 	inline short number_near_points(const Pos center_pos, const Player player) const
 	{
 		short result = 0;
-		if (is_enable(n(center_pos), put_bit | player))
+		if (is_enable(n(center_pos), putBit | player))
 			result++;
-		if (is_enable(s(center_pos), put_bit | player))
+		if (is_enable(s(center_pos), putBit | player))
 			result++;
-		if (is_enable(w(center_pos), put_bit | player))
+		if (is_enable(w(center_pos), putBit | player))
 			result++;
-		if (is_enable(e(center_pos), put_bit | player))
+		if (is_enable(e(center_pos), putBit | player))
 			result++;
-		if (is_enable(nw(center_pos), put_bit | player))
+		if (is_enable(nw(center_pos), putBit | player))
 			result++;
-		if (is_enable(ne(center_pos), put_bit | player))
+		if (is_enable(ne(center_pos), putBit | player))
 			result++;
-		if (is_enable(sw(center_pos), put_bit | player))
+		if (is_enable(sw(center_pos), putBit | player))
 			result++;
-		if (is_enable(se(center_pos), put_bit | player))
+		if (is_enable(se(center_pos), putBit | player))
 			result++;
 		return result;
 	}
@@ -415,13 +415,13 @@ public:
 	inline short number_near_groups(const Pos center_pos, const Player player) const
 	{
 		short result = 0;
-		if (is_not_enable(w(center_pos), player | put_bit) && (is_enable(nw(center_pos), player | put_bit) || is_enable(n(center_pos), player | put_bit)))
+		if (is_not_enable(w(center_pos), player | putBit) && (is_enable(nw(center_pos), player | putBit) || is_enable(n(center_pos), player | putBit)))
 			result++;
-		if (is_not_enable(s(center_pos), player | put_bit) && (is_enable(sw(center_pos), player | put_bit) || is_enable(w(center_pos), player | put_bit)))
+		if (is_not_enable(s(center_pos), player | putBit) && (is_enable(sw(center_pos), player | putBit) || is_enable(w(center_pos), player | putBit)))
 			result++;
-		if (is_not_enable(e(center_pos), player | put_bit) && (is_enable(se(center_pos), player | put_bit) || is_enable(s(center_pos), player | put_bit)))
+		if (is_not_enable(e(center_pos), player | putBit) && (is_enable(se(center_pos), player | putBit) || is_enable(s(center_pos), player | putBit)))
 			result++;
-		if (is_not_enable(n(center_pos), player | put_bit) && (is_enable(ne(center_pos), player | put_bit) || is_enable(e(center_pos), player | put_bit)))
+		if (is_not_enable(n(center_pos), player | putBit) && (is_enable(ne(center_pos), player | putBit) || is_enable(e(center_pos), player | putBit)))
 			result++;
 		return result;
 	}
