@@ -180,9 +180,9 @@ private:
 	// InpChainPoints - возможные точки цикла, InpSurPoints - возможные окруженные точки.
 	int getInputPoints(const Pos centerPos, const PosValue enableCond, Pos inpChainPoints[], Pos inpSurPoints[]) const;
 	// Поставить начальные точки.
-	void place_begin_pattern(BeginPattern pattern);
+	void placeBeginPattern(BeginPattern pattern);
 	// Изменение счета игроков.
-	inline void add_sub_captured_freed(const Player player, const Score captured, const Score freed)
+	void addSubCapturedFreed(const Player player, const Score captured, const Score freed)
 	{
 		if (captured == -1)
 		{
@@ -195,7 +195,7 @@ private:
 		}
 	}
 	// Изменяет Captured/Free в зависимости от того, захвачена или окружена точка.
-	inline void check_captured_and_freed(const Pos pos, const Player player, Score &captured, Score &freed)
+	void checkCapturedAndFreed(const Pos pos, const Player player, Score &captured, Score &freed)
 	{
 		if (isPutted(pos))
 		{
@@ -206,7 +206,7 @@ private:
 		}
 	}
 	// Захватывает/освобождает окруженную точку.
-	inline void set_capture_free_state(const Pos pos, const Player player)
+	void setCaptureFreeState(const Pos pos, const Player player)
 	{
 		if (isPutted(pos))
 		{
@@ -222,8 +222,8 @@ private:
 	void remove_empty_base(const Pos start_pos);
 	bool build_chain(const Pos start_pos, const PosValue enable_cond, const Pos direction_pos, list<Pos> &chain);
 	void find_surround(list<Pos> &chain, Pos inside_point, Player player);
-	inline void update_hash(Player player, Pos pos) { _hash ^= _zobrist->getHash((player + 1) * pos); }
-	inline IntersectionState get_intersection_state(const Pos pos, const Pos next_pos) const
+	void update_hash(Player player, Pos pos) { _hash ^= _zobrist->getHash((player + 1) * pos); }
+	IntersectionState get_intersection_state(const Pos pos, const Pos next_pos) const
 	{
 		Point a, b;
 		to_xy(pos, a.x, a.y);
@@ -253,38 +253,38 @@ public:
 	// Деструктор.
 	~Field();
 
-	inline Score get_score(Player player) const { return _captureCount[player] - _captureCount[next_player(player)]; }
-	inline Score get_prev_score(Player player) const { return _changes.back().captureCount[player] - _changes.back().captureCount[next_player(player)]; }
-	inline Player get_last_player() const { return getPlayer(pointsSeq.back()); }
-	inline Score get_d_score(Player player) const { return get_score(player) - get_prev_score(player); }
-	inline Score get_d_score() const { return get_d_score(get_last_player()); }
-	inline Player get_player() const { return _player; }
-	inline Hash get_hash() const { return _hash; }
-	inline Hash get_hash(Pos pos) const { return _zobrist->getHash(pos); }
-	inline Zobrist& get_zobrist() const { return *_zobrist; };
-	inline Coord width() const { return _width; }
-	inline Coord height() const { return _height; }
-	inline Pos length() const { return (_width + 2) * (_height + 2); }
-	inline Pos min_pos() const { return to_pos(0, 0); }
-	inline Pos max_pos() const { return to_pos(_width - 1, _height - 1); }
-	inline Pos n(Pos pos) const { return pos - (_width + 2); }
-	inline Pos s(Pos pos) const { return pos + (_width + 2); }
-	inline Pos w(Pos pos) const { return pos - 1; }
-	inline Pos e(Pos pos) const { return pos + 1; }
-	inline Pos nw(Pos pos) const { return pos - (_width + 2) - 1; }
-	inline Pos ne(Pos pos) const { return pos - (_width + 2) + 1; }
-	inline Pos sw(Pos pos) const { return pos + (_width + 2) - 1; }
-	inline Pos se(Pos pos) const { return pos + (_width + 2) + 1; }
-	inline Pos to_pos(const Coord x, const Coord y) const { return (y + 1) * (_width + 2) + x + 1; }
-	inline Coord to_x(const Pos pos) const { return static_cast<Coord>(pos % (_width + 2) - 1); }
-	inline Coord to_y(const Pos pos) const { return static_cast<Coord>(pos / (_width + 2) - 1); }
+	Score get_score(Player player) const { return _captureCount[player] - _captureCount[next_player(player)]; }
+	Score get_prev_score(Player player) const { return _changes.back().captureCount[player] - _changes.back().captureCount[next_player(player)]; }
+	Player get_last_player() const { return getPlayer(pointsSeq.back()); }
+	Score get_d_score(Player player) const { return get_score(player) - get_prev_score(player); }
+	Score get_d_score() const { return get_d_score(get_last_player()); }
+	Player get_player() const { return _player; }
+	Hash get_hash() const { return _hash; }
+	Hash get_hash(Pos pos) const { return _zobrist->getHash(pos); }
+	Zobrist& get_zobrist() const { return *_zobrist; };
+	Coord width() const { return _width; }
+	Coord height() const { return _height; }
+	Pos length() const { return (_width + 2) * (_height + 2); }
+	Pos min_pos() const { return to_pos(0, 0); }
+	Pos max_pos() const { return to_pos(_width - 1, _height - 1); }
+	Pos n(Pos pos) const { return pos - (_width + 2); }
+	Pos s(Pos pos) const { return pos + (_width + 2); }
+	Pos w(Pos pos) const { return pos - 1; }
+	Pos e(Pos pos) const { return pos + 1; }
+	Pos nw(Pos pos) const { return pos - (_width + 2) - 1; }
+	Pos ne(Pos pos) const { return pos - (_width + 2) + 1; }
+	Pos sw(Pos pos) const { return pos + (_width + 2) - 1; }
+	Pos se(Pos pos) const { return pos + (_width + 2) + 1; }
+	Pos to_pos(const Coord x, const Coord y) const { return (y + 1) * (_width + 2) + x + 1; }
+	Coord to_x(const Pos pos) const { return static_cast<Coord>(pos % (_width + 2) - 1); }
+	Coord to_y(const Pos pos) const { return static_cast<Coord>(pos / (_width + 2) - 1); }
 	// Конвертация из Pos в XY.
-	inline void to_xy(const Pos pos, Coord &x, Coord &y) const { x = to_x(pos); y = to_y(pos); }
-	inline void set_player(const Player player) { _player = player; }
+	void to_xy(const Pos pos, Coord &x, Coord &y) const { x = to_x(pos); y = to_y(pos); }
+	void set_player(const Player player) { _player = player; }
 	// Установить следующего игрока как текущего.
-	inline void set_next_player() { set_player(next_player(_player)); }
+	void set_next_player() { set_player(next_player(_player)); }
 	// Поставить точку на поле следующего по очереди игрока.
-	inline bool do_step(const Pos pos)
+	bool do_step(const Pos pos)
 	{
 		if (puttingAllow(pos))
 		{
@@ -294,7 +294,7 @@ public:
 		return false;
 	}
 	// Поставить точку на поле.
-	inline bool do_step(const Pos pos, const Player player)
+	bool do_step(const Pos pos, const Player player)
 	{
 		if (puttingAllow(pos))
 		{
@@ -304,7 +304,7 @@ public:
 		return false;
 	}
 	// Поставить точку на поле максимально быстро (без дополнительных проверок).
-	inline void do_unsafe_step(const Pos pos)
+	void do_unsafe_step(const Pos pos)
 	{
 		_changes.push_back(BoardChange());
 		_changes.back().captureCount[0] = _captureCount[0];
@@ -323,7 +323,7 @@ public:
 		set_next_player();
 	}
 	// Поставить точку на поле следующего по очереди игрока максимально быстро (без дополнительных проверок).
-	inline void do_unsafe_step(const Pos pos, const Player player)
+	void do_unsafe_step(const Pos pos, const Player player)
 	{
 		_changes.push_back(BoardChange());
 		_changes.back().captureCount[0] = _captureCount[0];
@@ -340,7 +340,7 @@ public:
 		check_closure(pos, player);
 	}
 	// Откат хода.
-	inline void undo_step()
+	void undo_step()
 	{
 		pointsSeq.pop_back();
 		while (!_changes.back().changes.empty())
@@ -354,7 +354,7 @@ public:
 		_changes.pop_back();
 	}
 	// Проверяет, находятся ли две точки рядом.
-	inline bool is_near(const Pos pos1, const Pos pos2) const
+	bool is_near(const Pos pos1, const Pos pos2) const
 	{
 		if (n(pos1) == pos2  ||
 			s(pos1) == pos2  ||
@@ -369,7 +369,7 @@ public:
 			return false;
 	}
 	// Проверяет, есть ли рядом с center_pos точки цвета player.
-	inline bool is_near_points(const Pos center_pos, const Player player) const
+	bool is_near_points(const Pos center_pos, const Player player) const
 	{
 		if (isEnable(n(center_pos), putBit | player)  ||
 			isEnable(s(center_pos), putBit | player)  ||
@@ -384,7 +384,7 @@ public:
 			return false;
 	}
 	// Возвращает количество точек рядом с center_pos цвета player.
-	inline short number_near_points(const Pos center_pos, const Player player) const
+	short number_near_points(const Pos center_pos, const Player player) const
 	{
 		short result = 0;
 		if (isEnable(n(center_pos), putBit | player))
@@ -406,7 +406,7 @@ public:
 		return result;
 	}
 	// Возвращает количество групп точек рядом с center_pos.
-	inline short number_near_groups(const Pos center_pos, const Player player) const
+	short number_near_groups(const Pos center_pos, const Player player) const
 	{
 		short result = 0;
 		if (isNotEnable(w(center_pos), player | putBit) && (isEnable(nw(center_pos), player | putBit) || isEnable(n(center_pos), player | putBit)))

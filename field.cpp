@@ -73,7 +73,7 @@ int Field::getInputPoints(const Pos centerPos, const PosValue enableCond, Pos in
 	return result;
 }
 
-void Field::place_begin_pattern(BeginPattern pattern)
+void Field::placeBeginPattern(BeginPattern pattern)
 {
 	switch (pattern)
 	{
@@ -167,7 +167,7 @@ void Field::find_surround(list<Pos> &chain, Pos inside_point, Player player)
 			{
 				if (isNotBound(pos, player | putBit | boundBit))
 				{
-					check_captured_and_freed(pos, player, cur_capture_count, cur_freed_count);
+					checkCapturedAndFreed(pos, player, cur_capture_count, cur_freed_count);
 					sur_points.push_back(pos);
 					return true;
 				}
@@ -177,7 +177,7 @@ void Field::find_surround(list<Pos> &chain, Pos inside_point, Player player)
 				}
 			});
 	// Изменение счета игроков.
-	add_sub_captured_freed(player, cur_capture_count, cur_freed_count);
+	addSubCapturedFreed(player, cur_capture_count, cur_freed_count);
 
 #if SUR_COND != 1
 	if (cur_capture_count != 0) // Если захватили точки.
@@ -196,7 +196,7 @@ void Field::find_surround(list<Pos> &chain, Pos inside_point, Player player)
 		{
 			_changes.back().changes.push(pair<Pos, PosValue>(*i, _points[*i]));
 
-			set_capture_free_state(*i, player);
+			setCaptureFreeState(*i, player);
 		}
 	}
 	else // Если ничего не захватили.
@@ -242,7 +242,7 @@ Field::Field(const Coord width, const Coord height, const BeginPattern begin_pat
 	_zobrist = zobr;
 	_hash = 0;
 
-	place_begin_pattern(begin_pattern);
+	placeBeginPattern(begin_pattern);
 }
 
 Field::Field(const Field &orig)
