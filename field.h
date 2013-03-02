@@ -260,7 +260,7 @@ public:
 	~Field();
 
 	inline Score get_score(Player player) const { return _capture_count[player] - _capture_count[next_player(player)]; }
-	inline Score get_prev_score(Player player) const { return _changes.back().capture_count[player] - _changes.back().capture_count[next_player(player)]; }
+	inline Score get_prev_score(Player player) const { return _changes.back().captureCount[player] - _changes.back().captureCount[next_player(player)]; }
 	inline Player get_last_player() const { return get_player(points_seq.back()); }
 	inline Score get_d_score(Player player) const { return get_score(player) - get_prev_score(player); }
 	inline Score get_d_score() const { return get_d_score(get_last_player()); }
@@ -313,8 +313,8 @@ public:
 	inline void do_unsafe_step(const Pos pos)
 	{
 		_changes.push_back(BoardChange());
-		_changes.back().capture_count[0] = _capture_count[0];
-		_changes.back().capture_count[1] = _capture_count[1];
+		_changes.back().captureCount[0] = _capture_count[0];
+		_changes.back().captureCount[1] = _capture_count[1];
 		_changes.back().player = _player;
 
 		// Добавляем в изменения поставленную точку.
@@ -332,8 +332,8 @@ public:
 	inline void do_unsafe_step(const Pos pos, const Player player)
 	{
 		_changes.push_back(BoardChange());
-		_changes.back().capture_count[0] = _capture_count[0];
-		_changes.back().capture_count[1] = _capture_count[1];
+		_changes.back().captureCount[0] = _capture_count[0];
+		_changes.back().captureCount[1] = _capture_count[1];
 		_changes.back().player = _player;
 
 		// Добавляем в изменения поставленную точку.
@@ -355,8 +355,8 @@ public:
 			_changes.back().changes.pop();
 		}
 		_player = _changes.back().player;
-		_capture_count[0] = _changes.back().capture_count[0];
-		_capture_count[1] = _changes.back().capture_count[1];
+		_capture_count[0] = _changes.back().captureCount[0];
+		_capture_count[1] = _changes.back().captureCount[1];
 		_changes.pop_back();
 	}
 	// Проверяет, находятся ли две точки рядом.

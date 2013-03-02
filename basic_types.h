@@ -51,7 +51,7 @@ enum IntersectionState
 struct BoardChange
 {
 	// Предыдущий счет захваченных точек.
-	Score capture_count[2];
+	Score captureCount[2];
 	// Предыдущий игрок.
 	Player player;
 	// Предыдущий хеш.
