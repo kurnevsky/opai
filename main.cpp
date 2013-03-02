@@ -20,7 +20,7 @@ void gen_move(int id)
 	}
 	else
 	{
-		bot->set_player(player);
+		bot->setPlayer(player);
 		bot->get(x, y);
 		if (x == -1 || y == -1)
 			cout << "?" << " " << id << " " << "gen_move" << endl;
@@ -42,8 +42,8 @@ void gen_move_with_complexity(int id)
 	}
 	else
 	{
-		bot->set_player(player);
-		bot->get_with_complexity(x, y, complexity);
+		bot->setPlayer(player);
+		bot->getWithComplexity(x, y, complexity);
 		if (x == -1 || y == -1)
 			cout << "?" << " " << id << " " << "gen_move_with_complexity" << endl;
 		else
@@ -64,8 +64,8 @@ void gen_move_with_time(int id)
 	}
 	else
 	{
-		bot->set_player(player);
-		bot->get_with_time(x, y, time);
+		bot->setPlayer(player);
+		bot->getWithTime(x, y, time);
 		if (x == -1 || y == -1)
 			cout << "?" << " " << id << " " << "gen_move_with_time" << endl;
 		else
@@ -102,7 +102,7 @@ void play(int id)
 	Player player;
 
 	cin >> x >> y >> player;
-	if (bot == NULL || !bot->do_step(x, y, player))
+	if (bot == NULL || !bot->doStep(x, y, player))
 		cout << "?" << " " << id << " " << "play" << endl;
 	else
 		cout << "=" << " " << id << " " << "play" << " " << x << " " << y << " " << player << endl;
@@ -118,7 +118,7 @@ void quit(int id)
 
 void undo(int id)
 {
-	if (bot == NULL || !bot->undo_step())
+	if (bot == NULL || !bot->undoStep())
 		cout << "?" << " " << id << " " << "undo" << endl;
 	else
 		cout << "=" << " " << id << " " << "undo" << endl;

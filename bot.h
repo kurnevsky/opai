@@ -17,19 +17,19 @@ private:
 	mt* _gen;
 	Zobrist* _zobrist;
 	Field* _field;
-	size_t get_minimax_depth(size_t complexity);
-	size_t get_mtdf_depth(size_t complexity);
-	size_t get_uct_iterations(size_t complexity);
-	bool is_field_occupied() const;
-	bool boundary_check(Coord& x, Coord& y) const;
+	int getMinimaxDepth(int complexity);
+	int getMtdfDepth(int complexity);
+	int getUctIterations(int complexity);
+	bool isFieldOccupied() const;
+	bool boundaryCheck(Coord& x, Coord& y) const;
 public:
-	Bot(const Coord width, const Coord height, const BeginPattern begin_pattern, ptrdiff_t seed);
+	Bot(const Coord width, const Coord height, const BeginPattern beginPattern, ptrdiff_t seed);
 	~Bot();
-	bool do_step(Coord x, Coord y, Player player);
-	bool undo_step();
-	void set_player(Player player);
+	bool doStep(Coord x, Coord y, Player player);
+	bool undoStep();
+	void setPlayer(Player player);
 	// Возвращает лучший найденный ход.
 	void get(Coord& x, Coord& y);
-	void get_with_complexity(Coord& x, Coord& y, size_t complexity);
-	void get_with_time(Coord& x, Coord& y, Time time);
+	void getWithComplexity(Coord& x, Coord& y, int complexity);
+	void getWithTime(Coord& x, Coord& y, Time time);
 };
