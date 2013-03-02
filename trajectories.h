@@ -63,7 +63,7 @@ private:
 				if (_field->isInEmptyBase(pos)) // Если поставили в пустую базу (свою или нет), то дальше строить траекторию нет нужды.
 				{
 					_field->do_unsafe_step(pos, player);
-					if (_field->get_d_score(player) > 0)
+					if (_field->getDScore(player) > 0)
 						add_trajectory(_field->pointsSeq.end() - (_depth[player] - depth), _field->pointsSeq.end(), player);
 					_field->undo_step();
 				}
@@ -79,7 +79,7 @@ private:
 					}
 #endif
 
-					if (_field->get_d_score(player) > 0)
+					if (_field->getDScore(player) > 0)
 						add_trajectory(_field->pointsSeq.end() - (_depth[player] - depth), _field->pointsSeq.end(), player);
 					else if (depth > 0)
 						build_trajectories_recursive(depth - 1, player);
@@ -198,14 +198,14 @@ private:
 	}
 	Score calculate_max_score(Player player, size_t depth)
 	{
-		Score result = _field->get_score(player);
+		auto result = _field->getScore(player);
 		if (depth > 0)
 		{
 			for (auto i = _moves[player].begin(); i != _moves[player].end(); i++)
 				if (_field->puttingAllow(*i))
 				{
 					_field->do_unsafe_step(*i, player);
-					if (_field->get_d_score(player) >= 0)
+					if (_field->getDScore(player) >= 0)
 					{
 						Score cur_score = calculate_max_score(player, depth - 1);
 						if (cur_score > result)
@@ -243,11 +243,11 @@ public:
 	}
 	inline Player get_cur_player()
 	{
-		return _field->get_player();
+		return _field->getPlayer();
 	}
 	inline Player get_enemy_player()
 	{
-		return next_player(_field->get_player());
+		return next_player(_field->getPlayer());
 	}
 	inline void clear(Player player)
 	{

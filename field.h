@@ -251,13 +251,12 @@ public:
 	Field(const Field &orig);
 	// Деструктор.
 	~Field();
-
-	Score get_score(Player player) const { return _captureCount[player] - _captureCount[next_player(player)]; }
-	Score get_prev_score(Player player) const { return _changes.back().captureCount[player] - _changes.back().captureCount[next_player(player)]; }
-	Player get_last_player() const { return getPlayer(pointsSeq.back()); }
-	Score get_d_score(Player player) const { return get_score(player) - get_prev_score(player); }
-	Score get_d_score() const { return get_d_score(get_last_player()); }
-	Player get_player() const { return _player; }
+	Score getScore(Player player) const { return _captureCount[player] - _captureCount[next_player(player)]; }
+	Score getPrevScore(Player player) const { return _changes.back().captureCount[player] - _changes.back().captureCount[next_player(player)]; }
+	Player getLastPlayer() const { return getPlayer(pointsSeq.back()); }
+	Score getDScore(Player player) const { return getScore(player) - getPrevScore(player); }
+	Score getDScore() const { return getDScore(getLastPlayer()); }
+	Player getPlayer() const { return _player; }
 	Hash get_hash() const { return _hash; }
 	Hash get_hash(Pos pos) const { return _zobrist->getHash(pos); }
 	Zobrist& get_zobrist() const { return *_zobrist; };

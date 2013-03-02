@@ -27,12 +27,12 @@ int position_estimate(Field* field, Pos pos, Player player)
 
 Pos position_estimate(Field* field)
 {
-	int best_estimate = numeric_limits<int>::min();
+	auto best_estimate = numeric_limits<int>::min();
 	Pos result = -1;
 	for (Pos i = field->min_pos(); i <= field->max_pos(); i++)
 		if (field->puttingAllow(i))
 		{
-			int cur_estimate = position_estimate(field, i, field->get_player());
+			auto cur_estimate = position_estimate(field, i, field->getPlayer());
 			if (cur_estimate > best_estimate)
 			{
 				best_estimate = cur_estimate;

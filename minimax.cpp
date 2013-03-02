@@ -25,12 +25,12 @@ Score alphabeta(Field* field, size_t depth, Pos pos, Trajectories* last, Score a
 
 	if (depth == 0)
 	{
-		Score best_estimate = field->get_score(field->get_player());
+		auto best_estimate = field->getScore(field->getPlayer());
 		field->undo_step();
 		return -best_estimate;
 	}
 
-	if (field->get_d_score() < 0) // Если точка поставлена в окружение.
+	if (field->getDScore() < 0) // Если точка поставлена в окружение.
 	{
 		field->undo_step();
 		return -SCORE_INFINITY; // Для CurPlayer это хорошо, то есть оценка Infinity.
@@ -42,7 +42,7 @@ Score alphabeta(Field* field, size_t depth, Pos pos, Trajectories* last, Score a
 
 	if (moves->size() == 0)
 	{
-		Score best_estimate = field->get_score(field->get_player());
+		auto best_estimate = field->getScore(field->getPlayer());
 		field->undo_step();
 		return -best_estimate;
 	}
@@ -76,12 +76,12 @@ Score get_enemy_estimate(Field* field, Trajectories* last, size_t depth)
 	moves.assign(cur_trajectories.get_points()->begin(), cur_trajectories.get_points()->end());
 	if (moves.size() == 0)
 	{
-		result = field->get_score(field->get_player());
+		result = field->getScore(field->getPlayer());
 	}
 	else
 	{
-		Score alpha = -cur_trajectories.get_max_score(next_player(field->get_player()));
-		Score beta = cur_trajectories.get_max_score(field->get_player());
+		Score alpha = -cur_trajectories.get_max_score(next_player(field->getPlayer()));
+		Score beta = cur_trajectories.get_max_score(field->getPlayer());
 		#pragma omp parallel
 		{
 			Field* local_field = new Field(*field);
@@ -136,8 +136,8 @@ Pos minimax(Field* field, size_t depth)
 	// Для почти всех возможных точек, не входящих в траектории оценка будет такая же, как если бы игрок CurPlayer пропустил ход.
 	//int enemy_estimate = get_enemy_estimate(cur_field, Trajectories[cur_field.get_player()], Trajectories[next_player(cur_field.get_player())], depth);
 
-	Score alpha = -cur_trajectories.get_max_score(next_player(field->get_player()));
-	Score beta = cur_trajectories.get_max_score(field->get_player());
+	Score alpha = -cur_trajectories.get_max_score(next_player(field->getPlayer()));
+	Score beta = cur_trajectories.get_max_score(field->getPlayer());
 	#pragma omp parallel
 	{
 		Field* local_field = new Field(*field);

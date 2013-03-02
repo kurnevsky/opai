@@ -35,9 +35,9 @@ short play_random_game(Field* field, mt* gen, vector<Pos>* possible_moves)
 			putted++;
 		}
 
-	if (field->get_score(player_red) > 0)
+	if (field->getScore(player_red) > 0)
 		result = player_red;
-	else if (field->get_score(player_black) > 0)
+	else if (field->getScore(player_black) > 0)
 		result = player_black;
 	else
 		result = -1;
@@ -110,12 +110,12 @@ short play_simulation(Field* field, mt* gen, vector<Pos>* possible_moves, uct_no
 		if (next == NULL)
 		{
 			n->visits = numeric_limits<ulong>::max();
-			if (field->get_score(next_player(field->get_player())) > 0)
+			if (field->getScore(next_player(field->getPlayer())) > 0)
 				n->wins = numeric_limits<ulong>::max();
 
-			if (field->get_score(player_red) > 0)
+			if (field->getScore(player_red) > 0)
 				return player_red;
-			else if (field->get_score(player_black) > 0)
+			else if (field->getScore(player_black) > 0)
 				return player_black;
 			else
 				return -1;
@@ -129,7 +129,7 @@ short play_simulation(Field* field, mt* gen, vector<Pos>* possible_moves, uct_no
 	}
 
 	n->visits++;
-	if (randomresult == next_player(field->get_player()))
+	if (randomresult == next_player(field->getPlayer()))
 		n->wins++;
 
 	return randomresult;
