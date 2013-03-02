@@ -2,70 +2,70 @@
 
 using namespace std;
 
-short Field::get_input_points(const Pos center_pos, const PosValue enable_cond, Pos inp_chain_points[], Pos inp_sur_points[]) const
+int Field::getInputPoints(const Pos centerPos, const PosValue enableCond, Pos inpChainPoints[], Pos inpSurPoints[]) const
 {
-	short result = 0;
+	auto result = 0;
 
-	if (isNotEnable(w(center_pos), enable_cond))
+	if (isNotEnable(w(centerPos), enableCond))
 	{
-		if (isEnable(nw(center_pos), enable_cond))
+		if (isEnable(nw(centerPos), enableCond))
 		{
-			inp_chain_points[0] = nw(center_pos);
-			inp_sur_points[0] = w(center_pos);
+			inpChainPoints[0] = nw(centerPos);
+			inpSurPoints[0] = w(centerPos);
 			result++;
 		}
-		else if (isEnable(n(center_pos), enable_cond))
+		else if (isEnable(n(centerPos), enableCond))
 		{
-			inp_chain_points[0] = n(center_pos);
-			inp_sur_points[0] = w(center_pos);
+			inpChainPoints[0] = n(centerPos);
+			inpSurPoints[0] = w(centerPos);
 			result++;
 		}
 	}
 
-	if (isNotEnable(s(center_pos), enable_cond))
+	if (isNotEnable(s(centerPos), enableCond))
 	{
-		if (isEnable(sw(center_pos), enable_cond))
+		if (isEnable(sw(centerPos), enableCond))
 		{
-			inp_chain_points[result] = sw(center_pos);
-			inp_sur_points[result] = s(center_pos);
+			inpChainPoints[result] = sw(centerPos);
+			inpSurPoints[result] = s(centerPos);
 			result++;
 		}
-		else if (isEnable(w(center_pos), enable_cond))
+		else if (isEnable(w(centerPos), enableCond))
 		{
-			inp_chain_points[result] = w(center_pos);
-			inp_sur_points[result] = s(center_pos);
+			inpChainPoints[result] = w(centerPos);
+			inpSurPoints[result] = s(centerPos);
 			result++;
 		}
 	}
 
-	if (isNotEnable(e(center_pos), enable_cond))
+	if (isNotEnable(e(centerPos), enableCond))
 	{
-		if (isEnable(se(center_pos), enable_cond))
+		if (isEnable(se(centerPos), enableCond))
 		{
-			inp_chain_points[result] = se(center_pos);
-			inp_sur_points[result] = e(center_pos);
+			inpChainPoints[result] = se(centerPos);
+			inpSurPoints[result] = e(centerPos);
 			result++;
 		}
-		else if (isEnable(s(center_pos), enable_cond))
+		else if (isEnable(s(centerPos), enableCond))
 		{
-			inp_chain_points[result] = s(center_pos);
-			inp_sur_points[result] = e(center_pos);
+			inpChainPoints[result] = s(centerPos);
+			inpSurPoints[result] = e(centerPos);
 			result++;
 		}
 	}
 
-	if (isNotEnable(n(center_pos), enable_cond))
+	if (isNotEnable(n(centerPos), enableCond))
 	{
-		if (isEnable(ne(center_pos), enable_cond))
+		if (isEnable(ne(centerPos), enableCond))
 		{
-			inp_chain_points[result] = ne(center_pos);
-			inp_sur_points[result] = n(center_pos);
+			inpChainPoints[result] = ne(centerPos);
+			inpSurPoints[result] = n(centerPos);
 			result++;
 		}
-		else if (isEnable(e(center_pos), enable_cond))
+		else if (isEnable(e(centerPos), enableCond))
 		{
-			inp_chain_points[result] = e(center_pos);
-			inp_sur_points[result] = n(center_pos);
+			inpChainPoints[result] = e(centerPos);
+			inpSurPoints[result] = n(centerPos);
 			result++;
 		}
 	}
@@ -376,7 +376,7 @@ void Field::check_closure(const Pos start_pos, Player player)
 		}
 
 #if SUR_COND != 2 // Если приоритет не всегда у врага.
-		inp_points_count = get_input_points(start_pos, player | putBit, inp_chain_points, inp_sur_points);
+		inp_points_count = getInputPoints(start_pos, player | putBit, inp_chain_points, inp_sur_points);
 		if (inp_points_count > 1)
 		{
 			short chains_count = 0;
@@ -402,7 +402,7 @@ void Field::check_closure(const Pos start_pos, Player player)
 			pos--;
 			while (!isEnable(pos, next_player(player) | putBit))
 				pos--;
-			inp_points_count = get_input_points(pos, next_player(player) | putBit, inp_chain_points, inp_sur_points);
+			inp_points_count = getInputPoints(pos, next_player(player) | putBit, inp_chain_points, inp_sur_points);
 			for (short i = 0; i < inp_points_count; i++)
 				if (build_chain(pos, next_player(player) | putBit, inp_chain_points[i], chain))
 					if (is_point_inside_ring(start_pos, chain))
@@ -414,7 +414,7 @@ void Field::check_closure(const Pos start_pos, Player player)
 	}
 	else
 	{
-		inp_points_count = get_input_points(start_pos, player | putBit, inp_chain_points, inp_sur_points);
+		inp_points_count = getInputPoints(start_pos, player | putBit, inp_chain_points, inp_sur_points);
 		if (inp_points_count > 1)
 		{
 			short chains_count = 0;

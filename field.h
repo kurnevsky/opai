@@ -178,7 +178,7 @@ private:
 	}
 	// Возвращает количество групп точек рядом с CenterPos.
 	// InpChainPoints - возможные точки цикла, InpSurPoints - возможные окруженные точки.
-	short get_input_points(const Pos center_pos, const PosValue enable_cond, Pos inp_chain_points[], Pos inp_sur_points[]) const;
+	int getInputPoints(const Pos centerPos, const PosValue enableCond, Pos inpChainPoints[], Pos inpSurPoints[]) const;
 	// Поставить начальные точки.
 	void place_begin_pattern(BeginPattern pattern);
 	// Изменение счета игроков.
