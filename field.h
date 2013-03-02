@@ -35,89 +35,78 @@ private:
 
 	// Маски для определения условий.
 	static const PosValue enableMask = badBit | surBit | putBit | playerBit;
-	static const PosValue boundMask = badBit | boundBit | surBit | putBit | playerBit;
 
 public:
 	// Get state functions.
 	// Функции получения состояния.
 
 	// Получить по координате игрока, чья точка там поставлена.
-	inline Player get_player(const Pos pos) const { return _points[pos] & playerBit; }
+	Player getPlayer(const Pos pos) const { return _points[pos] & playerBit; }
 	// Проверить по координате, поставлена ли там точка.
-	inline bool is_putted(const Pos pos) const { return (_points[pos] & putBit) != 0; }
+	bool isPutted(const Pos pos) const { return (_points[pos] & putBit) != 0; }
 	// Прверить по координате, является ли точка окружающей базу.
-	inline bool is_base_bound(const Pos pos) const { return (_points[pos] & boundBit) != 0; }
+	bool isBaseBound(const Pos pos) const { return (_points[pos] & boundBit) != 0; }
 	// Проверить по координате, захвачено ли поле.
-	inline bool is_captured(const Pos pos) const { return (_points[pos] & surBit) != 0; }
+	bool isCaptured(const Pos pos) const { return (_points[pos] & surBit) != 0; }
 	// Проверить по координате, лежит ли она в пустой базе.
-	inline bool is_in_empty_base(const Pos pos) const { return (_points[pos] & emptyBaseBit) != 0; }
+	bool isInEmptyBase(const Pos pos) const { return (_points[pos] & emptyBaseBit) != 0; }
 	// Проверить по координате, помечено ли поле.
-	inline bool is_tagged(const Pos pos) const { return (_points[pos] & tagBit) != 0; }
+	bool isTagged(const Pos pos) const { return (_points[pos] & tagBit) != 0; }
 	// Получить условие по координате.
-	inline PosValue get_enable_cond(const Pos pos) const { return _points[pos] & enableMask; }
+	PosValue getEnableCond(const Pos pos) const { return _points[pos] & enableMask; }
 	// Проверка незанятости поля по условию.
-	inline bool is_enable(const Pos pos, const PosValue enable_cond) const { return (_points[pos] & enableMask) == enable_cond; }
+	bool isEnable(const Pos pos, const PosValue enableCond) const { return (_points[pos] & enableMask) == enableCond; }
 	// Проверка занятости поля по условию.
-	inline bool is_not_enable(const Pos pos, const PosValue enable_cond) const { return (_points[pos] & enableMask) != enable_cond; }
-	// Проверка на то, захвачено ли поле.
-	inline bool is_bound(const Pos pos, const PosValue bound_cond) const { return (_points[pos] & boundMask) == bound_cond; }
-	// Проверка на то, не захвачено ли поле.
-	inline bool is_not_bound(const Pos pos, const PosValue bound_cond) const { return (_points[pos] & boundMask) != bound_cond; }
+	bool isNotEnable(const Pos pos, const PosValue enableCond) const { return (_points[pos] & enableMask) != enableCond; }
 	// Провека на то, возможно ли поставить точку в полке.
-	inline bool putting_allow(const Pos pos) const { return !(_points[pos] & (putBit | surBit | badBit)); }
+	bool puttingAllow(const Pos pos) const { return !(_points[pos] & (putBit | surBit | badBit)); }
 
 	// Set state functions.
 	// Функции установки состояния.
 
 	// Пометить поле по координате как содержащее точку.
-	inline void set_putted(const Pos pos) { _points[pos] |= putBit; }
+	void setPutted(const Pos pos) { _points[pos] |= putBit; }
 	// Убрать с поля по координате put_bit.
-	inline void clear_put_bit(const Pos pos) { _points[pos] &= ~putBit; }
+	void clearPuted(const Pos pos) { _points[pos] &= ~putBit; }
 	// Пометить поле по координате как принадлежащее игроку.
-	inline void set_player(const Pos pos, const Player player) { _points[pos] = (_points[pos] & ~playerBit) | player; }
+	void setPlayer(const Pos pos, const Player player) { _points[pos] = (_points[pos] & ~playerBit) | player; }
 	// Пометить поле по координате как содержащее точку игрока.
-	inline void set_player_putted(const Pos pos, const Player player) { _points[pos] = (_points[pos] & ~playerBit) | player | putBit; }
+	void setPlayerPutted(const Pos pos, const Player player) { _points[pos] = (_points[pos] & ~playerBit) | player | putBit; }
 	// Пометить битом SurBit (захватить).
-	inline void capture(const Pos pos) { _points[pos] |= surBit; }
+	void capture(const Pos pos) { _points[pos] |= surBit; }
 	// Убрать бит SurBit.
-	inline void free(const Pos pos) { _points[pos] &= ~surBit; }
+	void free(const Pos pos) { _points[pos] &= ~surBit; }
 	// Пометить точку как окружающую базу.
-	inline void set_base_bound(const Pos pos) { _points[pos] |= boundBit; }
+	void setBaseBound(const Pos pos) { _points[pos] |= boundBit; }
 	// Пометить точку как не окружающую базу.
-	inline void clear_base_bound(const Pos pos) { _points[pos] &= ~boundBit; }
-	inline void set_empty_base(const Pos pos) { _points[pos] |= emptyBaseBit; }
-	inline void clear_empty_base(const Pos pos) { _points[pos] &= ~emptyBaseBit; }
+	void clearBaseBound(const Pos pos) { _points[pos] &= ~boundBit; }
+	void setEmptyBase(const Pos pos) { _points[pos] |= emptyBaseBit; }
+	void clearEmptyBase(const Pos pos) { _points[pos] &= ~emptyBaseBit; }
 	// Установить бит TagBit.
-	inline void set_tag(const Pos pos) { _points[pos] |= tagBit; }
+	void setTag(const Pos pos) { _points[pos] |= tagBit; }
 	// Убрать бит TagBit.
-	inline void clear_tag(const Pos pos) { _points[pos] &= ~tagBit; }
-	inline void set_bad(const Pos pos) { _points[pos] |= badBit; }
-	inline void clear_bad(const Pos pos) { _points[pos] &= ~badBit; }
+	void clearTag(const Pos pos) { _points[pos] &= ~tagBit; }
+	void setBad(const Pos pos) { _points[pos] |= badBit; }
+	void clearBad(const Pos pos) { _points[pos] &= ~badBit; }
 
 private:
 	vector<BoardChange> _changes;
-
 	// Main points array (game board).
 	// Основной массив точек (игровая доска).
 	PosValue* _points;
-
 	// Real field width.
 	// Действительная ширина поля.
 	Coord _width;
 	// Real field height.
 	// Действительная высота поля.
 	Coord _height;
-
 	// Current player color.
 	// Текущий цвет игроков.
 	Player _player;
-
 	// Capture points count.
 	// Количество захваченных точек.
-	Score _capture_count[2];
-
+	Score _captureCount[2];
 	Zobrist* _zobrist;
-
 	Hash _hash;
 
 public:
@@ -192,31 +181,31 @@ private:
 	{
 		if (captured == -1)
 		{
-			_capture_count[next_player(player)]++;
+			_captureCount[next_player(player)]++;
 		}
 		else
 		{
-			_capture_count[player] += captured;
-			_capture_count[next_player(player)] -= freed;
+			_captureCount[player] += captured;
+			_captureCount[next_player(player)] -= freed;
 		}
 	}
 	// Изменяет Captured/Free в зависимости от того, захвачена или окружена точка.
 	inline void check_captured_and_freed(const Pos pos, const Player player, Score &captured, Score &freed)
 	{
-		if (is_putted(pos))
+		if (isPutted(pos))
 		{
-			if (get_player(pos) != player)
+			if (getPlayer(pos) != player)
 				captured++;
-			else if (is_captured(pos))
+			else if (isCaptured(pos))
 				freed++;
 		}
 	}
 	// Захватывает/освобождает окруженную точку.
 	inline void set_capture_free_state(const Pos pos, const Player player)
 	{
-		if (is_putted(pos))
+		if (isPutted(pos))
 		{
-			if (get_player(pos) != player)
+			if (getPlayer(pos) != player)
 				capture(pos);
 			else
 				free(pos);
@@ -259,9 +248,9 @@ public:
 	// Деструктор.
 	~Field();
 
-	inline Score get_score(Player player) const { return _capture_count[player] - _capture_count[next_player(player)]; }
+	inline Score get_score(Player player) const { return _captureCount[player] - _captureCount[next_player(player)]; }
 	inline Score get_prev_score(Player player) const { return _changes.back().captureCount[player] - _changes.back().captureCount[next_player(player)]; }
-	inline Player get_last_player() const { return get_player(points_seq.back()); }
+	inline Player get_last_player() const { return getPlayer(points_seq.back()); }
 	inline Score get_d_score(Player player) const { return get_score(player) - get_prev_score(player); }
 	inline Score get_d_score() const { return get_d_score(get_last_player()); }
 	inline Player get_player() const { return _player; }
@@ -292,7 +281,7 @@ public:
 	// Поставить точку на поле следующего по очереди игрока.
 	inline bool do_step(const Pos pos)
 	{
-		if (putting_allow(pos))
+		if (puttingAllow(pos))
 		{
 			do_unsafe_step(pos);
 			return true;
@@ -302,7 +291,7 @@ public:
 	// Поставить точку на поле.
 	inline bool do_step(const Pos pos, const Player player)
 	{
-		if (putting_allow(pos))
+		if (puttingAllow(pos))
 		{
 			do_unsafe_step(pos, player);
 			return true;
@@ -313,14 +302,14 @@ public:
 	inline void do_unsafe_step(const Pos pos)
 	{
 		_changes.push_back(BoardChange());
-		_changes.back().captureCount[0] = _capture_count[0];
-		_changes.back().captureCount[1] = _capture_count[1];
+		_changes.back().captureCount[0] = _captureCount[0];
+		_changes.back().captureCount[1] = _captureCount[1];
 		_changes.back().player = _player;
 
 		// Добавляем в изменения поставленную точку.
 		_changes.back().changes.push(pair<Pos, PosValue>(pos, _points[pos]));
 
-		set_player_putted(pos, _player);
+		setPlayerPutted(pos, _player);
 
 		points_seq.push_back(pos);
 
@@ -332,14 +321,14 @@ public:
 	inline void do_unsafe_step(const Pos pos, const Player player)
 	{
 		_changes.push_back(BoardChange());
-		_changes.back().captureCount[0] = _capture_count[0];
-		_changes.back().captureCount[1] = _capture_count[1];
+		_changes.back().captureCount[0] = _captureCount[0];
+		_changes.back().captureCount[1] = _captureCount[1];
 		_changes.back().player = _player;
 
 		// Добавляем в изменения поставленную точку.
 		_changes.back().changes.push(pair<Pos, PosValue>(pos, _points[pos]));
 
-		set_player_putted(pos, player);
+		setPlayerPutted(pos, player);
 
 		points_seq.push_back(pos);
 
@@ -355,8 +344,8 @@ public:
 			_changes.back().changes.pop();
 		}
 		_player = _changes.back().player;
-		_capture_count[0] = _changes.back().captureCount[0];
-		_capture_count[1] = _changes.back().captureCount[1];
+		_captureCount[0] = _changes.back().captureCount[0];
+		_captureCount[1] = _changes.back().captureCount[1];
 		_changes.pop_back();
 	}
 	// Проверяет, находятся ли две точки рядом.
@@ -377,14 +366,14 @@ public:
 	// Проверяет, есть ли рядом с center_pos точки цвета player.
 	inline bool is_near_points(const Pos center_pos, const Player player) const
 	{
-		if (is_enable(n(center_pos), putBit | player)  ||
-			is_enable(s(center_pos), putBit | player)  ||
-			is_enable(w(center_pos), putBit | player)  ||
-			is_enable(e(center_pos), putBit | player)  ||
-			is_enable(nw(center_pos), putBit | player) ||
-			is_enable(ne(center_pos), putBit | player) ||
-			is_enable(sw(center_pos), putBit | player) ||
-			is_enable(se(center_pos), putBit | player))
+		if (isEnable(n(center_pos), putBit | player)  ||
+			isEnable(s(center_pos), putBit | player)  ||
+			isEnable(w(center_pos), putBit | player)  ||
+			isEnable(e(center_pos), putBit | player)  ||
+			isEnable(nw(center_pos), putBit | player) ||
+			isEnable(ne(center_pos), putBit | player) ||
+			isEnable(sw(center_pos), putBit | player) ||
+			isEnable(se(center_pos), putBit | player))
 			return true;
 		else
 			return false;
@@ -393,21 +382,21 @@ public:
 	inline short number_near_points(const Pos center_pos, const Player player) const
 	{
 		short result = 0;
-		if (is_enable(n(center_pos), putBit | player))
+		if (isEnable(n(center_pos), putBit | player))
 			result++;
-		if (is_enable(s(center_pos), putBit | player))
+		if (isEnable(s(center_pos), putBit | player))
 			result++;
-		if (is_enable(w(center_pos), putBit | player))
+		if (isEnable(w(center_pos), putBit | player))
 			result++;
-		if (is_enable(e(center_pos), putBit | player))
+		if (isEnable(e(center_pos), putBit | player))
 			result++;
-		if (is_enable(nw(center_pos), putBit | player))
+		if (isEnable(nw(center_pos), putBit | player))
 			result++;
-		if (is_enable(ne(center_pos), putBit | player))
+		if (isEnable(ne(center_pos), putBit | player))
 			result++;
-		if (is_enable(sw(center_pos), putBit | player))
+		if (isEnable(sw(center_pos), putBit | player))
 			result++;
-		if (is_enable(se(center_pos), putBit | player))
+		if (isEnable(se(center_pos), putBit | player))
 			result++;
 		return result;
 	}
@@ -415,13 +404,13 @@ public:
 	inline short number_near_groups(const Pos center_pos, const Player player) const
 	{
 		short result = 0;
-		if (is_not_enable(w(center_pos), player | putBit) && (is_enable(nw(center_pos), player | putBit) || is_enable(n(center_pos), player | putBit)))
+		if (isNotEnable(w(center_pos), player | putBit) && (isEnable(nw(center_pos), player | putBit) || isEnable(n(center_pos), player | putBit)))
 			result++;
-		if (is_not_enable(s(center_pos), player | putBit) && (is_enable(sw(center_pos), player | putBit) || is_enable(w(center_pos), player | putBit)))
+		if (isNotEnable(s(center_pos), player | putBit) && (isEnable(sw(center_pos), player | putBit) || isEnable(w(center_pos), player | putBit)))
 			result++;
-		if (is_not_enable(e(center_pos), player | putBit) && (is_enable(se(center_pos), player | putBit) || is_enable(s(center_pos), player | putBit)))
+		if (isNotEnable(e(center_pos), player | putBit) && (isEnable(se(center_pos), player | putBit) || isEnable(s(center_pos), player | putBit)))
 			result++;
-		if (is_not_enable(n(center_pos), player | putBit) && (is_enable(ne(center_pos), player | putBit) || is_enable(e(center_pos), player | putBit)))
+		if (isNotEnable(n(center_pos), player | putBit) && (isEnable(ne(center_pos), player | putBit) || isEnable(e(center_pos), player | putBit)))
 			result++;
 		return result;
 	}

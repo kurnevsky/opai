@@ -29,7 +29,7 @@ short play_random_game(Field* field, mt* gen, vector<Pos>* possible_moves)
 	}
 
 	for (auto i = moves.begin(); i < moves.end(); i++)
-		if (field->putting_allow(*i))
+		if (field->puttingAllow(*i))
 		{
 			field->do_unsafe_step(*i);
 			putted++;
@@ -53,7 +53,7 @@ void create_children(Field* field, vector<Pos>* possible_moves, uct_node* n)
 	uct_node** cur_child = &n->child;
 
 	for (auto i = possible_moves->begin(); i < possible_moves->end(); i++)
-		if (field->putting_allow(*i))
+		if (field->puttingAllow(*i))
 		{
 			*cur_child = new uct_node();
 			(*cur_child)->move = *i;
@@ -143,31 +143,31 @@ template<typename _Cont> void generate_possible_moves(Field* field, _Cont* possi
 
 	possible_moves->clear();
 	for (Pos i = field->min_pos(); i <= field->max_pos(); i++)
-		if (field->is_putted(i)) //TODO: Класть соседей, а не сами точки.
+		if (field->isPutted(i)) //TODO: Класть соседей, а не сами точки.
 			q.push(i);
 
 	while (!q.empty())
 	{
-		if (field->putting_allow(q.front())) //TODO: Убрать условие.
+		if (field->puttingAllow(q.front())) //TODO: Убрать условие.
 			possible_moves->push_back(q.front());
 		if (r_field[q.front()] < UCT_RADIUS)
 		{
-			if (field->putting_allow(field->n(q.front())) && r_field[field->n(q.front())] == 0)
+			if (field->puttingAllow(field->n(q.front())) && r_field[field->n(q.front())] == 0)
 			{
 				r_field[field->n(q.front())] = r_field[q.front()] + 1;
 				q.push(field->n(q.front()));
 			}
-			if (field->putting_allow(field->s(q.front())) && r_field[field->s(q.front())] == 0)
+			if (field->puttingAllow(field->s(q.front())) && r_field[field->s(q.front())] == 0)
 			{
 				r_field[field->s(q.front())] = r_field[q.front()] + 1;
 				q.push(field->s(q.front()));
 			}
-			if (field->putting_allow(field->w(q.front())) && r_field[field->w(q.front())] == 0)
+			if (field->puttingAllow(field->w(q.front())) && r_field[field->w(q.front())] == 0)
 			{
 				r_field[field->w(q.front())] = r_field[q.front()] + 1;
 				q.push(field->w(q.front()));
 			}
-			if (field->putting_allow(field->e(q.front())) && r_field[field->e(q.front())] == 0)
+			if (field->puttingAllow(field->e(q.front())) && r_field[field->e(q.front())] == 0)
 			{
 				r_field[field->e(q.front())] = r_field[q.front()] + 1;
 				q.push(field->e(q.front()));

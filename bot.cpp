@@ -62,7 +62,7 @@ void Bot::setPlayer(Player player)
 bool Bot::isFieldOccupied() const
 {
 	for (auto i = _field->min_pos(); i <= _field->max_pos(); i++)
-		if (_field->putting_allow(i))
+		if (_field->puttingAllow(i))
 			return false;
 	return true;
 }

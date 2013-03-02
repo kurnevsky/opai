@@ -28,7 +28,7 @@ private:
 		// Каждая точка траектории должна окружать что-либо и иметь рядом хотя бы 2 группы точек.
 		// Если нет - не добавляем эту траекторию.
 		for (auto i = begin; i < end; i++)
-			if (!_field->is_base_bound(*i) || (_field->number_near_groups(*i, player) < 2))
+			if (!_field->isBaseBound(*i) || (_field->number_near_groups(*i, player) < 2))
 				return;
 
 		// Высчитываем хеш траектории и сравниваем с уже существующими для исключения повторов.
@@ -58,9 +58,9 @@ private:
 	{
 		for (Pos pos = _field->min_pos(); pos <= _field->max_pos(); pos++)
 		{
-			if (_field->putting_allow(pos) && _field->is_near_points(pos, player))
+			if (_field->puttingAllow(pos) && _field->is_near_points(pos, player))
 			{
-				if (_field->is_in_empty_base(pos)) // Если поставили в пустую базу (свою или нет), то дальше строить траекторию нет нужды.
+				if (_field->isInEmptyBase(pos)) // Если поставили в пустую базу (свою или нет), то дальше строить траекторию нет нужды.
 				{
 					_field->do_unsafe_step(pos, player);
 					if (_field->get_d_score(player) > 0)
@@ -202,7 +202,7 @@ private:
 		if (depth > 0)
 		{
 			for (auto i = _moves[player].begin(); i != _moves[player].end(); i++)
-				if (_field->putting_allow(*i))
+				if (_field->puttingAllow(*i))
 				{
 					_field->do_unsafe_step(*i, player);
 					if (_field->get_d_score(player) >= 0)
