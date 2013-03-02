@@ -214,7 +214,7 @@ void Field::find_surround(list<Pos> &chain, Pos inside_point, Player player)
 	}
 }
 
-Field::Field(const Coord width, const Coord height, const BeginPattern begin_pattern, zobrist* zobr)
+Field::Field(const Coord width, const Coord height, const BeginPattern begin_pattern, Zobrist* zobr)
 {
 	_width = width;
 	_height = height;

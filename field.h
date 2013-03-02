@@ -116,7 +116,7 @@ private:
 	// Количество захваченных точек.
 	Score _capture_count[2];
 
-	zobrist* _zobrist;
+	Zobrist* _zobrist;
 
 	Hash _hash;
 
@@ -228,7 +228,7 @@ private:
 	void remove_empty_base(const Pos start_pos);
 	bool build_chain(const Pos start_pos, const PosValue enable_cond, const Pos direction_pos, list<Pos> &chain);
 	void find_surround(list<Pos> &chain, Pos inside_point, Player player);
-	inline void update_hash(Player player, Pos pos) { _hash ^= _zobrist->get_hash((player + 1) * pos); }
+	inline void update_hash(Player player, Pos pos) { _hash ^= _zobrist->getHash((player + 1) * pos); }
 	inline IntersectionState get_intersection_state(const Pos pos, const Pos next_pos) const
 	{
 		Point a, b;
@@ -253,7 +253,7 @@ private:
 
 public:
 	// Конструктор.
-	Field(const Coord width, const Coord height, const BeginPattern begin_pattern, zobrist* zobr);
+	Field(const Coord width, const Coord height, const BeginPattern begin_pattern, Zobrist* zobr);
 	// Конструктор копирования.
 	Field(const Field &orig);
 	// Деструктор.
@@ -266,8 +266,8 @@ public:
 	inline Score get_d_score() const { return get_d_score(get_last_player()); }
 	inline Player get_player() const { return _player; }
 	inline Hash get_hash() const { return _hash; }
-	inline Hash get_hash(Pos pos) const { return _zobrist->get_hash(pos); }
-	inline zobrist& get_zobrist() const { return *_zobrist; };
+	inline Hash get_hash(Pos pos) const { return _zobrist->getHash(pos); }
+	inline Zobrist& get_zobrist() const { return *_zobrist; };
 	inline Coord width() const { return _width; }
 	inline Coord height() const { return _height; }
 	inline Pos length() const { return (_width + 2) * (_height + 2); }

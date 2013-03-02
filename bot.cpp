@@ -15,7 +15,7 @@ using namespace std;
 Bot::Bot(const Coord width, const Coord height, const BeginPattern begin_pattern, ptrdiff_t seed)
 {
 	_gen = new mt(seed);
-	_zobrist = new zobrist((width + 2) * (height + 2), _gen);
+	_zobrist = new Zobrist((width + 2) * (height + 2), _gen);
 	_field = new Field(width, height, begin_pattern, _zobrist);
 }
 

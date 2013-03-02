@@ -15,7 +15,7 @@ class Bot
 {
 private:
 	mt* _gen;
-	zobrist* _zobrist;
+	Zobrist* _zobrist;
 	Field* _field;
 	size_t get_minimax_depth(size_t complexity);
 	size_t get_mtdf_depth(size_t complexity);

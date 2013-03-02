@@ -14,7 +14,7 @@ private:
 	list<Trajectory> _trajectories[2];
 	int* _trajectories_board;
 	bool _trajectories_board_owner;
-	zobrist* _zobrist;
+	Zobrist* _zobrist;
 	list<Pos> _moves[2];
 	list<Pos> _all_moves;
 
@@ -33,7 +33,7 @@ private:
 
 		// Высчитываем хеш траектории и сравниваем с уже существующими для исключения повторов.
 		for (auto i = begin; i < end; i++)
-			hash ^= _zobrist->get_hash(*i);
+			hash ^= _zobrist->getHash(*i);
 		for (auto i = _trajectories[player].begin(); i != _trajectories[player].end(); i++)
 			if (hash == i->hash())
 				return; // В теории возможны коллизии. Неплохо было бы сделать точную проверку.
@@ -140,7 +140,7 @@ private:
 		Hash result_hash = t1->hash();
 		for (auto i = t2->begin(); i != t2->end(); i++)
 			if (find(t1->begin(), t1->end(), *i) == t1->end())
-				result_hash ^= _zobrist->get_hash(*i);
+				result_hash ^= _zobrist->getHash(*i);
 		return result_hash;
 	}
 	bool exclude_unnecessary_trajectories(Player player)

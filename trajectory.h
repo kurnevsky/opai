@@ -9,18 +9,18 @@ class Trajectory
 {
 private:
 	list<Pos> _points;
-	zobrist *_zobrist;
+	Zobrist *_zobrist;
 	Hash _hash;
 	bool _excluded;
 
 public:
-	inline Trajectory(zobrist* cur_zobrist) { _hash = 0; _excluded = false; _zobrist = cur_zobrist; }
-	template<typename _InIt> inline Trajectory(_InIt first, _InIt last, zobrist* cur_zobrist) { _hash = 0; _excluded = false; _zobrist = cur_zobrist; assign(first, last); }
-	template<typename _InIt> inline Trajectory(_InIt first, _InIt last, zobrist* cur_zobrist, size_t hash) { _hash = 0; _excluded = false; _zobrist = cur_zobrist; assign(first, last, hash); }
+	Trajectory(Zobrist* cur_zobrist) { _hash = 0; _excluded = false; _zobrist = cur_zobrist; }
+	template<typename _InIt> inline Trajectory(_InIt first, _InIt last, Zobrist* cur_zobrist) { _hash = 0; _excluded = false; _zobrist = cur_zobrist; assign(first, last); }
+	template<typename _InIt> inline Trajectory(_InIt first, _InIt last, Zobrist* cur_zobrist, size_t hash) { _hash = 0; _excluded = false; _zobrist = cur_zobrist; assign(first, last, hash); }
 	inline Trajectory(const Trajectory &other) { _points = other._points; _hash = other._hash; _excluded = other._excluded; _zobrist = other._zobrist; }
 	inline size_t size() const { return _points.size(); }
 	inline bool empty() const { return _points.empty(); }
-	inline void push_back(Pos pos) { _points.push_back(pos); _hash ^= _zobrist->get_hash(pos); }
+	inline void push_back(Pos pos) { _points.push_back(pos); _hash ^= _zobrist->getHash(pos); }
 	inline void clear() { _points.clear(); _hash = 0; _excluded = false; }
 	inline const Trajectory& operator =(const Trajectory &other) { _points = other._points; _hash = other._hash; _excluded = other._excluded; _zobrist = other._zobrist; return *this; }
 	inline void swap(Trajectory &other) { Trajectory tmp(*this); *this = other; other = tmp; }
@@ -37,7 +37,7 @@ public:
 	inline void assign(_InIt first, _InIt last)
 	{
 		for (auto i = first; i != last; i++)
-			push_back(*i, _zobrist->get_hash(*i));
+			push_back(*i, _zobrist->getHash(*i));
 	}
 	template<typename _InIt>
 	inline void assign(_InIt first, _InIt last, Hash hash)
