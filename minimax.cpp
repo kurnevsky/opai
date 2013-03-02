@@ -85,7 +85,7 @@ Score get_enemy_estimate(Field* field, Trajectories* last, size_t depth)
 		#pragma omp parallel
 		{
 			Field* local_field = new Field(*field);
-			int* empty_board = new int[field->length()];
+			int* empty_board = new int[field->getLength()];
 
 			#pragma omp for schedule(dynamic, 1)
 			for (auto i = moves.begin(); i < moves.end(); i++)
@@ -141,7 +141,7 @@ Pos minimax(Field* field, size_t depth)
 	#pragma omp parallel
 	{
 		Field* local_field = new Field(*field);
-		int* empty_board = new int[field->length()];
+		int* empty_board = new int[field->getLength()];
 
 		#pragma omp for schedule(dynamic, 1)
 		for (auto i = moves.begin(); i < moves.end(); i++)

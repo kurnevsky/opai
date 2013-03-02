@@ -225,8 +225,8 @@ public:
 		_depth[get_enemy_player()] = depth / 2;
 		if (empty_board == NULL)
 		{
-			_trajectories_board = new int[field->length()];
-			fill_n(_trajectories_board, _field->length(), 0);
+			_trajectories_board = new int[field->getLength()];
+			fill_n(_trajectories_board, _field->getLength(), 0);
 			_trajectories_board_owner = true;
 		}
 		else

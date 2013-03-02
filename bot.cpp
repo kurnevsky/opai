@@ -71,8 +71,8 @@ bool Bot::boundaryCheck(Coord& x, Coord& y) const
 {
 	if (_field->pointsSeq.size() == 0)
 	{
-		x = _field->width() / 2;
-		y = _field->height() / 2;
+		x = _field->getWidth() / 2;
+		y = _field->getHeight() / 2;
 		return true;
 	}
 	if (isFieldOccupied())

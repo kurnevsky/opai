@@ -137,8 +137,8 @@ short play_simulation(Field* field, mt* gen, vector<Pos>* possible_moves, uct_no
 
 template<typename _Cont> void generate_possible_moves(Field* field, _Cont* possible_moves)
 {
-	ushort* r_field = new ushort[field->length()];
-	fill_n(r_field, field->length(), 0);
+	ushort* r_field = new ushort[field->getLength()];
+	fill_n(r_field, field->getLength(), 0);
 	std::queue<Pos> q;
 
 	possible_moves->clear();

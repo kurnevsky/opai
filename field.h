@@ -219,16 +219,15 @@ private:
 			capture(pos);
 	}
 	// Удаляет пометку пустой базы с поля точек, начиная с позиции StartPos.
-	void remove_empty_base(const Pos start_pos);
-	bool build_chain(const Pos start_pos, const PosValue enable_cond, const Pos direction_pos, list<Pos> &chain);
-	void find_surround(list<Pos> &chain, Pos inside_point, Player player);
-	void update_hash(Player player, Pos pos) { _hash ^= _zobrist->getHash((player + 1) * pos); }
-	IntersectionState get_intersection_state(const Pos pos, const Pos next_pos) const
+	void removeEmptyBase(const Pos startPos);
+	bool buildChain(const Pos startPos, const PosValue enableCond, const Pos directionPos, list<Pos> &chain);
+	void findSurround(list<Pos> &chain, Pos insidePoint, Player player);
+	void updateHash(Player player, Pos pos) { _hash ^= _zobrist->getHash((player + 1) * pos); }
+	IntersectionState getIntersectionState(const Pos pos, const Pos nextPos) const
 	{
 		Point a, b;
 		to_xy(pos, a.x, a.y);
-		to_xy(next_pos, b.x, b.y);
-
+		to_xy(nextPos, b.x, b.y);
 		if (b.x <= a.x)
 			switch (b.y - a.y)
 			{
@@ -262,9 +261,9 @@ public:
 	Hash get_hash() const { return _hash; }
 	Hash get_hash(Pos pos) const { return _zobrist->getHash(pos); }
 	Zobrist& get_zobrist() const { return *_zobrist; };
-	Coord width() const { return _width; }
-	Coord height() const { return _height; }
-	Pos length() const { return (_width + 2) * (_height + 2); }
+	Coord getWidth() const { return _width; }
+	Coord getHeight() const { return _height; }
+	Pos getLength() const { return (_width + 2) * (_height + 2); }
 	Pos min_pos() const { return to_pos(0, 0); }
 	Pos max_pos() const { return to_pos(_width - 1, _height - 1); }
 	Pos n(Pos pos) const { return pos - (_width + 2); }

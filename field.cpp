@@ -94,9 +94,9 @@ void Field::placeBeginPattern(BeginPattern pattern)
 	}
 }
 
-void Field::remove_empty_base(const Pos start_pos)
+void Field::removeEmptyBase(const Pos startPos)
 {
-	wave(	start_pos,
+	wave(	startPos,
 			[&](Pos pos)->bool
 			{
 				if (isInEmptyBase(pos))
@@ -112,14 +112,14 @@ void Field::remove_empty_base(const Pos start_pos)
 			});
 }
 
-bool Field::build_chain(const Pos start_pos, const PosValue enable_cond, const Pos direction_pos, list<Pos> &chain)
+bool Field::buildChain(const Pos startPos, const PosValue enableCond, const Pos directionPos, list<Pos> &chain)
 {
 	chain.clear();
-	chain.push_back(start_pos);
-	Pos pos = direction_pos;
-	Pos center_pos = start_pos;
+	chain.push_back(startPos);
+	auto pos = directionPos;
+	auto centerPos = startPos;
 	// Площадь базы.
-	int TempSquare = square(center_pos, pos);
+	int baseSquare = square(centerPos, pos);
 	do
 	{
 		if (isTagged(pos))
@@ -135,40 +135,40 @@ bool Field::build_chain(const Pos start_pos, const PosValue enable_cond, const P
 			setTag(pos);
 			chain.push_back(pos);
 		}
-		swap(pos, center_pos);
-		getFirstNextPos(center_pos, pos);
-		while (isNotEnable(pos, enable_cond))
-			getNextPos(center_pos, pos);
-		TempSquare += square(center_pos, pos);
+		swap(pos, centerPos);
+		getFirstNextPos(centerPos, pos);
+		while (isNotEnable(pos, enableCond))
+			getNextPos(centerPos, pos);
+		baseSquare += square(centerPos, pos);
 	}
-	while (pos != start_pos);
+	while (pos != startPos);
 
 	for (auto i = chain.begin(); i != chain.end(); i++)
 		clearTag(*i);
 
-	return (TempSquare < 0 && chain.size() > 2);
+	return (baseSquare < 0 && chain.size() > 2);
 }
 
-void Field::find_surround(list<Pos> &chain, Pos inside_point, Player player)
+void Field::findSurround(list<Pos> &chain, Pos insidePoint, Player player)
 {
 	// Количество захваченных точек.
-	int cur_capture_count = 0;
+	auto curCaptureCount = 0;
 	// Количество захваченных пустых полей.
-	int cur_freed_count = 0;
+	auto curFreedCount = 0;
 
-	list<Pos> sur_points;
+	list<Pos> surPoints;
 
 	// Помечаем точки цепочки.
 	for (auto i = chain.begin(); i != chain.end(); i++)
 		setTag(*i);
 
-	wave(	inside_point,
+	wave(	insidePoint,
 			[&, player](Pos pos)->bool
 			{
 				if (isNotBound(pos, player | putBit | boundBit))
 				{
-					checkCapturedAndFreed(pos, player, cur_capture_count, cur_freed_count);
-					sur_points.push_back(pos);
+					checkCapturedAndFreed(pos, player, curCaptureCount, curFreedCount);
+					surPoints.push_back(pos);
 					return true;
 				}
 				else
@@ -177,10 +177,10 @@ void Field::find_surround(list<Pos> &chain, Pos inside_point, Player player)
 				}
 			});
 	// Изменение счета игроков.
-	addSubCapturedFreed(player, cur_capture_count, cur_freed_count);
+	addSubCapturedFreed(player, curCaptureCount, curFreedCount);
 
 #if SUR_COND != 1
-	if (cur_capture_count != 0) // Если захватили точки.
+	if (curCaptureCount != 0) // Если захватили точки.
 #endif
 	{
 		for (auto i = chain.begin(); i != chain.end(); i++)
@@ -192,7 +192,7 @@ void Field::find_surround(list<Pos> &chain, Pos inside_point, Player player)
 			setBaseBound(*i);
 		}
 
-		for (auto i = sur_points.begin(); i != sur_points.end(); i++)
+		for (auto i = surPoints.begin(); i != surPoints.end(); i++)
 		{
 			_changes.back().changes.push(pair<Pos, PosValue>(*i, _points[*i]));
 
@@ -204,7 +204,7 @@ void Field::find_surround(list<Pos> &chain, Pos inside_point, Player player)
 		for (auto i = chain.begin(); i != chain.end(); i++)
 			clearTag(*i);
 
-		for (auto i = sur_points.begin(); i != sur_points.end(); i++)
+		for (auto i = surPoints.begin(); i != surPoints.end(); i++)
 		{
 			_changes.back().changes.push(pair<Pos, PosValue>(*i, _points[*i]));
 
@@ -222,8 +222,8 @@ Field::Field(const Coord width, const Coord height, const BeginPattern begin_pat
 	_captureCount[player_red] = 0;
 	_captureCount[player_black] = 0;
 
-	_points = new PosValue[length()];
-	fill_n(_points, length(), 0);
+	_points = new PosValue[getLength()];
+	fill_n(_points, getLength(), 0);
 
 	for (Coord x = -1; x <= width; x++)
 	{
@@ -236,8 +236,8 @@ Field::Field(const Coord width, const Coord height, const BeginPattern begin_pat
 		setBad(to_pos(width, y));
 	}
 
-	_changes.reserve(length());
-	pointsSeq.reserve(length());
+	_changes.reserve(getLength());
+	pointsSeq.reserve(getLength());
 
 	_zobrist = zobr;
 	_hash = 0;
@@ -253,11 +253,11 @@ Field::Field(const Field &orig)
 	_captureCount[player_red] = orig._captureCount[player_red];
 	_captureCount[player_black] = orig._captureCount[player_black];
 
-	_points = new PosValue[length()];
-	copy_n(orig._points, length(), _points);
+	_points = new PosValue[getLength()];
+	copy_n(orig._points, getLength(), _points);
 
-	_changes.reserve(length());
-	pointsSeq.reserve(length());
+	_changes.reserve(getLength());
+	pointsSeq.reserve(getLength());
 
 	_changes.assign(orig._changes.begin(), orig._changes.end());
 	pointsSeq.assign(orig.pointsSeq.begin(), orig.pointsSeq.end());
@@ -313,13 +313,11 @@ void Field::wave(Pos start_pos, function<bool(Pos)> cond)
 
 bool Field::is_point_inside_ring(const Pos pos, const list<Pos> &ring) const
 {
-	int intersections = 0;
-
-	IntersectionState state = INTERSECTION_STATE_NONE;
-
+	auto intersections = 0;
+	auto state = INTERSECTION_STATE_NONE;
 	for (auto i = ring.begin(); i != ring.end(); i++)
 	{
-		switch (get_intersection_state(pos, *i))
+		switch (getIntersectionState(pos, *i))
 		{
 		case (INTERSECTION_STATE_NONE):
 			state = INTERSECTION_STATE_NONE;
@@ -341,17 +339,16 @@ bool Field::is_point_inside_ring(const Pos pos, const list<Pos> &ring) const
 	if (state == INTERSECTION_STATE_UP || state == INTERSECTION_STATE_DOWN)
 	{
 		auto i = ring.begin();
-		IntersectionState begin_state = get_intersection_state(pos, *i);
-		while (begin_state == INTERSECTION_STATE_TARGET)
+		auto beginState = getIntersectionState(pos, *i);
+		while (beginState == INTERSECTION_STATE_TARGET)
 		{
 			i++;
-			begin_state = get_intersection_state(pos, *i);
+			beginState = getIntersectionState(pos, *i);
 		}
-		if ((state == INTERSECTION_STATE_UP && begin_state == INTERSECTION_STATE_DOWN) ||
-			(state == INTERSECTION_STATE_DOWN && begin_state == INTERSECTION_STATE_UP))
+		if ((state == INTERSECTION_STATE_UP && beginState == INTERSECTION_STATE_DOWN) ||
+			(state == INTERSECTION_STATE_DOWN && beginState == INTERSECTION_STATE_UP))
 			intersections++;
 	}
-
 	return intersections % 2 == 1;
 }
 
@@ -381,16 +378,16 @@ void Field::check_closure(const Pos start_pos, Player player)
 		{
 			short chains_count = 0;
 			for (short i = 0; i < inp_points_count; i++)
-				if (build_chain(start_pos, getPlayer(start_pos) | putBit, inp_chain_points[i], chain))
+				if (buildChain(start_pos, getPlayer(start_pos) | putBit, inp_chain_points[i], chain))
 				{
-					find_surround(chain, inp_sur_points[i], player);
+					findSurround(chain, inp_sur_points[i], player);
 					chains_count++;
 					if (chains_count == inp_points_count - 1)
 						break;
 				}
 				if (isBaseBound(start_pos))
 				{
-					remove_empty_base(start_pos);
+					removeEmptyBase(start_pos);
 					return;
 				}
 		}
@@ -403,11 +400,11 @@ void Field::check_closure(const Pos start_pos, Player player)
 			while (!isEnable(pos, next_player(player) | putBit))
 				pos--;
 			inp_points_count = getInputPoints(pos, next_player(player) | putBit, inp_chain_points, inp_sur_points);
-			for (short i = 0; i < inp_points_count; i++)
-				if (build_chain(pos, next_player(player) | putBit, inp_chain_points[i], chain))
+			for (auto i = 0; i < inp_points_count; i++)
+				if (buildChain(pos, next_player(player) | putBit, inp_chain_points[i], chain))
 					if (is_point_inside_ring(start_pos, chain))
 					{
-						find_surround(chain, inp_sur_points[i], next_player(player));
+						findSurround(chain, inp_sur_points[i], next_player(player));
 						break;
 					}
 		} while (!isCaptured(start_pos));
@@ -417,11 +414,11 @@ void Field::check_closure(const Pos start_pos, Player player)
 		inp_points_count = getInputPoints(start_pos, player | putBit, inp_chain_points, inp_sur_points);
 		if (inp_points_count > 1)
 		{
-			short chains_count = 0;
-			for (short i = 0; i < inp_points_count; i++)
-				if (build_chain(start_pos, player | putBit, inp_chain_points[i], chain))
+			auto chains_count = 0;
+			for (auto i = 0; i < inp_points_count; i++)
+				if (buildChain(start_pos, player | putBit, inp_chain_points[i], chain))
 				{
-					find_surround(chain, inp_sur_points[i], player);
+					findSurround(chain, inp_sur_points[i], player);
 					chains_count++;
 					if (chains_count == inp_points_count - 1)
 						break;
