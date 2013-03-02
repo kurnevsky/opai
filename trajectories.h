@@ -28,7 +28,7 @@ private:
 		// Каждая точка траектории должна окружать что-либо и иметь рядом хотя бы 2 группы точек.
 		// Если нет - не добавляем эту траекторию.
 		for (auto i = begin; i < end; i++)
-			if (!_field->isBaseBound(*i) || (_field->number_near_groups(*i, player) < 2))
+			if (!_field->isBaseBound(*i) || (_field->numberNearGroups(*i, player) < 2))
 				return;
 
 		// Высчитываем хеш траектории и сравниваем с уже существующими для исключения повторов.
@@ -58,23 +58,23 @@ private:
 	{
 		for (auto pos = _field->minPos(); pos <= _field->maxPos(); pos++)
 		{
-			if (_field->puttingAllow(pos) && _field->is_near_points(pos, player))
+			if (_field->puttingAllow(pos) && _field->isNearPoints(pos, player))
 			{
 				if (_field->isInEmptyBase(pos)) // Если поставили в пустую базу (свою или нет), то дальше строить траекторию нет нужды.
 				{
-					_field->do_unsafe_step(pos, player);
+					_field->doUnsafeStep(pos, player);
 					if (_field->getDScore(player) > 0)
 						add_trajectory(_field->pointsSeq.end() - (_depth[player] - depth), _field->pointsSeq.end(), player);
-					_field->undo_step();
+					_field->undoStep();
 				}
 				else
 				{
-					_field->do_unsafe_step(pos, player);
+					_field->doUnsafeStep(pos, player);
 
 #if SUR_COND == 1
-					if (_field->is_base_bound(pos) && _field->get_d_score(player) == 0)
+					if (_field->isBaseBound(pos) && _field->getDScore(player) == 0)
 					{
-						_field->undo_step();
+						_field->undoStep();
 						continue;
 					}
 #endif
@@ -84,7 +84,7 @@ private:
 					else if (depth > 0)
 						build_trajectories_recursive(depth - 1, player);
 
-					_field->undo_step();
+					_field->undoStep();
 				}
 			}
 		}
@@ -204,14 +204,14 @@ private:
 			for (auto i = _moves[player].begin(); i != _moves[player].end(); i++)
 				if (_field->puttingAllow(*i))
 				{
-					_field->do_unsafe_step(*i, player);
+					_field->doUnsafeStep(*i, player);
 					if (_field->getDScore(player) >= 0)
 					{
 						Score cur_score = calculate_max_score(player, depth - 1);
 						if (cur_score > result)
 							result = cur_score;
 					}
-					_field->undo_step();
+					_field->undoStep();
 				}
 		}
 		return result;

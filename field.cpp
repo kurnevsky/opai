@@ -5,7 +5,6 @@ using namespace std;
 int Field::getInputPoints(const Pos centerPos, const PosValue enableCond, Pos inpChainPoints[], Pos inpSurPoints[]) const
 {
 	auto result = 0;
-
 	if (isNotEnable(w(centerPos), enableCond))
 	{
 		if (isEnable(nw(centerPos), enableCond))
@@ -21,7 +20,6 @@ int Field::getInputPoints(const Pos centerPos, const PosValue enableCond, Pos in
 			result++;
 		}
 	}
-
 	if (isNotEnable(s(centerPos), enableCond))
 	{
 		if (isEnable(sw(centerPos), enableCond))
@@ -37,7 +35,6 @@ int Field::getInputPoints(const Pos centerPos, const PosValue enableCond, Pos in
 			result++;
 		}
 	}
-
 	if (isNotEnable(e(centerPos), enableCond))
 	{
 		if (isEnable(se(centerPos), enableCond))
@@ -53,7 +50,6 @@ int Field::getInputPoints(const Pos centerPos, const PosValue enableCond, Pos in
 			result++;
 		}
 	}
-
 	if (isNotEnable(n(centerPos), enableCond))
 	{
 		if (isEnable(ne(centerPos), enableCond))
@@ -69,7 +65,6 @@ int Field::getInputPoints(const Pos centerPos, const PosValue enableCond, Pos in
 			result++;
 		}
 	}
-
 	return result;
 }
 
@@ -78,16 +73,16 @@ void Field::placeBeginPattern(BeginPattern pattern)
 	switch (pattern)
 	{
 	case (BEGIN_PATTERN_CROSSWIRE):
-		do_step(toPos(_width / 2 - 1, _height / 2 - 1));
-		do_step(toPos(_width / 2, _height / 2 - 1));
-		do_step(toPos(_width / 2, _height / 2));
-		do_step(toPos(_width / 2 - 1, _height / 2));
+		doStep(toPos(_width / 2 - 1, _height / 2 - 1));
+		doStep(toPos(_width / 2, _height / 2 - 1));
+		doStep(toPos(_width / 2, _height / 2));
+		doStep(toPos(_width / 2 - 1, _height / 2));
 		break;
 	case (BEGIN_PATTERN_SQUARE):
-		do_step(toPos(_width / 2 - 1, _height / 2 - 1));
-		do_step(toPos(_width / 2, _height / 2 - 1));
-		do_step(toPos(_width / 2 - 1, _height / 2));
-		do_step(toPos(_width / 2, _height / 2));
+		doStep(toPos(_width / 2 - 1, _height / 2 - 1));
+		doStep(toPos(_width / 2, _height / 2 - 1));
+		doStep(toPos(_width / 2 - 1, _height / 2));
+		doStep(toPos(_width / 2, _height / 2));
 		break;
     case (BEGIN_PATTERN_CLEAN):
         break;
@@ -119,7 +114,7 @@ bool Field::buildChain(const Pos startPos, const PosValue enableCond, const Pos 
 	auto pos = directionPos;
 	auto centerPos = startPos;
 	// Площадь базы.
-	int baseSquare = square(centerPos, pos);
+	auto baseSquare = square(centerPos, pos);
 	do
 	{
 		if (isTagged(pos))
@@ -142,10 +137,8 @@ bool Field::buildChain(const Pos startPos, const PosValue enableCond, const Pos 
 		baseSquare += square(centerPos, pos);
 	}
 	while (pos != startPos);
-
 	for (auto i = chain.begin(); i != chain.end(); i++)
 		clearTag(*i);
-
 	return (baseSquare < 0 && chain.size() > 2);
 }
 
@@ -155,13 +148,10 @@ void Field::findSurround(list<Pos> &chain, Pos insidePoint, Player player)
 	auto curCaptureCount = 0;
 	// Количество захваченных пустых полей.
 	auto curFreedCount = 0;
-
 	list<Pos> surPoints;
-
 	// Помечаем точки цепочки.
 	for (auto i = chain.begin(); i != chain.end(); i++)
 		setTag(*i);
-
 	wave(	insidePoint,
 			[&, player](Pos pos)->bool
 			{
@@ -178,7 +168,6 @@ void Field::findSurround(list<Pos> &chain, Pos insidePoint, Player player)
 			});
 	// Изменение счета игроков.
 	addSubCapturedFreed(player, curCaptureCount, curFreedCount);
-
 #if SUR_COND != 1
 	if (curCaptureCount != 0) // Если захватили точки.
 #endif
@@ -191,7 +180,6 @@ void Field::findSurround(list<Pos> &chain, Pos insidePoint, Player player)
 			// Помечаем точки цепочки.
 			setBaseBound(*i);
 		}
-
 		for (auto i = surPoints.begin(); i != surPoints.end(); i++)
 		{
 			_changes.back().changes.push(pair<Pos, PosValue>(*i, _points[*i]));
@@ -203,7 +191,6 @@ void Field::findSurround(list<Pos> &chain, Pos insidePoint, Player player)
 	{
 		for (auto i = chain.begin(); i != chain.end(); i++)
 			clearTag(*i);
-
 		for (auto i = surPoints.begin(); i != surPoints.end(); i++)
 		{
 			_changes.back().changes.push(pair<Pos, PosValue>(*i, _points[*i]));
@@ -214,17 +201,15 @@ void Field::findSurround(list<Pos> &chain, Pos insidePoint, Player player)
 	}
 }
 
-Field::Field(const Coord width, const Coord height, const BeginPattern begin_pattern, Zobrist* zobr)
+Field::Field(const Coord width, const Coord height, const BeginPattern begin_pattern, Zobrist* zobrist)
 {
 	_width = width;
 	_height = height;
 	_player = playerRed;
 	_captureCount[playerRed] = 0;
 	_captureCount[playerBlack] = 0;
-
 	_points = new PosValue[getLength()];
 	fill_n(_points, getLength(), 0);
-
 	for (Coord x = -1; x <= width; x++)
 	{
 		setBad(toPos(x, -1));
@@ -235,13 +220,10 @@ Field::Field(const Coord width, const Coord height, const BeginPattern begin_pat
 		setBad(toPos(-1, y));
 		setBad(toPos(width, y));
 	}
-
 	_changes.reserve(getLength());
 	pointsSeq.reserve(getLength());
-
-	_zobrist = zobr;
+	_zobrist = zobrist;
 	_hash = 0;
-
 	placeBeginPattern(begin_pattern);
 }
 
@@ -252,16 +234,12 @@ Field::Field(const Field &orig)
 	_player = orig._player;
 	_captureCount[playerRed] = orig._captureCount[playerRed];
 	_captureCount[playerBlack] = orig._captureCount[playerBlack];
-
 	_points = new PosValue[getLength()];
 	copy_n(orig._points, getLength(), _points);
-
 	_changes.reserve(getLength());
 	pointsSeq.reserve(getLength());
-
 	_changes.assign(orig._changes.begin(), orig._changes.end());
 	pointsSeq.assign(orig.pointsSeq.begin(), orig.pointsSeq.end());
-
 	_zobrist = orig._zobrist;
 	_hash = orig._hash;
 }
@@ -271,16 +249,14 @@ Field::~Field()
 	delete _points;
 }
 
-void Field::wave(Pos start_pos, function<bool(Pos)> cond)
+void Field::wave(Pos startPos, function<bool(Pos)> cond)
 {
 	// Очередь для волнового алгоритма (обхода в ширину).
 	list<Pos> q;
-
-	if (!cond(start_pos))
+	if (!cond(startPos))
 		return;
-
-	q.push_back(start_pos);
-	setTag(start_pos);
+	q.push_back(startPos);
+	setTag(startPos);
 	auto it = q.begin();
 	while (it != q.end())
 	{
@@ -306,12 +282,11 @@ void Field::wave(Pos start_pos, function<bool(Pos)> cond)
 		}
 		it++;
 	}
-
 	for (it = q.begin(); it != q.end(); it++)
 		clearTag(*it);
 }
 
-bool Field::is_point_inside_ring(const Pos pos, const list<Pos> &ring) const
+bool Field::isPointInsideRing(const Pos pos, const list<Pos> &ring) const
 {
 	auto intersections = 0;
 	auto state = INTERSECTION_STATE_NONE;
@@ -352,75 +327,71 @@ bool Field::is_point_inside_ring(const Pos pos, const list<Pos> &ring) const
 	return intersections % 2 == 1;
 }
 
-void Field::check_closure(const Pos start_pos, Player player)
+void Field::checkClosure(const Pos startPos, Player player)
 {
-	short inp_points_count;
-	Pos inp_chain_points[4], inp_sur_points[4];
-
+	int inpPointsCount;
+	Pos inpChainPoints[4], inpSurPoints[4];
 	list<Pos> chain;
-
-	if (isInEmptyBase(start_pos)) // Если точка поставлена в пустую базу.
+	if (isInEmptyBase(startPos)) // Если точка поставлена в пустую базу.
 	{
 		// Проверяем, в чью пустую базу поставлена точка.
-		Pos pos = start_pos - 1;
+		Pos pos = startPos - 1;
 		while (!isPutted(pos))
 			pos--;
 
-		if (getPlayer(pos) == getPlayer(start_pos)) // Если поставили в свою пустую базу.
+		if (getPlayer(pos) == getPlayer(startPos)) // Если поставили в свою пустую базу.
 		{
-			clearEmptyBase(start_pos);
+			clearEmptyBase(startPos);
 			return;
 		}
-
 #if SUR_COND != 2 // Если приоритет не всегда у врага.
-		inp_points_count = getInputPoints(start_pos, player | putBit, inp_chain_points, inp_sur_points);
-		if (inp_points_count > 1)
+		inpPointsCount = getInputPoints(startPos, player | putBit, inpChainPoints, inpSurPoints);
+		if (inpPointsCount > 1)
 		{
-			short chains_count = 0;
-			for (short i = 0; i < inp_points_count; i++)
-				if (buildChain(start_pos, getPlayer(start_pos) | putBit, inp_chain_points[i], chain))
+			auto chainsCount = 0;
+			for (auto i = 0; i < inpPointsCount; i++)
+				if (buildChain(startPos, getPlayer(startPos) | putBit, inpChainPoints[i], chain))
 				{
-					findSurround(chain, inp_sur_points[i], player);
-					chains_count++;
-					if (chains_count == inp_points_count - 1)
+					findSurround(chain, inpSurPoints[i], player);
+					chainsCount++;
+					if (chainsCount == inpPointsCount - 1)
 						break;
 				}
-				if (isBaseBound(start_pos))
+				if (isBaseBound(startPos))
 				{
-					removeEmptyBase(start_pos);
+					removeEmptyBase(startPos);
 					return;
 				}
 		}
 #endif
-
 		pos++;
 		do
 		{
 			pos--;
 			while (!isEnable(pos, nextPlayer(player) | putBit))
 				pos--;
-			inp_points_count = getInputPoints(pos, nextPlayer(player) | putBit, inp_chain_points, inp_sur_points);
-			for (auto i = 0; i < inp_points_count; i++)
-				if (buildChain(pos, nextPlayer(player) | putBit, inp_chain_points[i], chain))
-					if (is_point_inside_ring(start_pos, chain))
+			inpPointsCount = getInputPoints(pos, nextPlayer(player) | putBit, inpChainPoints, inpSurPoints);
+			for (auto i = 0; i < inpPointsCount; i++)
+				if (buildChain(pos, nextPlayer(player) | putBit, inpChainPoints[i], chain))
+					if (isPointInsideRing(startPos, chain))
 					{
-						findSurround(chain, inp_sur_points[i], nextPlayer(player));
+						findSurround(chain, inpSurPoints[i], nextPlayer(player));
 						break;
 					}
-		} while (!isCaptured(start_pos));
+		} while (!isCaptured(startPos));
 	}
 	else
 	{
-		inp_points_count = getInputPoints(start_pos, player | putBit, inp_chain_points, inp_sur_points);
-		if (inp_points_count > 1)
+		inpPointsCount = getInputPoints(startPos, player | putBit, inpChainPoints, inpSurPoints);
+		if (inpPointsCount > 1)
 		{
-			auto chains_count = 0;
-			for (auto i = 0; i < inp_points_count; i++)
-				if (buildChain(start_pos, player | putBit, inp_chain_points[i], chain))
+			auto chainsCount = 0;
+			for (auto i = 0; i < inpPointsCount; i++)
+				if (buildChain(startPos, player | putBit, inpChainPoints[i], chain))
 				{
-					findSurround(chain, inp_sur_points[i], player);
-					chains_count++;
-					if (chains_count == inp_points_count - 1)
+					findSurround(chain, inpSurPoints[i], player);
+					chainsCount++;
+					if (chainsCount == inpPointsCount - 1)
 						break;
 				}
 		}

@@ -31,7 +31,7 @@ Player play_random_game(Field* field, mt* gen, vector<Pos>* possible_moves)
 	for (auto i = moves.begin(); i < moves.end(); i++)
 		if (field->puttingAllow(*i))
 		{
-			field->do_unsafe_step(*i);
+			field->doUnsafeStep(*i);
 			putted++;
 		}
 
@@ -43,7 +43,7 @@ Player play_random_game(Field* field, mt* gen, vector<Pos>* possible_moves)
 		result = -1;
 
 	for (size_t i = 0; i < putted; i++)
-		field->undo_step();
+		field->undoStep();
 
 	return result;
 }
@@ -121,11 +121,11 @@ short play_simulation(Field* field, mt* gen, vector<Pos>* possible_moves, uct_no
 				return -1;
 		}
 
-		field->do_unsafe_step(next->move);
+		field->doUnsafeStep(next->move);
 
 		randomresult = play_simulation(field, gen, possible_moves, next);
 
-		field->undo_step();
+		field->undoStep();
 	}
 
 	n->visits++;

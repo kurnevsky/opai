@@ -43,14 +43,14 @@ int Bot::getUctIterations(int complexity)
 
 bool Bot::doStep(Coord x, Coord y, Player player)
 {
-	return _field->do_step(_field->toPos(x, y), player);
+	return _field->doStep(_field->toPos(x, y), player);
 }
 
 bool Bot::undoStep()
 {
 	if (_field->pointsSeq.size() == 0)
 		return false;
-	_field->undo_step();
+	_field->undoStep();
 	return true;
 }
 

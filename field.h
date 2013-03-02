@@ -281,63 +281,54 @@ public:
 	// Установить следующего игрока как текущего.
 	void setNextPlayer() { setPlayer(nextPlayer(_player)); }
 	// Поставить точку на поле следующего по очереди игрока.
-	bool do_step(const Pos pos)
+	bool doStep(const Pos pos)
 	{
 		if (puttingAllow(pos))
 		{
-			do_unsafe_step(pos);
+			doUnsafeStep(pos);
 			return true;
 		}
 		return false;
 	}
 	// Поставить точку на поле.
-	bool do_step(const Pos pos, const Player player)
+	bool doStep(const Pos pos, const Player player)
 	{
 		if (puttingAllow(pos))
 		{
-			do_unsafe_step(pos, player);
+			doUnsafeStep(pos, player);
 			return true;
 		}
 		return false;
 	}
 	// Поставить точку на поле максимально быстро (без дополнительных проверок).
-	void do_unsafe_step(const Pos pos)
+	void doUnsafeStep(const Pos pos)
 	{
 		_changes.push_back(BoardChange());
 		_changes.back().captureCount[0] = _captureCount[0];
 		_changes.back().captureCount[1] = _captureCount[1];
 		_changes.back().player = _player;
-
 		// Добавляем в изменения поставленную точку.
 		_changes.back().changes.push(pair<Pos, PosValue>(pos, _points[pos]));
-
 		setPlayerPutted(pos, _player);
-
 		pointsSeq.push_back(pos);
-
-		check_closure(pos, _player);
-
+		checkClosure(pos, _player);
 		setNextPlayer();
 	}
 	// Поставить точку на поле следующего по очереди игрока максимально быстро (без дополнительных проверок).
-	void do_unsafe_step(const Pos pos, const Player player)
+	void doUnsafeStep(const Pos pos, const Player player)
 	{
 		_changes.push_back(BoardChange());
 		_changes.back().captureCount[0] = _captureCount[0];
 		_changes.back().captureCount[1] = _captureCount[1];
 		_changes.back().player = _player;
-
 		// Добавляем в изменения поставленную точку.
 		_changes.back().changes.push(pair<Pos, PosValue>(pos, _points[pos]));
-
 		setPlayerPutted(pos, player);
-
 		pointsSeq.push_back(pos);
-
-		check_closure(pos, player);
+		checkClosure(pos, player);
 	}
 	// Откат хода.
-	void undo_step()
+	void undoStep()
 	{
 		pointsSeq.pop_back();
 		while (!_changes.back().changes.empty())
@@ -351,7 +342,7 @@ public:
 		_changes.pop_back();
 	}
 	// Проверяет, находятся ли две точки рядом.
-	bool is_near(const Pos pos1, const Pos pos2) const
+	bool isNear(const Pos pos1, const Pos pos2) const
 	{
 		if (n(pos1) == pos2  ||
 			s(pos1) == pos2  ||
@@ -365,59 +356,59 @@ public:
 		else
 			return false;
 	}
-	// Проверяет, есть ли рядом с center_pos точки цвета player.
-	bool is_near_points(const Pos center_pos, const Player player) const
+	// Проверяет, есть ли рядом с centerPos точки цвета player.
+	bool isNearPoints(const Pos centerPos, const Player player) const
 	{
-		if (isEnable(n(center_pos), putBit | player)  ||
-			isEnable(s(center_pos), putBit | player)  ||
-			isEnable(w(center_pos), putBit | player)  ||
-			isEnable(e(center_pos), putBit | player)  ||
-			isEnable(nw(center_pos), putBit | player) ||
-			isEnable(ne(center_pos), putBit | player) ||
-			isEnable(sw(center_pos), putBit | player) ||
-			isEnable(se(center_pos), putBit | player))
+		if (isEnable(n(centerPos), putBit | player)  ||
+			isEnable(s(centerPos), putBit | player)  ||
+			isEnable(w(centerPos), putBit | player)  ||
+			isEnable(e(centerPos), putBit | player)  ||
+			isEnable(nw(centerPos), putBit | player) ||
+			isEnable(ne(centerPos), putBit | player) ||
+			isEnable(sw(centerPos), putBit | player) ||
+			isEnable(se(centerPos), putBit | player))
 			return true;
 		else
 			return false;
 	}
-	// Возвращает количество точек рядом с center_pos цвета player.
-	short number_near_points(const Pos center_pos, const Player player) const
+	// Возвращает количество точек рядом с centerPos цвета player.
+	int numberNearPoints(const Pos centerPos, const Player player) const
 	{
-		short result = 0;
-		if (isEnable(n(center_pos), putBit | player))
+		auto result = 0;
+		if (isEnable(n(centerPos), putBit | player))
 			result++;
-		if (isEnable(s(center_pos), putBit | player))
+		if (isEnable(s(centerPos), putBit | player))
 			result++;
-		if (isEnable(w(center_pos), putBit | player))
+		if (isEnable(w(centerPos), putBit | player))
 			result++;
-		if (isEnable(e(center_pos), putBit | player))
+		if (isEnable(e(centerPos), putBit | player))
 			result++;
-		if (isEnable(nw(center_pos), putBit | player))
+		if (isEnable(nw(centerPos), putBit | player))
 			result++;
-		if (isEnable(ne(center_pos), putBit | player))
+		if (isEnable(ne(centerPos), putBit | player))
 			result++;
-		if (isEnable(sw(center_pos), putBit | player))
+		if (isEnable(sw(centerPos), putBit | player))
 			result++;
-		if (isEnable(se(center_pos), putBit | player))
+		if (isEnable(se(centerPos), putBit | player))
 			result++;
 		return result;
 	}
-	// Возвращает количество групп точек рядом с center_pos.
-	short number_near_groups(const Pos center_pos, const Player player) const
+	// Возвращает количество групп точек рядом с centerPos.
+	int numberNearGroups(const Pos centerPos, const Player player) const
 	{
-		short result = 0;
-		if (isNotEnable(w(center_pos), player | putBit) && (isEnable(nw(center_pos), player | putBit) || isEnable(n(center_pos), player | putBit)))
+		auto result = 0;
+		if (isNotEnable(w(centerPos), player | putBit) && (isEnable(nw(centerPos), player | putBit) || isEnable(n(centerPos), player | putBit)))
 			result++;
-		if (isNotEnable(s(center_pos), player | putBit) && (isEnable(sw(center_pos), player | putBit) || isEnable(w(center_pos), player | putBit)))
+		if (isNotEnable(s(centerPos), player | putBit) && (isEnable(sw(centerPos), player | putBit) || isEnable(w(centerPos), player | putBit)))
 			result++;
-		if (isNotEnable(e(center_pos), player | putBit) && (isEnable(se(center_pos), player | putBit) || isEnable(s(center_pos), player | putBit)))
+		if (isNotEnable(e(centerPos), player | putBit) && (isEnable(se(centerPos), player | putBit) || isEnable(s(centerPos), player | putBit)))
 			result++;
-		if (isNotEnable(n(center_pos), player | putBit) && (isEnable(ne(center_pos), player | putBit) || isEnable(e(center_pos), player | putBit)))
+		if (isNotEnable(n(centerPos), player | putBit) && (isEnable(ne(centerPos), player | putBit) || isEnable(e(centerPos), player | putBit)))
 			result++;
 		return result;
 	}
-	void wave(Pos start_pos, function<bool(Pos)> cond);
-	bool is_point_inside_ring(const Pos pos, const list<Pos> &ring) const;
+	void wave(Pos startPos, function<bool(Pos)> cond);
+	bool isPointInsideRing(const Pos pos, const list<Pos> &ring) const;
 	// Проверяет поставленную точку на наличие созданных ею окружений, и окружает, если они есть.
-	void check_closure(const Pos start_pos, Player player);
+	void checkClosure(const Pos startPos, Player player);
 };

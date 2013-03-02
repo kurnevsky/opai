@@ -21,18 +21,18 @@ Score alphabeta(Field* field, size_t depth, Pos pos, Trajectories* last, Score a
 	Trajectories cur_trajectories(field, empty_board);
 
 	// Делаем ход, выбранный на предыдущем уровне рекурсии, после чего этот ход становится вражеским.
-	field->do_unsafe_step(pos);
+	field->doUnsafeStep(pos);
 
 	if (depth == 0)
 	{
 		auto best_estimate = field->getScore(field->getPlayer());
-		field->undo_step();
+		field->undoStep();
 		return -best_estimate;
 	}
 
 	if (field->getDScore() < 0) // Если точка поставлена в окружение.
 	{
-		field->undo_step();
+		field->undoStep();
 		return -SCORE_INFINITY; // Для CurPlayer это хорошо, то есть оценка Infinity.
 	}
 
@@ -43,7 +43,7 @@ Score alphabeta(Field* field, size_t depth, Pos pos, Trajectories* last, Score a
 	if (moves->size() == 0)
 	{
 		auto best_estimate = field->getScore(field->getPlayer());
-		field->undo_step();
+		field->undoStep();
 		return -best_estimate;
 	}
 
@@ -60,7 +60,7 @@ Score alphabeta(Field* field, size_t depth, Pos pos, Trajectories* last, Score a
 		}
 	}
 
-	field->undo_step();
+	field->undoStep();
 	return -alpha;
 }
 
