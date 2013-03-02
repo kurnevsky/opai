@@ -70,7 +70,7 @@ Score get_enemy_estimate(Field* field, Trajectories* last, size_t depth)
 	Score result;
 	vector<Pos> moves;
 
-	field->set_next_player();
+	field->setNextPlayer();
 	cur_trajectories.build_trajectories(last);
 
 	moves.assign(cur_trajectories.get_points()->begin(), cur_trajectories.get_points()->end());
@@ -109,7 +109,7 @@ Score get_enemy_estimate(Field* field, Trajectories* last, size_t depth)
 		result = alpha;
 	}
 
-	field->set_next_player();
+	field->setNextPlayer();
 	return -result;
 }
 

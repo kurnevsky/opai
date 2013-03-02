@@ -78,16 +78,16 @@ void Field::placeBeginPattern(BeginPattern pattern)
 	switch (pattern)
 	{
 	case (BEGIN_PATTERN_CROSSWIRE):
-		do_step(to_pos(_width / 2 - 1, _height / 2 - 1));
-		do_step(to_pos(_width / 2, _height / 2 - 1));
-		do_step(to_pos(_width / 2, _height / 2));
-		do_step(to_pos(_width / 2 - 1, _height / 2));
+		do_step(toPos(_width / 2 - 1, _height / 2 - 1));
+		do_step(toPos(_width / 2, _height / 2 - 1));
+		do_step(toPos(_width / 2, _height / 2));
+		do_step(toPos(_width / 2 - 1, _height / 2));
 		break;
 	case (BEGIN_PATTERN_SQUARE):
-		do_step(to_pos(_width / 2 - 1, _height / 2 - 1));
-		do_step(to_pos(_width / 2, _height / 2 - 1));
-		do_step(to_pos(_width / 2 - 1, _height / 2));
-		do_step(to_pos(_width / 2, _height / 2));
+		do_step(toPos(_width / 2 - 1, _height / 2 - 1));
+		do_step(toPos(_width / 2, _height / 2 - 1));
+		do_step(toPos(_width / 2 - 1, _height / 2));
+		do_step(toPos(_width / 2, _height / 2));
 		break;
     case (BEGIN_PATTERN_CLEAN):
         break;
@@ -227,13 +227,13 @@ Field::Field(const Coord width, const Coord height, const BeginPattern begin_pat
 
 	for (Coord x = -1; x <= width; x++)
 	{
-		setBad(to_pos(x, -1));
-		setBad(to_pos(x, height));
+		setBad(toPos(x, -1));
+		setBad(toPos(x, height));
 	}
 	for (Coord y = -1; y <= height; y++)
 	{
-		setBad(to_pos(-1, y));
-		setBad(to_pos(width, y));
+		setBad(toPos(-1, y));
+		setBad(toPos(width, y));
 	}
 
 	_changes.reserve(getLength());

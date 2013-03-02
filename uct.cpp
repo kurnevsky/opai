@@ -13,7 +13,7 @@
 using namespace std;
 using namespace boost;
 
-short play_random_game(Field* field, mt* gen, vector<Pos>* possible_moves)
+Player play_random_game(Field* field, mt* gen, vector<Pos>* possible_moves)
 {
 	vector<Pos> moves(possible_moves->size());
 	size_t putted = 0;
@@ -94,7 +94,7 @@ uct_node* uct_select(mt* gen, uct_node* n)
 
 short play_simulation(Field* field, mt* gen, vector<Pos>* possible_moves, uct_node* n)
 {
-	short randomresult;
+	Player randomresult;
 
 	if (n->visits == 0)
 	{

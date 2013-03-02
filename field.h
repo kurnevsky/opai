@@ -262,8 +262,8 @@ public:
 	Coord getWidth() const { return _width; }
 	Coord getHeight() const { return _height; }
 	Pos getLength() const { return (_width + 2) * (_height + 2); }
-	Pos minPos() const { return to_pos(0, 0); }
-	Pos maxPos() const { return to_pos(_width - 1, _height - 1); }
+	Pos minPos() const { return toPos(0, 0); }
+	Pos maxPos() const { return toPos(_width - 1, _height - 1); }
 	Pos n(Pos pos) const { return pos - (_width + 2); }
 	Pos s(Pos pos) const { return pos + (_width + 2); }
 	Pos w(Pos pos) const { return pos - 1; }
@@ -272,14 +272,14 @@ public:
 	Pos ne(Pos pos) const { return pos - (_width + 2) + 1; }
 	Pos sw(Pos pos) const { return pos + (_width + 2) - 1; }
 	Pos se(Pos pos) const { return pos + (_width + 2) + 1; }
-	Pos to_pos(const Coord x, const Coord y) const { return (y + 1) * (_width + 2) + x + 1; }
+	Pos toPos(const Coord x, const Coord y) const { return (y + 1) * (_width + 2) + x + 1; }
 	Coord toX(const Pos pos) const { return static_cast<Coord>(pos % (_width + 2) - 1); }
 	Coord toY(const Pos pos) const { return static_cast<Coord>(pos / (_width + 2) - 1); }
 	// Конвертация из Pos в XY.
 	void toXY(const Pos pos, Coord &x, Coord &y) const { x = toX(pos); y = toY(pos); }
 	void setPlayer(const Player player) { _player = player; }
 	// Установить следующего игрока как текущего.
-	void set_next_player() { setPlayer(nextPlayer(_player)); }
+	void setNextPlayer() { setPlayer(nextPlayer(_player)); }
 	// Поставить точку на поле следующего по очереди игрока.
 	bool do_step(const Pos pos)
 	{
@@ -317,7 +317,7 @@ public:
 
 		check_closure(pos, _player);
 
-		set_next_player();
+		setNextPlayer();
 	}
 	// Поставить точку на поле следующего по очереди игрока максимально быстро (без дополнительных проверок).
 	void do_unsafe_step(const Pos pos, const Player player)
