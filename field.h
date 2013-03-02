@@ -35,7 +35,7 @@ private:
 
 	// Маски для определения условий.
 	static const PosValue enableMask = badBit | surBit | putBit | playerBit;
-	static const PosValue bound_mask = badBit | boundBit | surBit | putBit | playerBit;
+	static const PosValue boundMask = badBit | boundBit | surBit | putBit | playerBit;
 
 public:
 	// Get state functions.
@@ -60,9 +60,9 @@ public:
 	// Проверка занятости поля по условию.
 	bool isNotEnable(const Pos pos, const PosValue enableCond) const { return (_points[pos] & enableMask) != enableCond; }
 	// Проверка на то, захвачено ли поле.
-	bool isBound(const Pos pos, const PosValue boundCond) const { return (_points[pos] & bound_mask) == boundCond; }
+	bool isBound(const Pos pos, const PosValue boundCond) const { return (_points[pos] & boundMask) == boundCond; }
 	// Проверка на то, не захвачено ли поле.
-	bool isNotBound(const Pos pos, const PosValue boundCond) const { return (_points[pos] & bound_mask) != boundCond; }
+	bool isNotBound(const Pos pos, const PosValue boundCond) const { return (_points[pos] & boundMask) != boundCond; }
 	// Провека на то, возможно ли поставить точку в полке.
 	bool puttingAllow(const Pos pos) const { return !(_points[pos] & (putBit | surBit | badBit)); }
 
