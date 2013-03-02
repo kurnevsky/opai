@@ -19,7 +19,7 @@ int position_estimate(Field* field, Pos pos, Player player)
 	c1 = cg_summa[field->number_near_points(pos, player)];
 	c2 = cg_summa[field->number_near_points(pos, next_player(player))];
 	result = (g1 * 3 + g2 * 2) * (5 - abs(g1 - g2)) - c1 - c2;
-	if (field->points_seq.size() > 0 && field->is_near(field->points_seq.back(), pos))
+	if (field->pointsSeq.size() > 0 && field->is_near(field->pointsSeq.back(), pos))
 		result += 5;
 	// Эмпирическая формула оценки важности точки при просчете ходов.
 	return result;

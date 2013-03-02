@@ -35,6 +35,7 @@ private:
 
 	// Маски для определения условий.
 	static const PosValue enableMask = badBit | surBit | putBit | playerBit;
+	static const PosValue bound_mask = badBit | boundBit | surBit | putBit | playerBit;
 
 public:
 	// Get state functions.
@@ -58,6 +59,10 @@ public:
 	bool isEnable(const Pos pos, const PosValue enableCond) const { return (_points[pos] & enableMask) == enableCond; }
 	// Проверка занятости поля по условию.
 	bool isNotEnable(const Pos pos, const PosValue enableCond) const { return (_points[pos] & enableMask) != enableCond; }
+	// Проверка на то, захвачено ли поле.
+	bool isBound(const Pos pos, const PosValue boundCond) const { return (_points[pos] & bound_mask) == boundCond; }
+	// Проверка на то, не захвачено ли поле.
+	bool isNotBound(const Pos pos, const PosValue boundCond) const { return (_points[pos] & bound_mask) != boundCond; }
 	// Провека на то, возможно ли поставить точку в полке.
 	bool puttingAllow(const Pos pos) const { return !(_points[pos] & (putBit | surBit | badBit)); }
 
@@ -112,32 +117,32 @@ private:
 public:
 	// History points sequance.
 	// Последовательность поставленных точек.
-	vector<Pos> points_seq;
+	vector<Pos> pointsSeq;
 
 private:
 	// Возвращает косое произведение векторов Pos1 и Pos2.
-	inline int square(const Pos pos1, const Pos pos2) const { return to_x(pos1) * to_y(pos2) - to_y(pos1) * to_x(pos2); }
+	int square(const Pos pos1, const Pos pos2) const { return to_x(pos1) * to_y(pos2) - to_y(pos1) * to_x(pos2); }
 	//  * . .   x . *   . x x   . . .
 	//  . o .   x o .   . o .   . o x
 	//  x x .   . . .   . . *   * . x
 	//  o - center pos
 	//  x - pos
 	//  * - result
-	inline void get_first_next_pos(const Pos center_pos, Pos &pos) const
+	void getFirstNextPos(const Pos centerPos, Pos &pos) const
 	{
-		if (pos < center_pos)
+		if (pos < centerPos)
 		{
-			if ((pos == nw(center_pos)) || (pos == center_pos - 1))
-				pos = ne(center_pos);
+			if ((pos == nw(centerPos)) || (pos == centerPos - 1))
+				pos = ne(centerPos);
 			else
-				pos = se(center_pos);
+				pos = se(centerPos);
 		}
 		else
 		{
-			if ((pos == center_pos + 1) || (pos == se(center_pos)))
-				pos = sw(center_pos);
+			if ((pos == centerPos + 1) || (pos == se(centerPos)))
+				pos = sw(centerPos);
 			else
-				pos = nw(center_pos);
+				pos = nw(centerPos);
 		}
 	}
 	//  . . .   * . .   x * .   . x *   . . x   . . .   . . .   . . .
@@ -146,29 +151,29 @@ private:
 	//  o - center pos
 	//  x - pos
 	//  * - result
-	inline void get_next_pos(const Pos center_pos, Pos &pos) const
+	void getNextPos(const Pos centerPos, Pos &pos) const
 	{
-		if (pos < center_pos)
+		if (pos < centerPos)
 		{
-			if (pos == nw(center_pos))
-				pos = n(center_pos);
-			else if (pos == n(center_pos))
-				pos = ne(center_pos);
-			else if (pos == ne(center_pos))
-				pos = e(center_pos);
+			if (pos == nw(centerPos))
+				pos = n(centerPos);
+			else if (pos == n(centerPos))
+				pos = ne(centerPos);
+			else if (pos == ne(centerPos))
+				pos = e(centerPos);
 			else
-				pos = nw(center_pos);
+				pos = nw(centerPos);
 		}
 		else
 		{
-			if (pos == e(center_pos))
-                pos = se(center_pos);
-			else if (pos == se(center_pos))
-				pos = s(center_pos);
-			else if (pos == s(center_pos))
-				pos = sw(center_pos);
+			if (pos == e(centerPos))
+                pos = se(centerPos);
+			else if (pos == se(centerPos))
+				pos = s(centerPos);
+			else if (pos == s(centerPos))
+				pos = sw(centerPos);
 			else
-				pos = w(center_pos);
+				pos = w(centerPos);
 		}
 	}
 	// Возвращает количество групп точек рядом с CenterPos.
@@ -250,7 +255,7 @@ public:
 
 	inline Score get_score(Player player) const { return _captureCount[player] - _captureCount[next_player(player)]; }
 	inline Score get_prev_score(Player player) const { return _changes.back().captureCount[player] - _changes.back().captureCount[next_player(player)]; }
-	inline Player get_last_player() const { return getPlayer(points_seq.back()); }
+	inline Player get_last_player() const { return getPlayer(pointsSeq.back()); }
 	inline Score get_d_score(Player player) const { return get_score(player) - get_prev_score(player); }
 	inline Score get_d_score() const { return get_d_score(get_last_player()); }
 	inline Player get_player() const { return _player; }
@@ -311,7 +316,7 @@ public:
 
 		setPlayerPutted(pos, _player);
 
-		points_seq.push_back(pos);
+		pointsSeq.push_back(pos);
 
 		check_closure(pos, _player);
 
@@ -330,14 +335,14 @@ public:
 
 		setPlayerPutted(pos, player);
 
-		points_seq.push_back(pos);
+		pointsSeq.push_back(pos);
 
 		check_closure(pos, player);
 	}
 	// Откат хода.
 	inline void undo_step()
 	{
-		points_seq.pop_back();
+		pointsSeq.pop_back();
 		while (!_changes.back().changes.empty())
 		{
 			_points[_changes.back().changes.top().first] = _changes.back().changes.top().second;

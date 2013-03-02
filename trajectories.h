@@ -35,7 +35,7 @@ private:
 		for (auto i = begin; i < end; i++)
 			hash ^= _zobrist->getHash(*i);
 		for (auto i = _trajectories[player].begin(); i != _trajectories[player].end(); i++)
-			if (hash == i->hash())
+			if (hash == i->getHash())
 				return; // В теории возможны коллизии. Неплохо было бы сделать точную проверку.
 
 		_trajectories[player].push_back(Trajectory(begin, end, _zobrist, hash));
@@ -64,7 +64,7 @@ private:
 				{
 					_field->do_unsafe_step(pos, player);
 					if (_field->get_d_score(player) > 0)
-						add_trajectory(_field->points_seq.end() - (_depth[player] - depth), _field->points_seq.end(), player);
+						add_trajectory(_field->pointsSeq.end() - (_depth[player] - depth), _field->pointsSeq.end(), player);
 					_field->undo_step();
 				}
 				else
@@ -80,7 +80,7 @@ private:
 #endif
 
 					if (_field->get_d_score(player) > 0)
-						add_trajectory(_field->points_seq.end() - (_depth[player] - depth), _field->points_seq.end(), player);
+						add_trajectory(_field->pointsSeq.end() - (_depth[player] - depth), _field->pointsSeq.end(), player);
 					else if (depth > 0)
 						build_trajectories_recursive(depth - 1, player);
 
@@ -137,7 +137,7 @@ private:
 	// Возвращает хеш Зобриста пересечения двух траекторий.
 	inline Hash get_intersect_hash(Trajectory* t1, Trajectory* t2)
 	{
-		Hash result_hash = t1->hash();
+		Hash result_hash = t1->getHash();
 		for (auto i = t2->begin(); i != t2->end(); i++)
 			if (find(t1->begin(), t1->end(), *i) == t1->end())
 				result_hash ^= _zobrist->getHash(*i);
@@ -180,7 +180,7 @@ private:
 			for (i = _trajectories[player].begin(); i != --_trajectories[player].end(); i++)
 				if (k->size() > i->size())
 					for (j = i, j++; j != _trajectories[player].end(); j++)
-						if (k->size() > j->size() && k->hash() == get_intersect_hash(&(*i), &(*j)))
+						if (k->size() > j->size() && k->getHash() == get_intersect_hash(&(*i), &(*j)))
 							k->exclude();
 	}
 	inline void exclude_composite_trajectories()

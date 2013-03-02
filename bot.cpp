@@ -48,7 +48,7 @@ bool Bot::doStep(Coord x, Coord y, Player player)
 
 bool Bot::undoStep()
 {
-	if (_field->points_seq.size() == 0)
+	if (_field->pointsSeq.size() == 0)
 		return false;
 	_field->undo_step();
 	return true;
@@ -69,7 +69,7 @@ bool Bot::isFieldOccupied() const
 
 bool Bot::boundaryCheck(Coord& x, Coord& y) const
 {
-	if (_field->points_seq.size() == 0)
+	if (_field->pointsSeq.size() == 0)
 	{
 		x = _field->width() / 2;
 		y = _field->height() / 2;

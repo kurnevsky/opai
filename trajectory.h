@@ -119,10 +119,9 @@ public:
 		_points.assign(first, last);
 		_hash = hash;
 	}
-	Hash hash() const
+	Hash getHash() const
 	{
-		return
-		_hash;
+		return _hash;
 	}
 	void exclude()
 	{
