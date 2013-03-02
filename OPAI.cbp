@@ -48,8 +48,6 @@
 		<Unit filename="config.h" />
 		<Unit filename="field.cpp" />
 		<Unit filename="field.h" />
-		<Unit filename="field_serializer.cpp" />
-		<Unit filename="field_serializer.h" />
 		<Unit filename="main.cpp" />
 		<Unit filename="minimax.cpp" />
 		<Unit filename="minimax.h" />
