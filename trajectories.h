@@ -52,7 +52,7 @@ private:
 		_trajectories[player].push_back(Trajectory(_zobrist));
 		for (auto i = trajectory->begin(); i != trajectory->end(); i++)
 			if (*i != pos)
-				_trajectories[player].back().push_back(*i);
+				_trajectories[player].back().pushBack(*i);
 	}
 	void build_trajectories_recursive(size_t depth, Player player)
 	{
@@ -301,7 +301,7 @@ public:
 
 		if (_depth[get_enemy_player()] > 0)
 			for (auto i = last->_trajectories[get_enemy_player()].begin(); i != last->_trajectories[get_enemy_player()].end(); i++)
-				if ((i->size() <= _depth[get_enemy_player()] || (i->size() == _depth[get_enemy_player()] + 1 && find(i->begin(), i->end(), pos) != i->end())) && i->is_valid(_field, pos))
+				if ((i->size() <= _depth[get_enemy_player()] || (i->size() == _depth[get_enemy_player()] + 1 && find(i->begin(), i->end(), pos) != i->end())) && i->isValid(_field, pos))
 					add_trajectory(&(*i), pos, get_enemy_player());
 
 		calculate_moves();

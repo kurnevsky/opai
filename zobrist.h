@@ -15,7 +15,7 @@ private:
 	// Размер таблицы хешей.
 	int _size;
 	// Хеши.
-	Hash *_hashes;
+	Hash* _hashes;
 
 public:
 	// Конструктор.
