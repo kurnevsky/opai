@@ -16,18 +16,18 @@ using namespace std;
 // Pos - последний выбранный, но не сделанный ход.
 // alpha, beta - интервал оценок, вне которого искать нет смысла.
 // На выходе оценка позиции для CurPlayer (до хода Pos).
-Score alphabeta(Field* field, size_t depth, Pos pos, Trajectories* last, Score alpha, Score beta, int* empty_board)
+Score alphabeta(Field* field, Depth depth, Pos pos, Trajectories* last, Score alpha, Score beta, int* emptyBoard)
 {
-	Trajectories cur_trajectories(field, empty_board);
+	Trajectories curTrajectories(field, emptyBoard);
 
 	// Делаем ход, выбранный на предыдущем уровне рекурсии, после чего этот ход становится вражеским.
 	field->doUnsafeStep(pos);
 
 	if (depth == 0)
 	{
-		auto best_estimate = field->getScore(field->getPlayer());
+		auto bestEstimate = field->getScore(field->getPlayer());
 		field->undoStep();
-		return -best_estimate;
+		return -bestEstimate;
 	}
 
 	if (field->getDScore() < 0) // Если точка поставлена в окружение.
@@ -36,25 +36,25 @@ Score alphabeta(Field* field, size_t depth, Pos pos, Trajectories* last, Score a
 		return -SCORE_INFINITY; // Для CurPlayer это хорошо, то есть оценка Infinity.
 	}
 
-	cur_trajectories.buildTrajectories(last, pos);
+	curTrajectories.buildTrajectories(last, pos);
 
-	list<Pos>* moves = cur_trajectories.getPoints();
+	list<Pos>* moves = curTrajectories.getPoints();
 
 	if (moves->size() == 0)
 	{
-		auto best_estimate = field->getScore(field->getPlayer());
+		auto bestEstimate = field->getScore(field->getPlayer());
 		field->undoStep();
-		return -best_estimate;
+		return -bestEstimate;
 	}
 
 	for (auto i = moves->begin(); i != moves->end(); i++)
 	{
-		Score cur_estimate = alphabeta(field, depth - 1, *i, &cur_trajectories, -alpha - 1, -alpha, empty_board);
-		if (cur_estimate > alpha && cur_estimate < beta)
-			cur_estimate = alphabeta(field, depth - 1, *i, &cur_trajectories, -beta, -cur_estimate, empty_board);
-		if (cur_estimate > alpha)
+		auto curEstimate = alphabeta(field, depth - 1, *i, &curTrajectories, -alpha - 1, -alpha, emptyBoard);
+		if (curEstimate > alpha && curEstimate < beta)
+			curEstimate = alphabeta(field, depth - 1, *i, &curTrajectories, -beta, -curEstimate, emptyBoard);
+		if (curEstimate > alpha)
 		{
-			alpha = cur_estimate;
+			alpha = curEstimate;
 			if (alpha >= beta)
 				break;
 		}
@@ -64,47 +64,48 @@ Score alphabeta(Field* field, size_t depth, Pos pos, Trajectories* last, Score a
 	return -alpha;
 }
 
-Score get_enemy_estimate(Field* field, Trajectories* last, size_t depth)
+Score get_enemy_estimate(Field* field, Trajectories* last, Depth depth)
 {
-	Trajectories cur_trajectories(field, NULL);
+	Trajectories curTrajectories(field, NULL);
 	Score result;
 	vector<Pos> moves;
 
 	field->setNextPlayer();
-	cur_trajectories.buildTrajectories(last);
+	curTrajectories.buildTrajectories(last);
 
-	moves.assign(cur_trajectories.getPoints()->begin(), cur_trajectories.getPoints()->end());
+	moves.assign(curTrajectories.getPoints()->begin(), curTrajectories.getPoints()->end());
 	if (moves.size() == 0)
 	{
 		result = field->getScore(field->getPlayer());
 	}
 	else
 	{
-		auto alpha = -cur_trajectories.getMaxScore(nextPlayer(field->getPlayer()));
-		auto beta = cur_trajectories.getMaxScore(field->getPlayer());
+		auto alpha = -curTrajectories.getMaxScore(nextPlayer(field->getPlayer()));
+		auto beta = curTrajectories.getMaxScore(field->getPlayer());
 		#pragma omp parallel
 		{
-			Field* local_field = new Field(*field);
-			int* empty_board = new int[field->getLength()];
+			Field* localField = new Field(*field);
+			int* emptyBoard = new int[field->getLength()];
+			fill_n(emptyBoard, field->getLength(), 0);
 
 			#pragma omp for schedule(dynamic, 1)
 			for (auto i = moves.begin(); i < moves.end(); i++)
 			{
 				if (alpha < beta)
 				{
-					Score cur_estimate = alphabeta(local_field, depth - 1, *i, &cur_trajectories, -alpha - 1, -alpha, empty_board);
-					if (cur_estimate > alpha && cur_estimate < beta)
-						cur_estimate = alphabeta(local_field, depth - 1, *i, &cur_trajectories, -beta, -cur_estimate, empty_board);
+					auto curEstimate = alphabeta(localField, depth - 1, *i, &curTrajectories, -alpha - 1, -alpha, emptyBoard);
+					if (curEstimate > alpha && curEstimate < beta)
+						curEstimate = alphabeta(localField, depth - 1, *i, &curTrajectories, -beta, -curEstimate, emptyBoard);
 					#pragma omp critical
 					{
-						if (cur_estimate > alpha) // Обновляем нижнюю границу.
-							alpha = cur_estimate;
+						if (curEstimate > alpha) // Обновляем нижнюю границу.
+							alpha = curEstimate;
 					}
 				}
 			}
 
-			delete empty_board;
-			delete local_field;
+			delete emptyBoard;
+			delete localField;
 		}
 		result = alpha;
 	}
@@ -116,54 +117,52 @@ Score get_enemy_estimate(Field* field, Trajectories* last, size_t depth)
 // CurField - поле, на котором производится оценка.
 // Depth - глубина оценки.
 // Moves - на входе возможные ходы, на выходе лучшие из них.
-Pos minimax(Field* field, size_t depth)
+Pos minimax(Field* field, Depth depth)
 {
 	// Главные траектории - свои и вражеские.
-	Trajectories cur_trajectories(field, NULL);
+	Trajectories curTrajectories(field, NULL);
 	Pos result;
 	vector<Pos> moves;
-
 	// Делаем что-то только когда глубина просчета положительная и колическтво возможных ходов на входе не равно 0.
 	if (depth <= 0)
 		return -1;
-
 	// Получаем ходы из траекторий (которые имеет смысл рассматривать), и находим пересечение со входными возможными точками.
-	cur_trajectories.buildTrajectories(depth);
-	moves.assign(cur_trajectories.getPoints()->begin(), cur_trajectories.getPoints()->end());
+	curTrajectories.buildTrajectories(depth);
+	moves.assign(curTrajectories.getPoints()->begin(), curTrajectories.getPoints()->end());
 	// Если нет возможных ходов, входящих в траектории - выходим.
 	if (moves.size() == 0)
 		return -1;
 	// Для почти всех возможных точек, не входящих в траектории оценка будет такая же, как если бы игрок CurPlayer пропустил ход.
 	//int enemy_estimate = get_enemy_estimate(cur_field, Trajectories[cur_field.get_player()], Trajectories[next_player(cur_field.get_player())], depth);
-
-	auto alpha = -cur_trajectories.getMaxScore(nextPlayer(field->getPlayer()));
-	auto beta = cur_trajectories.getMaxScore(field->getPlayer());
+	auto alpha = -curTrajectories.getMaxScore(nextPlayer(field->getPlayer()));
+	auto beta = curTrajectories.getMaxScore(field->getPlayer());
 	#pragma omp parallel
 	{
-		Field* local_field = new Field(*field);
-		int* empty_board = new int[field->getLength()];
+		Field* localField = new Field(*field);
+		int* emptyBoard = new int[field->getLength()];
+		fill_n(emptyBoard, field->getLength(), 0);
 
 		#pragma omp for schedule(dynamic, 1)
 		for (auto i = moves.begin(); i < moves.end(); i++)
 		{
 			if (alpha < beta)
 			{
-				Score cur_estimate = alphabeta(local_field, depth - 1, *i, &cur_trajectories, -alpha - 1, -alpha, empty_board);
-				if (cur_estimate > alpha && cur_estimate < beta)
-					cur_estimate = alphabeta(local_field, depth - 1, *i, &cur_trajectories, -beta, -cur_estimate, empty_board);
+				auto curEstimate = alphabeta(localField, depth - 1, *i, &curTrajectories, -alpha - 1, -alpha, emptyBoard);
+				if (curEstimate > alpha && curEstimate < beta)
+					curEstimate = alphabeta(localField, depth - 1, *i, &curTrajectories, -beta, -curEstimate, emptyBoard);
 				#pragma omp critical
 				{
-					if (cur_estimate > alpha) // Обновляем нижнюю границу.
+					if (curEstimate > alpha) // Обновляем нижнюю границу.
 					{
-						alpha = cur_estimate;
+						alpha = curEstimate;
 						result = *i;
 					}
 				}
 			}
 		}
 
-		delete empty_board;
-		delete local_field;
+		delete emptyBoard;
+		delete localField;
 	}
-	return alpha == get_enemy_estimate(field, &cur_trajectories, depth - 1) ? -1 : result;
+	return alpha == get_enemy_estimate(field, &curTrajectories, depth - 1) ? -1 : result;
 }

@@ -7,5 +7,5 @@
 
 using namespace std;
 
-Score alphabeta(Field* field, size_t depth, Pos pos, Trajectories* last, Score alpha, Score beta, int* empty_board);
-Pos minimax(Field* field, size_t depth);
+Score alphabeta(Field* field, Depth depth, Pos pos, Trajectories* last, Score alpha, Score beta, int* emptyBoard);
+Pos minimax(Field* field, Depth depth);

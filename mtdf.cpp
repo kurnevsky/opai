@@ -50,6 +50,7 @@ Pos mtdf(Field* field, size_t depth)
 	auto beta = cur_trajectories.getMaxScore(field->getPlayer());
 
 	int* empty_board = new int[field->getLength()];
+	fill_n(empty_board, field->getLength(), 0);
 
 	do
 	{
