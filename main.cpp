@@ -12,7 +12,6 @@ void gen_move(int id)
 {
 	Player player;
 	Coord x, y;
-
 	cin >> player;
 	if (bot == NULL)
 	{
@@ -33,8 +32,7 @@ void gen_move_with_complexity(int id)
 {
 	Player player;
 	Coord x, y;
-	int complexity;
-
+	Complexity complexity;
 	cin >> player >> complexity;
 	if (bot == NULL)
 	{
@@ -56,7 +54,6 @@ void gen_move_with_time(int id)
 	Player player;
 	Coord x, y;
 	Time time;
-
 	cin >> player >> time;
 	if (bot == NULL)
 	{
@@ -77,7 +74,6 @@ void init(int id)
 {
 	Coord x, y;
 	ptrdiff_t seed;
-
 	cin >> x >> y >> seed;
 	// Если существовало поле - удаляем его.
 	if (bot != NULL)
@@ -100,7 +96,6 @@ void play(int id)
 {
 	Coord x, y;
 	Player player;
-
 	cin >> x >> y >> player;
 	if (bot == NULL || !bot->doStep(x, y, player))
 		cout << "?" << " " << id << " " << "play" << endl;
@@ -148,10 +143,8 @@ int main()
 	string s;
 	int id;
 	map<string, void(*)(int)> codes;
-
 	bot = NULL;
 	fill_codes(codes);
-
 	while (true)
 	{
 		cin >> id >> s;
@@ -161,6 +154,6 @@ int main()
 		else
 			cout << "?" << " " << id << " " << s << endl;
 		// Очищаем cin до конца строки.
-		while (cin.get() != 10) {}
+		while (cin.get() != 10);
 	}
 }
