@@ -7,15 +7,15 @@
 
 using namespace std;
 
-struct uct_node
+struct uctNode
 {
-	ulong wins;
-	ulong visits;
-	uint move;
-	uct_node* child;
-	uct_node* sibling;
+	Iterations wins;
+	Iterations visits;
+	Pos move;
+	uctNode* child;
+	uctNode* sibling;
 
-	uct_node()
+	uctNode()
 	{
 		wins = 0;
 		visits = 0;
@@ -25,5 +25,5 @@ struct uct_node
 	}
 };
 
-Pos uct(Field* field, mt* gen, size_t max_simulations);
-Pos uct_with_time(Field* field, mt* gen, Time time);
+Pos uct(Field* field, mt* gen, Iterations max_simulations);
+Pos uctWithTime(Field* field, mt* gen, Time time);

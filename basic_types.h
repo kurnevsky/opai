@@ -18,10 +18,10 @@ typedef int Player;
 typedef int Score;
 typedef int Coord;
 typedef size_t Hash;
-typedef int Time;
-typedef int Depth;
-typedef int Complexity;
-typedef int Iterations;
+typedef uint Time;
+typedef uint Depth;
+typedef uint Complexity;
+typedef uint Iterations;
 
 #define SCORE_INFINITY numeric_limits<Score>::max()
 

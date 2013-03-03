@@ -189,7 +189,7 @@ void Bot::getWithTime(Coord& x, Coord& y, Time time)
 #elif SEARCH_WITH_TIME_TYPE == 1 // minimax
 #error Invalid SEARCH_WITH_TIME_TYPE.
 #elif SEARCH_WITH_TIME_TYPE == 2 // uct
-	auto result = uct_with_time(_field, _gen, time);
+	auto result = uctWithTime(_field, _gen, time);
 	if (result == -1)
 		result = position_estimate(_field);
 	x = _field->toX(result);

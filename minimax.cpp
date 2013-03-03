@@ -64,7 +64,7 @@ Score alphabeta(Field* field, Depth depth, Pos pos, Trajectories* last, Score al
 	return -alpha;
 }
 
-Score get_enemy_estimate(Field* field, Trajectories* last, Depth depth)
+Score getEnemyEstimate(Field* field, Trajectories* last, Depth depth)
 {
 	Trajectories curTrajectories(field, NULL);
 	Score result;
@@ -139,17 +139,17 @@ Pos minimax(Field* field, Depth depth)
 	#pragma omp parallel
 	{
 		Field* localField = new Field(*field);
-		int* emptyBoard = new int[field->getLength()];
-		fill_n(emptyBoard, field->getLength(), 0);
+		int* localEmptyBoard = new int[field->getLength()];
+		fill_n(localEmptyBoard, field->getLength(), 0);
 
 		#pragma omp for schedule(dynamic, 1)
 		for (auto i = moves.begin(); i < moves.end(); i++)
 		{
 			if (alpha < beta)
 			{
-				auto curEstimate = alphabeta(localField, depth - 1, *i, &curTrajectories, -alpha - 1, -alpha, emptyBoard);
+				auto curEstimate = alphabeta(localField, depth - 1, *i, &curTrajectories, -alpha - 1, -alpha, localEmptyBoard);
 				if (curEstimate > alpha && curEstimate < beta)
-					curEstimate = alphabeta(localField, depth - 1, *i, &curTrajectories, -beta, -curEstimate, emptyBoard);
+					curEstimate = alphabeta(localField, depth - 1, *i, &curTrajectories, -beta, -curEstimate, localEmptyBoard);
 				#pragma omp critical
 				{
 					if (curEstimate > alpha) // Обновляем нижнюю границу.
@@ -161,8 +161,8 @@ Pos minimax(Field* field, Depth depth)
 			}
 		}
 
-		delete emptyBoard;
+		delete localEmptyBoard;
 		delete localField;
 	}
-	return alpha == get_enemy_estimate(field, &curTrajectories, depth - 1) ? -1 : result;
+	return alpha == getEnemyEstimate(field, &curTrajectories, depth - 1) ? -1 : result;
 }
