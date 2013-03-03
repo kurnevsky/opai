@@ -9,61 +9,53 @@
 
 using namespace std;
 
-Score mtdf_alphabeta(Field* field, vector<Pos>* moves, size_t depth, Trajectories* last, Score alpha, Score beta, int* empty_board, Pos* best)
+Score mtdfAlphabeta(Field* field, vector<Pos>* moves, Depth depth, Trajectories* last, Score alpha, Score beta, int* emptyBoard, Pos* best)
 {
 	for (auto i = moves->begin(); i != moves->end(); i++)
 	{
-		Score cur_estimate = alphabeta(field, depth - 1, *i, last, -beta, -alpha, empty_board);
-		if (cur_estimate > alpha)
+		auto curEstimate = alphabeta(field, depth - 1, *i, last, -beta, -alpha, emptyBoard);
+		if (curEstimate > alpha)
 		{
-			alpha = cur_estimate;
+			alpha = curEstimate;
 			*best = *i;
 			if (alpha >= beta)
 				break;
 		}
 	}
-
 	return alpha;
 }
 
 // CurField - поле, на котором производится оценка.
 // Depth - глубина оценки.
-Pos mtdf(Field* field, size_t depth)
+Pos mtdf(Field* field, Depth depth)
 {
 	// Главные траектории - свои и вражеские.
-	Trajectories cur_trajectories(field, NULL);
+	Trajectories curTrajectories(field, NULL);
 	vector<Pos> moves;
 	Pos result;
-
 	// Делаем что-то только когда глубина просчета положительная и колическтво возможных ходов на входе не равно 0.
 	if (depth <= 0)
 		return -1;
-
 	// Получаем ходы из траекторий (которые имеет смысл рассматривать), и находим пересечение со входными возможными точками.
-	cur_trajectories.buildTrajectories(depth);
-	moves.assign(cur_trajectories.getPoints()->begin(), cur_trajectories.getPoints()->end());
+	curTrajectories.buildTrajectories(depth);
+	moves.assign(curTrajectories.getPoints()->begin(), curTrajectories.getPoints()->end());
 	// Если нет возможных ходов, входящих в траектории - выходим.
 	if (moves.size() == 0)
 		return -1;
-
-	auto alpha = -cur_trajectories.getMaxScore(nextPlayer(field->getPlayer()));
-	auto beta = cur_trajectories.getMaxScore(field->getPlayer());
-
-	int* empty_board = new int[field->getLength()];
-	fill_n(empty_board, field->getLength(), 0);
-
+	auto alpha = -curTrajectories.getMaxScore(nextPlayer(field->getPlayer()));
+	auto beta = curTrajectories.getMaxScore(field->getPlayer());
+	int* emptyBoard = new int[field->getLength()];
+	fill_n(emptyBoard, field->getLength(), 0);
 	do
 	{
-		int center = (alpha + beta) / 2;
-		Score cur_estimate = mtdf_alphabeta(field, &moves, depth, &cur_trajectories, center, center + 1, empty_board, &result);
-		if (cur_estimate > center)
-			alpha = cur_estimate;
+		auto center = (alpha + beta) / 2;
+		auto curEstimate = mtdfAlphabeta(field, &moves, depth, &curTrajectories, center, center + 1, emptyBoard, &result);
+		if (curEstimate > center)
+			alpha = curEstimate;
 		else
-			beta = cur_estimate;
+			beta = curEstimate;
 	}
 	while (beta - alpha > 1);
-
-	delete empty_board;
-
+	delete emptyBoard;
 	return result;
 }
