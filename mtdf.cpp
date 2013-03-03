@@ -31,7 +31,7 @@ Score mtdf_alphabeta(Field* field, vector<Pos>* moves, size_t depth, Trajectorie
 Pos mtdf(Field* field, size_t depth)
 {
 	// Главные траектории - свои и вражеские.
-	Trajectories cur_trajectories(field, NULL, depth);
+	Trajectories cur_trajectories(field, NULL);
 	vector<Pos> moves;
 	Pos result;
 
@@ -40,14 +40,14 @@ Pos mtdf(Field* field, size_t depth)
 		return -1;
 
 	// Получаем ходы из траекторий (которые имеет смысл рассматривать), и находим пересечение со входными возможными точками.
-	cur_trajectories.build_trajectories();
-	moves.assign(cur_trajectories.get_points()->begin(), cur_trajectories.get_points()->end());
+	cur_trajectories.buildTrajectories(depth);
+	moves.assign(cur_trajectories.getPoints()->begin(), cur_trajectories.getPoints()->end());
 	// Если нет возможных ходов, входящих в траектории - выходим.
 	if (moves.size() == 0)
 		return -1;
 
-	auto alpha = -cur_trajectories.get_max_score(nextPlayer(field->getPlayer()));
-	auto beta = cur_trajectories.get_max_score(field->getPlayer());
+	auto alpha = -cur_trajectories.getMaxScore(nextPlayer(field->getPlayer()));
+	auto beta = cur_trajectories.getMaxScore(field->getPlayer());
 
 	int* empty_board = new int[field->getLength()];
 

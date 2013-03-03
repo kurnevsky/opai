@@ -9,52 +9,48 @@
 class Trajectories
 {
 private:
-	size_t _depth[2];
+	Depth _depth[2];
 	Field* _field;
 	list<Trajectory> _trajectories[2];
-	int* _trajectories_board;
-	bool _trajectories_board_owner;
+	int* _trajectoriesBoard;
+	bool _trajectoriesBoardOwner;
 	Zobrist* _zobrist;
 	list<Pos> _moves[2];
-	list<Pos> _all_moves;
+	list<Pos> _allMoves;
 
 private:
 	template<typename _InIt>
-	void add_trajectory(_InIt begin, _InIt end, Player player)
+	void addTrajectory(_InIt begin, _InIt end, Player player)
 	{
 		Hash hash = 0;
-
 		// Эвристические проверки.
 		// Каждая точка траектории должна окружать что-либо и иметь рядом хотя бы 2 группы точек.
 		// Если нет - не добавляем эту траекторию.
 		for (auto i = begin; i < end; i++)
 			if (!_field->isBaseBound(*i) || (_field->numberNearGroups(*i, player) < 2))
 				return;
-
 		// Высчитываем хеш траектории и сравниваем с уже существующими для исключения повторов.
 		for (auto i = begin; i < end; i++)
 			hash ^= _zobrist->getHash(*i);
 		for (auto i = _trajectories[player].begin(); i != _trajectories[player].end(); i++)
 			if (hash == i->getHash())
 				return; // В теории возможны коллизии. Неплохо было бы сделать точную проверку.
-
 		_trajectories[player].push_back(Trajectory(begin, end, _zobrist, hash));
 	}
-	inline void add_trajectory(Trajectory* trajectory, Player player)
+	void addTrajectory(Trajectory* trajectory, Player player)
 	{
 		_trajectories[player].push_back(Trajectory(*trajectory));
 	}
-	inline void add_trajectory(Trajectory* trajectory, Pos pos, Player player)
+	void addTrajectory(Trajectory* trajectory, Pos pos, Player player)
 	{
 		if (trajectory->size() == 1)
 			return;
-
 		_trajectories[player].push_back(Trajectory(_zobrist));
 		for (auto i = trajectory->begin(); i != trajectory->end(); i++)
 			if (*i != pos)
 				_trajectories[player].back().pushBack(*i);
 	}
-	void build_trajectories_recursive(size_t depth, Player player)
+	void buildTrajectoriesRecursive(Depth depth, Player player)
 	{
 		for (auto pos = _field->minPos(); pos <= _field->maxPos(); pos++)
 		{
@@ -64,7 +60,7 @@ private:
 				{
 					_field->doUnsafeStep(pos, player);
 					if (_field->getDScore(player) > 0)
-						add_trajectory(_field->pointsSeq.end() - (_depth[player] - depth), _field->pointsSeq.end(), player);
+						addTrajectory(_field->pointsSeq.end() - (_depth[player] - depth), _field->pointsSeq.end(), player);
 					_field->undoStep();
 				}
 				else
@@ -80,81 +76,80 @@ private:
 #endif
 
 					if (_field->getDScore(player) > 0)
-						add_trajectory(_field->pointsSeq.end() - (_depth[player] - depth), _field->pointsSeq.end(), player);
+						addTrajectory(_field->pointsSeq.end() - (_depth[player] - depth), _field->pointsSeq.end(), player);
 					else if (depth > 0)
-						build_trajectories_recursive(depth - 1, player);
+						buildTrajectoriesRecursive(depth - 1, player);
 
 					_field->undoStep();
 				}
 			}
 		}
 	}
-	inline void project(Trajectory* trajectory)
+	void project(Trajectory* trajectory)
 	{
 		for (auto j = trajectory->begin(); j != trajectory->end(); j++)
-			_trajectories_board[*j]++;
+			_trajectoriesBoard[*j]++;
 	}
 	// Проецирует траектории на доску TrajectoriesBoard (для каждой точки Pos очередной траектории инкрементирует TrajectoriesBoard[Pos]).
 	// Для оптимизации в данной реализации функции не проверяются траектории на исключенность (поле Excluded).
-	inline void project(Player player)
+	void project(Player player)
 	{
 		for (auto i = _trajectories[player].begin(); i != _trajectories[player].end(); i++)
 			if (!i->excluded())
 				project(&(*i));
 	}
-	inline void project()
+	void project()
 	{
 		project(playerRed);
 		project(playerBlack);
 	}
-	inline void unproject(Trajectory* trajectory)
+	void unproject(Trajectory* trajectory)
 	{
 		for (auto j = trajectory->begin(); j != trajectory->end(); j++)
-			_trajectories_board[*j]--;
+			_trajectoriesBoard[*j]--;
 	}
 	// Удаляет проекцию траекторий с доски TrajectoriesBoard.
-	inline void unproject(Player player)
+	void unproject(Player player)
 	{
 		for (auto i = _trajectories[player].begin(); i != _trajectories[player].end(); i++)
 			if (!i->excluded())
 				unproject(&(*i));
 	}
-	inline void unproject()
+	void unproject()
 	{
 		unproject(playerRed);
 		unproject(playerBlack);
 	}
-	inline void include_all_trajectories(Player player)
+	void includeAllTrajectories(Player player)
 	{
 		for (auto i = _trajectories[player].begin(); i != _trajectories[player].end(); i++)
 			i->include();
 	}
-	inline void include_all_trajectories()
+	void includeAllTrajectories()
 	{
-		include_all_trajectories(playerRed);
-		include_all_trajectories(playerBlack);
+		includeAllTrajectories(playerRed);
+		includeAllTrajectories(playerBlack);
 	}
 	// Возвращает хеш Зобриста пересечения двух траекторий.
-	inline Hash get_intersect_hash(Trajectory* t1, Trajectory* t2)
+	Hash getIntersectHash(Trajectory* t1, Trajectory* t2)
 	{
-		Hash result_hash = t1->getHash();
+		auto resultHash = t1->getHash();
 		for (auto i = t2->begin(); i != t2->end(); i++)
 			if (find(t1->begin(), t1->end(), *i) == t1->end())
-				result_hash ^= _zobrist->getHash(*i);
-		return result_hash;
+				resultHash ^= _zobrist->getHash(*i);
+		return resultHash;
 	}
-	bool exclude_unnecessary_trajectories(Player player)
+	bool excludeUnnecessaryTrajectories(Player player)
 	{
-		bool need_exclude = false;
-
+		auto need_exclude = false;
 		for (auto i = _trajectories[player].begin(); i != _trajectories[player].end(); i++)
 		{
 			if (i->excluded())
 				continue;
 			// Считаем в c количество точек, входящих только в эту траекторию.
-			uint c = 0;
+			auto c = 0;
 			for (auto j = i->begin(); j != i->end(); j++)
-				if (_trajectories_board[*j] == 1)
+				if (_trajectoriesBoard[*j] == 1)
 					c++;
 			// Если точек, входящих только в эту траекторию, > 1, то исключаем эту траекторию.
 			if (c > 1)
@@ -164,31 +159,29 @@ private:
 				unproject(&(*i));
 			}
 		}
-
 		return need_exclude;
 	}
-	inline void exclude_unnecessary_trajectories()
+	void excludeUnnecessaryTrajectories()
 	{
-		while (exclude_unnecessary_trajectories(playerRed) || exclude_unnecessary_trajectories(playerBlack));
+		while (excludeUnnecessaryTrajectories(playerRed) || excludeUnnecessaryTrajectories(playerBlack));
 	}
 	// Исключает составные траектории.
-	void exclude_composite_trajectories(Player player)
+	void excludeCompositeTrajectories(Player player)
 	{
 		list<Trajectory>::iterator i, j, k;
-
 		for (k = _trajectories[player].begin(); k != _trajectories[player].end(); k++)
 			for (i = _trajectories[player].begin(); i != --_trajectories[player].end(); i++)
 				if (k->size() > i->size())
 					for (j = i, j++; j != _trajectories[player].end(); j++)
-						if (k->size() > j->size() && k->getHash() == get_intersect_hash(&(*i), &(*j)))
+						if (k->size() > j->size() && k->getHash() == getIntersectHash(&(*i), &(*j)))
 							k->exclude();
 	}
-	inline void exclude_composite_trajectories()
+	void excludeCompositeTrajectories()
 	{
-		exclude_composite_trajectories(playerRed);
-		exclude_composite_trajectories(playerBlack);
+		excludeCompositeTrajectories(playerRed);
+		excludeCompositeTrajectories(playerBlack);
 	}
-	inline void get_points(list<Pos>* moves, Player player)
+	void getPoints(list<Pos>* moves, Player player)
 	{
 		for (auto i = _trajectories[player].begin(); i != _trajectories[player].end(); i++)
 			if (!i->excluded())
@@ -196,7 +189,7 @@ private:
 					if (find(moves->begin(), moves->end(), *j) == moves->end())
 						moves->push_back(*j);
 	}
-	Score calculate_max_score(Player player, size_t depth)
+	Score calculateMaxScore(Player player, Depth depth)
 	{
 		auto result = _field->getScore(player);
 		if (depth > 0)
@@ -207,9 +200,9 @@ private:
 					_field->doUnsafeStep(*i, player);
 					if (_field->getDScore(player) >= 0)
 					{
-						Score cur_score = calculate_max_score(player, depth - 1);
-						if (cur_score > result)
-							result = cur_score;
+						auto curScore = calculateMaxScore(player, depth - 1);
+						if (curScore > result)
+							result = curScore;
 					}
 					_field->undoStep();
 				}
@@ -218,128 +211,120 @@ private:
 	}
 
 public:
-	inline Trajectories(Field* field, int* empty_board = NULL, size_t depth = 0)
+	Trajectories(Field* field, int* emptyBoard)
 	{
 		_field = field;
-		_depth[get_cur_player()] = (depth + 1) / 2;
-		_depth[get_enemy_player()] = depth / 2;
-		if (empty_board == NULL)
+		if (emptyBoard == NULL)
 		{
-			_trajectories_board = new int[field->getLength()];
-			fill_n(_trajectories_board, _field->getLength(), 0);
-			_trajectories_board_owner = true;
+			_trajectoriesBoard = new int[field->getLength()];
+			fill_n(_trajectoriesBoard, _field->getLength(), 0);
+			_trajectoriesBoardOwner = true;
 		}
 		else
 		{
-			_trajectories_board = empty_board;
-			_trajectories_board_owner = false;
+			_trajectoriesBoard = emptyBoard;
+			_trajectoriesBoardOwner = false;
 		}
 		_zobrist = &field->getZobrist();
 	}
 	~Trajectories()
 	{
-		if (_trajectories_board_owner)
-			delete _trajectories_board;
+		if (_trajectoriesBoardOwner)
+			delete _trajectoriesBoard;
 	}
-	inline Player get_cur_player()
+	Player getCurPlayer()
 	{
 		return _field->getPlayer();
 	}
-	inline Player get_enemy_player()
+	Player getEnemyPlayer()
 	{
 		return nextPlayer(_field->getPlayer());
 	}
-	inline void clear(Player player)
+	void clear(Player player)
 	{
 		_trajectories[player].clear();
 	}
-	inline void clear()
+	void clear()
 	{
 		clear(playerRed);
 		clear(playerBlack);
 	}
-	inline void build_trajectories(Player player)
+	void buildPlayerTrajectories(Player player)
 	{
 		if (_depth[player] > 0)
-			build_trajectories_recursive(_depth[player] - 1, player);
+			buildTrajectoriesRecursive(_depth[player] - 1, player);
 	}
-	void calculate_moves()
+	void calculateMoves()
 	{
-		exclude_composite_trajectories();
+		excludeCompositeTrajectories();
 		// Проецируем неисключенные траектории на доску.
 		project();
 		// Исключаем те траектории, у которых имеется более одной точки, принадлежащей только ей.
-		exclude_unnecessary_trajectories();
+		excludeUnnecessaryTrajectories();
 		// Получаем список точек, входящих в оставшиеся неисключенные траектории.
-		get_points(&_moves[playerRed], playerRed);
-		get_points(&_moves[playerBlack], playerBlack);
-		_all_moves.assign(_moves[playerRed].begin(), _moves[playerRed].end());
+		getPoints(&_moves[playerRed], playerRed);
+		getPoints(&_moves[playerBlack], playerBlack);
+		_allMoves.assign(_moves[playerRed].begin(), _moves[playerRed].end());
 		for (auto i = _moves[playerBlack].begin(); i != _moves[playerBlack].end(); i++)
-			if (find(_all_moves.begin(), _all_moves.end(), *i) == _all_moves.end())
-				_all_moves.push_back(*i);
+			if (find(_allMoves.begin(), _allMoves.end(), *i) == _allMoves.end())
+				_allMoves.push_back(*i);
 #if ALPHABETA_SORT
-		_all_moves.sort([&](pos x, pos y){ return _trajectories_board[x] < _trajectories_board[y]; });
+		_allMoves.sort([&](pos x, pos y){ return _trajectories_board[x] < _trajectories_board[y]; });
 #endif
 		// Очищаем доску от проекций.
 		unproject();
 		// После получения списка ходов обратно включаем в рассмотрение все траектории (для следующего уровня рекурсии).
-		include_all_trajectories();
+		includeAllTrajectories();
 	}
-	inline void build_trajectories()
+	void buildTrajectories(Depth depth)
 	{
-		build_trajectories(get_cur_player());
-		build_trajectories(get_enemy_player());
-		calculate_moves();
+		_depth[getCurPlayer()] = (depth + 1) / 2;
+		_depth[getEnemyPlayer()] = depth / 2;
+		buildPlayerTrajectories(getCurPlayer());
+		buildPlayerTrajectories(getEnemyPlayer());
+		calculateMoves();
 	}
-	void build_trajectories(Trajectories* last, Pos pos)
+	void buildTrajectories(Trajectories* last, Pos pos)
 	{
-		_depth[get_cur_player()] = last->_depth[get_cur_player()];
-		_depth[get_enemy_player()] = last->_depth[get_enemy_player()] - 1;
+		_depth[getCurPlayer()] = last->_depth[getCurPlayer()];
+		_depth[getEnemyPlayer()] = last->_depth[getEnemyPlayer()] - 1;
 
-		if (_depth[get_cur_player()] > 0)
-			build_trajectories_recursive(_depth[get_cur_player()] - 1, get_cur_player());
+		if (_depth[getCurPlayer()] > 0)
+			buildTrajectoriesRecursive(_depth[getCurPlayer()] - 1, getCurPlayer());
 
-		if (_depth[get_enemy_player()] > 0)
-			for (auto i = last->_trajectories[get_enemy_player()].begin(); i != last->_trajectories[get_enemy_player()].end(); i++)
-				if ((i->size() <= _depth[get_enemy_player()] || (i->size() == _depth[get_enemy_player()] + 1 && find(i->begin(), i->end(), pos) != i->end())) && i->isValid(_field, pos))
-					add_trajectory(&(*i), pos, get_enemy_player());
+		if (_depth[getEnemyPlayer()] > 0)
+			for (auto i = last->_trajectories[getEnemyPlayer()].begin(); i != last->_trajectories[getEnemyPlayer()].end(); i++)
+				if ((static_cast<Depth>(i->size()) <= _depth[getEnemyPlayer()] ||
+						(static_cast<Depth>(i->size()) == _depth[getEnemyPlayer()] + 1 &&
+							find(i->begin(), i->end(), pos) != i->end())) && i->isValid(_field, pos))
+					addTrajectory(&(*i), pos, getEnemyPlayer());
 
-		calculate_moves();
+		calculateMoves();
 	}
 	// Строит траектории с учетом предыдущих траекторий и того, что последний ход был сделан не на траектории (или не сделан вовсе).
-	void build_trajectories(Trajectories* last)
+	void buildTrajectories(Trajectories* last)
 	{
-		_depth[get_cur_player()] = last->_depth[get_cur_player()];
-		_depth[get_enemy_player()] = last->_depth[get_enemy_player()] - 1;
+		_depth[getCurPlayer()] = last->_depth[getCurPlayer()];
+		_depth[getEnemyPlayer()] = last->_depth[getEnemyPlayer()] - 1;
 
-		if (_depth[get_cur_player()] > 0)
-			for (auto i = last->_trajectories[get_cur_player()].begin(); i != last->_trajectories[get_cur_player()].end(); i++)
-				add_trajectory(&(*i), get_cur_player());
+		if (_depth[getCurPlayer()] > 0)
+			for (auto i = last->_trajectories[getCurPlayer()].begin(); i != last->_trajectories[getCurPlayer()].end(); i++)
+				addTrajectory(&(*i), getCurPlayer());
 
-		if (_depth[get_enemy_player()] > 0)
-			for (auto i = last->_trajectories[get_enemy_player()].begin(); i != last->_trajectories[get_enemy_player()].end(); i++)
-				if (i->size() <= _depth[get_enemy_player()])
-					add_trajectory(&(*i), get_enemy_player());
+		if (_depth[getEnemyPlayer()] > 0)
+			for (auto i = last->_trajectories[getEnemyPlayer()].begin(); i != last->_trajectories[getEnemyPlayer()].end(); i++)
+				if (static_cast<Depth>(i->size()) <= _depth[getEnemyPlayer()])
+					addTrajectory(&(*i), getEnemyPlayer());
 
-		calculate_moves();
-	}
-	inline void sort_moves(vector<Pos>* moves) const
-	{
-		// Сортируем точки по убыванию количества траекторий, в которые они входят.
-		sort(moves->begin(), moves->end(), [&](Pos x, Pos y){ return _trajectories_board[x] < _trajectories_board[y]; });
-	}
-	inline void sort_moves(list<Pos>* moves) const
-	{
-		// Сортируем точки по убыванию количества траекторий, в которые они входят.
-		moves->sort([&](Pos x, Pos y){ return _trajectories_board[x] < _trajectories_board[y]; });
+		calculateMoves();
 	}
 	// Получить список ходов.
-	inline list<Pos>* get_points()
+	list<Pos>* getPoints()
 	{
-		return &_all_moves;
+		return &_allMoves;
 	}
-	inline Score get_max_score(Player player)
+	Score getMaxScore(Player player)
 	{
-		return calculate_max_score(player, _depth[player]) + _depth[nextPlayer(player)];
+		return calculateMaxScore(player, _depth[player]) + _depth[nextPlayer(player)];
 	}
 };

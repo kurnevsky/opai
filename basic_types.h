@@ -19,6 +19,9 @@ typedef int Score;
 typedef int Coord;
 typedef size_t Hash;
 typedef int Time;
+typedef int Depth;
+typedef int Complexity;
+typedef int Iterations;
 
 #define SCORE_INFINITY numeric_limits<Score>::max()
 

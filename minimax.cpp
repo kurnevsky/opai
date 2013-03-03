@@ -36,9 +36,9 @@ Score alphabeta(Field* field, size_t depth, Pos pos, Trajectories* last, Score a
 		return -SCORE_INFINITY; // Для CurPlayer это хорошо, то есть оценка Infinity.
 	}
 
-	cur_trajectories.build_trajectories(last, pos);
+	cur_trajectories.buildTrajectories(last, pos);
 
-	list<Pos>* moves = cur_trajectories.get_points();
+	list<Pos>* moves = cur_trajectories.getPoints();
 
 	if (moves->size() == 0)
 	{
@@ -66,22 +66,22 @@ Score alphabeta(Field* field, size_t depth, Pos pos, Trajectories* last, Score a
 
 Score get_enemy_estimate(Field* field, Trajectories* last, size_t depth)
 {
-	Trajectories cur_trajectories(field);
+	Trajectories cur_trajectories(field, NULL);
 	Score result;
 	vector<Pos> moves;
 
 	field->setNextPlayer();
-	cur_trajectories.build_trajectories(last);
+	cur_trajectories.buildTrajectories(last);
 
-	moves.assign(cur_trajectories.get_points()->begin(), cur_trajectories.get_points()->end());
+	moves.assign(cur_trajectories.getPoints()->begin(), cur_trajectories.getPoints()->end());
 	if (moves.size() == 0)
 	{
 		result = field->getScore(field->getPlayer());
 	}
 	else
 	{
-		auto alpha = -cur_trajectories.get_max_score(nextPlayer(field->getPlayer()));
-		auto beta = cur_trajectories.get_max_score(field->getPlayer());
+		auto alpha = -cur_trajectories.getMaxScore(nextPlayer(field->getPlayer()));
+		auto beta = cur_trajectories.getMaxScore(field->getPlayer());
 		#pragma omp parallel
 		{
 			Field* local_field = new Field(*field);
@@ -119,7 +119,7 @@ Score get_enemy_estimate(Field* field, Trajectories* last, size_t depth)
 Pos minimax(Field* field, size_t depth)
 {
 	// Главные траектории - свои и вражеские.
-	Trajectories cur_trajectories(field, NULL, depth);
+	Trajectories cur_trajectories(field, NULL);
 	Pos result;
 	vector<Pos> moves;
 
@@ -128,16 +128,16 @@ Pos minimax(Field* field, size_t depth)
 		return -1;
 
 	// Получаем ходы из траекторий (которые имеет смысл рассматривать), и находим пересечение со входными возможными точками.
-	cur_trajectories.build_trajectories();
-	moves.assign(cur_trajectories.get_points()->begin(), cur_trajectories.get_points()->end());
+	cur_trajectories.buildTrajectories(depth);
+	moves.assign(cur_trajectories.getPoints()->begin(), cur_trajectories.getPoints()->end());
 	// Если нет возможных ходов, входящих в траектории - выходим.
 	if (moves.size() == 0)
 		return -1;
 	// Для почти всех возможных точек, не входящих в траектории оценка будет такая же, как если бы игрок CurPlayer пропустил ход.
 	//int enemy_estimate = get_enemy_estimate(cur_field, Trajectories[cur_field.get_player()], Trajectories[next_player(cur_field.get_player())], depth);
 
-	auto alpha = -cur_trajectories.get_max_score(nextPlayer(field->getPlayer()));
-	auto beta = cur_trajectories.get_max_score(field->getPlayer());
+	auto alpha = -cur_trajectories.getMaxScore(nextPlayer(field->getPlayer()));
+	auto beta = cur_trajectories.getMaxScore(field->getPlayer());
 	#pragma omp parallel
 	{
 		Field* local_field = new Field(*field);
