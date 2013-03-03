@@ -65,7 +65,7 @@ uctNode* uctSelect(mt* gen, uctNode* n)
 		if (next->visits > 0)
 		{
 			winRate = static_cast<double>(next->wins)/next->visits;
-			uct = UCTK * sqrt(log(static_cast<double>(n->visits)) / (5 * next->visits));
+			uct = UCTK * sqrt(2 * log(static_cast<double>(n->visits)) / next->visits);
 			uctValue = winRate + uct;
 		}
 		else
