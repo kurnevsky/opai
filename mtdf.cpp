@@ -77,7 +77,7 @@ Pos mtdf(Field* field, Depth depth)
 	{
 		auto center = (alpha + beta) / 2;
 		if ((alpha + beta) % 2 == -1)
-			center -= 1;
+			center--;
 		auto curEstimate = mtdfAlphabeta(fields, &moves, depth, &curTrajectories, center, center + 1, emptyBoards, &result);
 		if (curEstimate > center)
 			alpha = curEstimate;
