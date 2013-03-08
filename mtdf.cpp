@@ -9,17 +9,26 @@
 
 using namespace std;
 
-Score mtdfAlphabeta(Field* field, vector<Pos>* moves, Depth depth, Trajectories* last, Score alpha, Score beta, int* emptyBoard, Pos* best)
+Score mtdfAlphabeta(Field** fields, vector<Pos>* moves, Depth depth, Trajectories* last, Score alpha, Score beta, int** emptyBoards, Pos* best)
 {
-	for (auto i = moves->begin(); i != moves->end(); i++)
+	#pragma omp parallel
 	{
-		auto curEstimate = alphabeta(field, depth - 1, *i, last, -beta, -alpha, emptyBoard);
-		if (curEstimate > alpha)
+		auto threadNum = omp_get_thread_num();
+		#pragma omp for schedule(dynamic, 1)
+		for (auto i = moves->begin(); i < moves->end(); i++)
 		{
-			alpha = curEstimate;
-			*best = *i;
-			if (alpha >= beta)
-				break;
+			if (alpha < beta)
+			{
+				auto curEstimate = alphabeta(fields[threadNum], depth - 1, *i, last, -beta, -alpha, emptyBoards[threadNum]);
+				#pragma omp critical
+				{
+					if (curEstimate > alpha)
+					{
+						alpha = curEstimate;
+						*best = *i;
+					}
+				}
+			}
 		}
 	}
 	return alpha;
@@ -44,18 +53,31 @@ Pos mtdf(Field* field, Depth depth)
 		return -1;
 	auto alpha = -curTrajectories.getMaxScore(nextPlayer(field->getPlayer()));
 	auto beta = curTrajectories.getMaxScore(field->getPlayer());
-	int* emptyBoard = new int[field->getLength()];
-	fill_n(emptyBoard, field->getLength(), 0);
+	auto maxThreads = omp_get_max_threads();
+	int** emptyBoards = new int*[maxThreads];
+	for (auto i = 0; i < maxThreads; i++)
+	{
+		emptyBoards[i] = new int[field->getLength()];
+		fill_n(emptyBoards[i], field->getLength(), 0);
+	}
+	Field** fields = new Field*[maxThreads];
+	for (auto i = 0; i < maxThreads; i++)
+		fields[i] = new Field(*field);
 	do
 	{
 		auto center = (alpha + beta) / 2;
-		auto curEstimate = mtdfAlphabeta(field, &moves, depth, &curTrajectories, center, center + 1, emptyBoard, &result);
+		auto curEstimate = mtdfAlphabeta(fields, &moves, depth, &curTrajectories, center, center + 1, emptyBoards, &result);
 		if (curEstimate > center)
 			alpha = curEstimate;
 		else
 			beta = curEstimate;
 	}
-	while (beta - alpha > 1);
-	delete emptyBoard;
-	return result;
+	while (alpha != beta);//(beta - alpha > 1);
+	for (auto i = 0; i < maxThreads; i++)
+		delete emptyBoards[i];
+	delete emptyBoards;
+	for (auto i = 0; i < maxThreads; i++)
+		delete fields[i];
+	delete fields;
+	return alpha == getEnemyEstimate(field, &curTrajectories, depth - 1) ? -1 : result;
 }
