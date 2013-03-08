@@ -8,5 +8,5 @@
 using namespace std;
 
 Score alphabeta(Field* field, Depth depth, Pos pos, Trajectories* last, Score alpha, Score beta, int* emptyBoard);
-Score getEnemyEstimate(Field* field, Trajectories* last, Depth depth);
+Score getEnemyEstimate(Field** fields, int** emptyBoards, int maxThreads, Trajectories* last, Depth depth);
 Pos minimax(Field* field, Depth depth);

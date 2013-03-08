@@ -64,38 +64,34 @@ Score alphabeta(Field* field, Depth depth, Pos pos, Trajectories* last, Score al
 	return -alpha;
 }
 
-Score getEnemyEstimate(Field* field, Trajectories* last, Depth depth)
+Score getEnemyEstimate(Field** fields, int** emptyBoards, int maxThreads, Trajectories* last, Depth depth)
 {
-	Trajectories curTrajectories(field, NULL);
+	Trajectories curTrajectories(fields[0], emptyBoards[0]);
 	Score result;
 	vector<Pos> moves;
-
-	field->setNextPlayer();
+	for (auto i = 0; i < maxThreads; i++)
+		fields[i]->setNextPlayer();
 	curTrajectories.buildTrajectories(last);
-
 	moves.assign(curTrajectories.getPoints()->begin(), curTrajectories.getPoints()->end());
 	if (moves.size() == 0)
 	{
-		result = field->getScore(field->getPlayer());
+		result = fields[0]->getScore(fields[0]->getPlayer());
 	}
 	else
 	{
-		auto alpha = -curTrajectories.getMaxScore(nextPlayer(field->getPlayer()));
-		auto beta = curTrajectories.getMaxScore(field->getPlayer());
+		auto alpha = -curTrajectories.getMaxScore(nextPlayer(fields[0]->getPlayer()));
+		auto beta = curTrajectories.getMaxScore(fields[0]->getPlayer());
 		#pragma omp parallel
 		{
-			Field* localField = new Field(*field);
-			int* emptyBoard = new int[field->getLength()];
-			fill_n(emptyBoard, field->getLength(), 0);
-
+			auto threadNum = omp_get_thread_num();
 			#pragma omp for schedule(dynamic, 1)
 			for (auto i = moves.begin(); i < moves.end(); i++)
 			{
 				if (alpha < beta)
 				{
-					auto curEstimate = alphabeta(localField, depth - 1, *i, &curTrajectories, -alpha - 1, -alpha, emptyBoard);
+					auto curEstimate = alphabeta(fields[threadNum], depth - 1, *i, &curTrajectories, -alpha - 1, -alpha, emptyBoards[threadNum]);
 					if (curEstimate > alpha && curEstimate < beta)
-						curEstimate = alphabeta(localField, depth - 1, *i, &curTrajectories, -beta, -curEstimate, emptyBoard);
+						curEstimate = alphabeta(fields[threadNum], depth - 1, *i, &curTrajectories, -beta, -curEstimate, emptyBoards[threadNum]);
 					#pragma omp critical
 					{
 						if (curEstimate > alpha) // Обновляем нижнюю границу.
@@ -103,14 +99,11 @@ Score getEnemyEstimate(Field* field, Trajectories* last, Depth depth)
 					}
 				}
 			}
-
-			delete emptyBoard;
-			delete localField;
 		}
 		result = alpha;
 	}
-
-	field->setNextPlayer();
+	for (auto i = 0; i < maxThreads; i++)
+		fields[i]->setNextPlayer();
 	return -result;
 }
 
@@ -119,37 +112,54 @@ Score getEnemyEstimate(Field* field, Trajectories* last, Depth depth)
 // Moves - на входе возможные ходы, на выходе лучшие из них.
 Pos minimax(Field* field, Depth depth)
 {
+	int* emptyBoard = new int[field->getLength()];
+	fill_n(emptyBoard, field->getLength(), 0);
 	// Главные траектории - свои и вражеские.
-	Trajectories curTrajectories(field, NULL);
+	Trajectories curTrajectories(field, emptyBoard);
 	Pos result;
 	vector<Pos> moves;
 	// Делаем что-то только когда глубина просчета положительная и колическтво возможных ходов на входе не равно 0.
 	if (depth <= 0)
+	{
+		delete emptyBoard;
 		return -1;
+	}
 	// Получаем ходы из траекторий (которые имеет смысл рассматривать), и находим пересечение со входными возможными точками.
 	curTrajectories.buildTrajectories(depth);
 	moves.assign(curTrajectories.getPoints()->begin(), curTrajectories.getPoints()->end());
 	// Если нет возможных ходов, входящих в траектории - выходим.
 	if (moves.size() == 0)
+	{
+		delete emptyBoard;
 		return -1;
+	}
 	// Для почти всех возможных точек, не входящих в траектории оценка будет такая же, как если бы игрок CurPlayer пропустил ход.
 	//int enemy_estimate = get_enemy_estimate(cur_field, Trajectories[cur_field.get_player()], Trajectories[next_player(cur_field.get_player())], depth);
+	auto maxThreads = omp_get_max_threads();
+	int** emptyBoards = new int*[maxThreads];
+	emptyBoards[0] = emptyBoard;
+	for (auto i = 1; i < maxThreads; i++)
+	{
+		emptyBoards[i] = new int[field->getLength()];
+		fill_n(emptyBoards[i], field->getLength(), 0);
+	}
+	Field** fields = new Field*[maxThreads];
+	fields[0] = field;
+	for (auto i = 1; i < maxThreads; i++)
+		fields[i] = new Field(*field);
 	auto alpha = -curTrajectories.getMaxScore(nextPlayer(field->getPlayer()));
 	auto beta = curTrajectories.getMaxScore(field->getPlayer());
 	#pragma omp parallel
 	{
-		Field* localField = new Field(*field);
-		int* localEmptyBoard = new int[field->getLength()];
-		fill_n(localEmptyBoard, field->getLength(), 0);
-
+		auto threadNum = omp_get_thread_num();
 		#pragma omp for schedule(dynamic, 1)
 		for (auto i = moves.begin(); i < moves.end(); i++)
 		{
 			if (alpha < beta)
 			{
-				auto curEstimate = alphabeta(localField, depth - 1, *i, &curTrajectories, -alpha - 1, -alpha, localEmptyBoard);
+				auto curEstimate = alphabeta(fields[threadNum], depth - 1, *i, &curTrajectories, -alpha - 1, -alpha, emptyBoards[threadNum]);
 				if (curEstimate > alpha && curEstimate < beta)
-					curEstimate = alphabeta(localField, depth - 1, *i, &curTrajectories, -beta, -curEstimate, localEmptyBoard);
+					curEstimate = alphabeta(fields[threadNum], depth - 1, *i, &curTrajectories, -beta, -curEstimate, emptyBoards[threadNum]);
 				#pragma omp critical
 				{
 					if (curEstimate > alpha) // Обновляем нижнюю границу.
@@ -160,9 +170,13 @@ Pos minimax(Field* field, Depth depth)
 				}
 			}
 		}
-
-		delete localEmptyBoard;
-		delete localField;
 	}
-	return alpha == getEnemyEstimate(field, &curTrajectories, depth - 1) ? -1 : result;
+	result = alpha == getEnemyEstimate(fields, emptyBoards, maxThreads, &curTrajectories, depth - 1) ? -1 : result;
+	for (auto i = 0; i < maxThreads; i++)
+		delete emptyBoards[i];
+	delete emptyBoards;
+	for (auto i = 1; i < maxThreads; i++)
+		delete fields[i];
+	delete fields;
+	return result;
 }

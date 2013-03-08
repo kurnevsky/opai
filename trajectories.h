@@ -13,7 +13,6 @@ private:
 	Field* _field;
 	list<Trajectory> _trajectories[2];
 	int* _trajectoriesBoard;
-	bool _trajectoriesBoardOwner;
 	Zobrist* _zobrist;
 	list<Pos> _moves[2];
 	list<Pos> _allMoves;
@@ -214,23 +213,8 @@ public:
 	Trajectories(Field* field, int* emptyBoard)
 	{
 		_field = field;
-		if (emptyBoard == NULL)
-		{
-			_trajectoriesBoard = new int[field->getLength()];
-			fill_n(_trajectoriesBoard, _field->getLength(), 0);
-			_trajectoriesBoardOwner = true;
-		}
-		else
-		{
-			_trajectoriesBoard = emptyBoard;
-			_trajectoriesBoardOwner = false;
-		}
+		_trajectoriesBoard = emptyBoard;
 		_zobrist = &field->getZobrist();
-	}
-	~Trajectories()
-	{
-		if (_trajectoriesBoardOwner)
-			delete _trajectoriesBoard;
 	}
 	Player getCurPlayer()
 	{
