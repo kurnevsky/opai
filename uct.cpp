@@ -83,10 +83,10 @@ uctNode* uctSelect(mt* gen, uctNode* n)
 	return result;
 }
 
-Player playSimulation(Field* field, mt* gen, vector<Pos>* possibleMoves, uctNode* n)
+Player playSimulation(Field* field, mt* gen, vector<Pos>* possibleMoves, uctNode* n, Depth depth)
 {
 	Player randomResult;
-	if (n->visits == 0)
+	if (n->visits == 0 || depth == UCT_DEPTH)
 	{
 		randomResult = playRandomGame(field, gen, possibleMoves);
 	}
@@ -108,7 +108,7 @@ Player playSimulation(Field* field, mt* gen, vector<Pos>* possibleMoves, uctNode
 				return -1;
 		}
 		field->doUnsafeStep(next->move);
-		randomResult = playSimulation(field, gen, possibleMoves, next);
+		randomResult = playSimulation(field, gen, possibleMoves, next, depth + 1);
 		field->undoStep();
 	}
 	n->visits++;
@@ -196,7 +196,7 @@ Pos uct(Field* field, mt* gen, Iterations maxSimulations)
 		}
 		#pragma omp for
 		for (Iterations i = 0; i < maxSimulations; i++)
-			playSimulation(localField, localGen, &moves, &n);
+			playSimulation(localField, localGen, &moves, &n, 0);
 		#pragma omp critical
 		{
 			uctNode* next = n.child;
@@ -249,7 +249,7 @@ Pos uctWithTime(Field* field, mt* gen, Time time)
 		}
 		while (t.get() < time)
 			for (Iterations i = 0; i < UCT_ITERATIONS_BEFORE_CHECK_TIME; i++)
-				playSimulation(localField, localGen, &moves, &n);
+				playSimulation(localField, localGen, &moves, &n, 0);
 		#pragma omp critical
 		{
 			uctNode* next = n.child;
