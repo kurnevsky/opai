@@ -57,15 +57,15 @@ void createChildren(Field* field, vector<Pos>* possibleMoves, uctNode* n)
 
 uctNode* uctSelect(mt* gen, uctNode* n)
 {
-	double bestUct = 0, winRate, uct, uctValue;
+	double bestUct = 0, uctValue;
 	uctNode* result = NULL;
 	uctNode* next = n->child;
 	while (next != NULL)
 	{
 		if (next->visits > 0)
 		{
-			winRate = static_cast<double>(next->wins)/next->visits;
-			uct = UCTK * sqrt(2 * log(static_cast<double>(n->visits)) / next->visits);
+			auto winRate = static_cast<double>(next->wins)/next->visits;
+			auto uct = UCTK * sqrt(2 * log(static_cast<double>(n->visits)) / next->visits);
 			uctValue = winRate + uct;
 		}
 		else
@@ -172,7 +172,7 @@ Pos uct(Field* field, mt* gen, Iterations maxSimulations)
 {
 	// Список всех возможных ходов для UCT.
 	vector<Pos> moves;
-	double bestEstimate = 0;
+	double bestUct = 0;
 	Pos result = -1;
 	generatePossibleMoves(field, &moves);
 	if (static_cast<size_t>(omp_get_max_threads()) > moves.size())
@@ -202,11 +202,16 @@ Pos uct(Field* field, mt* gen, Iterations maxSimulations)
 			uctNode* next = n.child;
 			while (next != NULL)
 			{
-				double curEstimate = static_cast<double>(next->wins) / next->visits;
-				if (curEstimate > bestEstimate)
+				if (next->visits != 0)
 				{
-					bestEstimate = curEstimate;
-					result = next->move;
+					auto winRate = static_cast<double>(next->wins)/next->visits;
+					auto uct = UCTK * sqrt(2 * log(static_cast<double>(n.visits)) / next->visits);
+					auto uctValue = winRate + uct;
+					if (uctValue > bestUct)
+					{
+						bestUct = uctValue;
+						result = next->move;
+					}
 				}
 				next = next->sibling;
 			}
@@ -224,8 +229,8 @@ Pos uctWithTime(Field* field, mt* gen, Time time)
 {
 	// Список всех возможных ходов для UCT.
 	vector<Pos> moves;
-	double bestEstimate = 0;
-	auto result = -1;
+	double bestUct = 0;
+	Pos result = -1;
 	Timer t;
 	generatePossibleMoves(field, &moves);
 	if (static_cast<size_t>(omp_get_max_threads()) > moves.size())
@@ -255,11 +260,16 @@ Pos uctWithTime(Field* field, mt* gen, Time time)
 			uctNode* next = n.child;
 			while (next != NULL)
 			{
-				double curEstimate = static_cast<double>(next->wins) / next->visits;
-				if (curEstimate > bestEstimate)
+				if (next->visits != 0)
 				{
-					bestEstimate = curEstimate;
-					result = next->move;
+					auto winRate = static_cast<double>(next->wins)/next->visits;
+					auto uct = UCTK * sqrt(2 * log(static_cast<double>(n.visits)) / next->visits);
+					auto uctValue = winRate + uct;
+					if (uctValue > bestUct)
+					{
+						bestUct = uctValue;
+						result = next->move;
+					}
 				}
 				next = next->sibling;
 			}
