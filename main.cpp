@@ -8,6 +8,11 @@
 
 Bot *bot;
 
+void author(int id)
+{
+	cout << "=" << " " << id << " " << "author" << " " << "kurnevsky_evgeny" << endl;
+}
+
 void gen_move(int id)
 {
 	Player player;
@@ -82,6 +87,11 @@ void init(int id)
 	cout << "=" << " " << id << " " << "init" << endl;
 }
 
+void license(int id)
+{
+	cout << "=" << " " << id << " " << "license" << " " << "GPL3" << endl;
+}
+
 void list_commands(int id)
 {
 	cout << "=" << " " << id << " " << "list_commands" << " " << "gen_move gen_move_with_complexity gen_move_with_time init list_commands name play quit undo version" << endl;
@@ -121,15 +131,17 @@ void undo(int id)
 
 void version(int id)
 {
-	cout << "=" << " " << id << " " << "version" << " " << "2013.2.10" << endl;
+	cout << "=" << " " << id << " " << "version" << " " << "2013.3.10" << endl;
 }
 
-inline void fill_codes(map<string, void(*)(int)> &codes)
+void fill_codes(map<string, void(*)(int)> &codes)
 {
+	codes["author"] = author;
 	codes["gen_move"] = gen_move;
 	codes["gen_move_with_complexity"] = gen_move_with_complexity;
 	codes["gen_move_with_time"] = gen_move_with_time;
 	codes["init"] = init;
+	codes["license"] = license;
 	codes["list_commands"] = list_commands;
 	codes["name"] = name;
 	codes["play"] = play;
