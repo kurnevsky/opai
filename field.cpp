@@ -4,7 +4,7 @@ using namespace std;
 
 int Field::getInputPoints(const Pos centerPos, const PosValue enableCond, Pos inpChainPoints[], Pos inpSurPoints[]) const
 {
-	auto result = 0;
+	int result = 0;
 	if (isNotEnable(w(centerPos), enableCond))
 	{
 		if (isEnable(nw(centerPos), enableCond))
@@ -288,7 +288,7 @@ void Field::wave(Pos startPos, function<bool(Pos)> cond)
 
 bool Field::isPointInsideRing(const Pos pos, const list<Pos> &ring) const
 {
-	auto intersections = 0;
+	int intersections = 0;
 	auto state = INTERSECTION_STATE_NONE;
 	for (auto i = ring.begin(); i != ring.end(); i++)
 	{

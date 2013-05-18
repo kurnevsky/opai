@@ -303,18 +303,9 @@ public:
 	// Поставить точку на поле максимально быстро (без дополнительных проверок).
 	void doUnsafeStep(const Pos pos)
 	{
-		_changes.push_back(BoardChange());
-		_changes.back().captureCount[0] = _captureCount[0];
-		_changes.back().captureCount[1] = _captureCount[1];
-		_changes.back().player = _player;
-		// Добавляем в изменения поставленную точку.
-		_changes.back().changes.push(pair<Pos, PosValue>(pos, _points[pos]));
-		setPlayerPutted(pos, _player);
-		pointsSeq.push_back(pos);
-		checkClosure(pos, _player);
+		doUnsafeStep(pos, _player);
 		setNextPlayer();
 	}
-	// Поставить точку на поле следующего по очереди игрока максимально быстро (без дополнительных проверок).
 	void doUnsafeStep(const Pos pos, const Player player)
 	{
 		_changes.push_back(BoardChange());
