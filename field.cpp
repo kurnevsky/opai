@@ -84,8 +84,8 @@ void Field::placeBeginPattern(BeginPattern pattern)
 		doStep(toPos(_width / 2 - 1, _height / 2));
 		doStep(toPos(_width / 2, _height / 2));
 		break;
-    case (BEGIN_PATTERN_CLEAN):
-        break;
+	case (BEGIN_PATTERN_CLEAN):
+		break;
 	}
 }
 
@@ -307,8 +307,8 @@ bool Field::isPointInsideRing(const Pos pos, const list<Pos> &ring) const
 				intersections++;
 			state = INTERSECTION_STATE_DOWN;
 			break;
-        case (INTERSECTION_STATE_TARGET):
-            break;
+		case (INTERSECTION_STATE_TARGET):
+			break;
 		}
 	}
 	if (state == INTERSECTION_STATE_UP || state == INTERSECTION_STATE_DOWN)
