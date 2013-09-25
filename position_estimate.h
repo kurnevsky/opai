@@ -6,6 +6,4 @@
 
 using namespace std;
 
-const int cg_summa[] = {-5, -1, 0, 0, 1, 2, 5, 20, 30};
-
 Pos position_estimate(Field* field);

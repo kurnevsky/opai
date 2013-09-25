@@ -61,7 +61,7 @@ void Bot::setPlayer(Player player)
 
 bool Bot::isFieldOccupied() const
 {
-  for (auto i = _field->minPos(); i <= _field->maxPos(); i++)
+  for (Pos i = _field->minPos(); i <= _field->maxPos(); i++)
     if (_field->puttingAllow(i))
       return false;
   return true;
@@ -89,23 +89,23 @@ void Bot::get(Coord& x, Coord& y)
   if (boundaryCheck(x, y))
     return;
 #if SEARCH_TYPE == 0 // position estimate
-  auto result = position_estimate(_field);
+  Pos result = position_estimate(_field);
   x = _field->toX(result);
   y = _field->toY(result);
 #elif SEARCH_TYPE == 1 // minimax
-  auto result =  minimax(_field, DEFAULT_MINIMAX_DEPTH);
+  Pos result =  minimax(_field, DEFAULT_MINIMAX_DEPTH);
   if (result == -1)
     result = position_estimate(_field);
   x = _field->toX(result);
   y = _field->toY(result);
 #elif SEARCH_TYPE == 2 // uct
-  auto result = uct(_field, _gen, DEFAULT_UCT_ITERATIONS);
+  Pos result = uct(_field, _gen, DEFAULT_UCT_ITERATIONS);
   if (result == -1)
     result = position_estimate(_field);
   x = _field->toX(result);
   y = _field->toY(result);
 #elif SEARCH_TYPE == 3 // minimax with uct
-  auto result =  minimax(_field, DEFAULT_MINIMAX_DEPTH);
+  Pos result =  minimax(_field, DEFAULT_MINIMAX_DEPTH);
   if (result == -1)
     result = uct(_field, _gen, DEFAULT_UCT_ITERATIONS);
   if (result == -1)
@@ -113,13 +113,13 @@ void Bot::get(Coord& x, Coord& y)
   x = _field->toX(result);
   y = _field->toY(result);
 #elif SEARCH_TYPE == 4 // MTD(f)
-  auto result =  mtdf(_field, DEFAULT_MTDF_DEPTH);
+  Pos result =  mtdf(_field, DEFAULT_MTDF_DEPTH);
   if (result == -1)
     result = position_estimate(_field);
   x = _field->toX(result);
   y = _field->toY(result);
 #elif SEARCH_TYPE == 5 // MTD(f) with uct
-  auto result =  mtdf(_field, DEFAULT_MTDF_DEPTH);
+  Pos result =  mtdf(_field, DEFAULT_MTDF_DEPTH);
   if (result == -1)
     result = uct(_field, _gen, DEFAULT_UCT_ITERATIONS);
   if (result == -1)
@@ -136,23 +136,23 @@ void Bot::getWithComplexity(Coord& x, Coord& y, Complexity complexity)
   if (boundaryCheck(x, y))
     return;
 #if SEARCH_WITH_COMPLEXITY_TYPE == 0 // positon estimate
-  auto result = position_estimate(_field);
+  Pos result = position_estimate(_field);
   x = _field->toX(result);
   y = _field->toY(result);
 #elif SEARCH_WITH_COMPLEXITY_TYPE == 1 // minimax
-  auto result =  minimax(_field, getMinimaxDepth(complexity));
+  Pos result =  minimax(_field, getMinimaxDepth(complexity));
   if (result == -1)
     result = position_estimate(_field);
   x = _field->toX(result);
   y = _field->toY(result);
 #elif SEARCH_WITH_COMPLEXITY_TYPE == 2 // uct
-  auto result = uct(_field, _gen, getUctIterations(complexity));
+  Pos result = uct(_field, _gen, getUctIterations(complexity));
   if (result == -1)
     result = position_estimate(_field);
   x = _field->toX(result);
   y = _field->toY(result);
 #elif SEARCH_WITH_COMPLEXITY_TYPE == 3 // minimax with uct
-  auto result =  minimax(_field, getMinimaxDepth(complexity));
+  Pos result =  minimax(_field, getMinimaxDepth(complexity));
   if (result == -1)
     result = uct(_field, _gen, getUctIterations(complexity));
   if (result == -1)
@@ -160,13 +160,13 @@ void Bot::getWithComplexity(Coord& x, Coord& y, Complexity complexity)
   x = _field->toX(result);
   y = _field->toY(result);
 #elif SEARCH_WITH_COMPLEXITY_TYPE == 4 // MTD(f)
-  auto result =  mtdf(_field, getMtdfDepth(complexity));
+  Pos result =  mtdf(_field, getMtdfDepth(complexity));
   if (result == -1)
     result = position_estimate(_field);
   x = _field->toX(result);
   y = _field->toY(result);
 #elif SEARCH_WITH_COMPLEXITY_TYPE == 5 // MTD(f) with uct
-  auto result =  mtdf(_field, getMtdfDepth(complexity));
+  Pos result =  mtdf(_field, getMtdfDepth(complexity));
   if (result == -1)
     result = uct(_field, _gen, getUctIterations(complexity));
   if (result == -1)
@@ -183,13 +183,13 @@ void Bot::getWithTime(Coord& x, Coord& y, Time time)
   if (boundaryCheck(x, y))
     return;
 #if SEARCH_WITH_TIME_TYPE == 0 // position estimate
-  auto result = position_estimate(_field);
+  Pos result = position_estimate(_field);
   x = _field->toX(result);
   y = _field->toY(result);
 #elif SEARCH_WITH_TIME_TYPE == 1 // minimax
 #error Invalid SEARCH_WITH_TIME_TYPE.
 #elif SEARCH_WITH_TIME_TYPE == 2 // uct
-  auto result = uctWithTime(_field, _gen, time);
+  Pos result = uctWithTime(_field, _gen, time);
   if (result == -1)
     result = position_estimate(_field);
   x = _field->toX(result);
