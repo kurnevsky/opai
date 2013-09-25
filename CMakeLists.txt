@@ -20,7 +20,7 @@ else()
   return()
 endif()
 
-add_executable(opai bot.cpp field.cpp minimax.cpp position_estimate.cpp uct.cpp mtdf.cpp main.cpp)
+add_executable(opai bot.cpp minimax.cpp position_estimate.cpp uct.cpp mtdf.cpp main.cpp)
 
 add_definitions("-std=c++11")
 

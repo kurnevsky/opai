@@ -28,7 +28,7 @@ typedef uint Iterations;
 // Структура координат точки.
 struct Point
 {
-	Coord x, y;
+  Coord x, y;
 };
 
 // Используемый шаблон в начале игры.
@@ -37,30 +37,30 @@ struct Point
 // BEGIN_PATTERN_SQUARE - начало с квадрата.
 enum BeginPattern
 {
-	BEGIN_PATTERN_CLEAN,
-	BEGIN_PATTERN_CROSSWIRE,
-	BEGIN_PATTERN_SQUARE
+  BEGIN_PATTERN_CLEAN,
+  BEGIN_PATTERN_CROSSWIRE,
+  BEGIN_PATTERN_SQUARE
 };
 
 enum IntersectionState
 {
-	INTERSECTION_STATE_NONE,
-	INTERSECTION_STATE_UP,
-	INTERSECTION_STATE_DOWN,
-	INTERSECTION_STATE_TARGET
+  INTERSECTION_STATE_NONE,
+  INTERSECTION_STATE_UP,
+  INTERSECTION_STATE_DOWN,
+  INTERSECTION_STATE_TARGET
 };
 
 // Одно изменение доски.
 struct BoardChange
 {
-	// Предыдущий счет захваченных точек.
-	Score captureCount[2];
-	// Предыдущий игрок.
-	Player player;
-	// Предыдущий хеш.
-	Hash hash;
-	// Список изменных точек (координата - значение до изменения).
-	stack<pair<Pos, PosValue>> changes;
+  // Предыдущий счет захваченных точек.
+  Score captureCount[2];
+  // Предыдущий игрок.
+  Player player;
+  // Предыдущий хеш.
+  Hash hash;
+  // Список изменных точек (координата - значение до изменения).
+  stack<pair<Pos, PosValue>> changes;
 };
 
 #if ENVIRONMENT_32

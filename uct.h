@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "config.h"
 #include "basic_types.h"
@@ -9,20 +9,20 @@ using namespace std;
 
 struct uctNode
 {
-	Iterations wins;
-	Iterations visits;
-	Pos move;
-	uctNode* child;
-	uctNode* sibling;
+  Iterations wins;
+  Iterations visits;
+  Pos move;
+  uctNode* child;
+  uctNode* sibling;
 
-	uctNode()
-	{
-		wins = 0;
-		visits = 0;
-		move = 0;
-		child = NULL;
-		sibling = NULL;
-	}
+  uctNode()
+  {
+    wins = 0;
+    visits = 0;
+    move = 0;
+    child = NULL;
+    sibling = NULL;
+  }
 };
 
 Pos uct(Field* field, mt* gen, Iterations max_simulations);

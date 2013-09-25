@@ -1,4 +1,4 @@
-﻿#include "config.h"
+#include "config.h"
 #include "basic_types.h"
 #include "bot.h"
 #include "time.h"
@@ -14,118 +14,118 @@ using namespace std;
 
 Bot::Bot(const Coord width, const Coord height, const BeginPattern beginPattern, ptrdiff_t seed)
 {
-	_gen = new mt(seed);
-	_zobrist = new Zobrist((width + 2) * (height + 2), _gen);
-	_field = new Field(width, height, beginPattern, _zobrist);
+  _gen = new mt(seed);
+  _zobrist = new Zobrist((width + 2) * (height + 2), _gen);
+  _field = new Field(width, height, beginPattern, _zobrist);
 }
 
 Bot::~Bot()
 {
-	delete _field;
-	delete _zobrist;
-	delete _gen;
+  delete _field;
+  delete _zobrist;
+  delete _gen;
 }
 
 Depth Bot::getMinimaxDepth(Complexity complexity)
 {
-	return (complexity - MIN_COMPLEXITY) * (MAX_MINIMAX_DEPTH - MIN_MINIMAX_DEPTH) / (MAX_COMPLEXITY - MIN_COMPLEXITY) + MIN_MINIMAX_DEPTH;
+  return (complexity - MIN_COMPLEXITY) * (MAX_MINIMAX_DEPTH - MIN_MINIMAX_DEPTH) / (MAX_COMPLEXITY - MIN_COMPLEXITY) + MIN_MINIMAX_DEPTH;
 }
 
 Depth Bot::getMtdfDepth(Complexity complexity)
 {
-	return (complexity - MIN_COMPLEXITY) * (MAX_MTDF_DEPTH - MIN_MTDF_DEPTH) / (MAX_COMPLEXITY - MIN_COMPLEXITY) + MIN_MTDF_DEPTH;
+  return (complexity - MIN_COMPLEXITY) * (MAX_MTDF_DEPTH - MIN_MTDF_DEPTH) / (MAX_COMPLEXITY - MIN_COMPLEXITY) + MIN_MTDF_DEPTH;
 }
 
 Iterations Bot::getUctIterations(Complexity complexity)
 {
-	return (complexity - MIN_COMPLEXITY) * (MAX_UCT_ITERATIONS - MIN_UCT_ITERATIONS) / (MAX_COMPLEXITY - MIN_COMPLEXITY) + MIN_UCT_ITERATIONS;
+  return (complexity - MIN_COMPLEXITY) * (MAX_UCT_ITERATIONS - MIN_UCT_ITERATIONS) / (MAX_COMPLEXITY - MIN_COMPLEXITY) + MIN_UCT_ITERATIONS;
 }
 
 bool Bot::doStep(Coord x, Coord y, Player player)
 {
-	return _field->doStep(_field->toPos(x, y), player);
+  return _field->doStep(_field->toPos(x, y), player);
 }
 
 bool Bot::undoStep()
 {
-	if (_field->pointsSeq.size() == 0)
-		return false;
-	_field->undoStep();
-	return true;
+  if (_field->pointsSeq.size() == 0)
+    return false;
+  _field->undoStep();
+  return true;
 }
 
 void Bot::setPlayer(Player player)
 {
-	_field->setPlayer(player);
+  _field->setPlayer(player);
 }
 
 bool Bot::isFieldOccupied() const
 {
-	for (auto i = _field->minPos(); i <= _field->maxPos(); i++)
-		if (_field->puttingAllow(i))
-			return false;
-	return true;
+  for (auto i = _field->minPos(); i <= _field->maxPos(); i++)
+    if (_field->puttingAllow(i))
+      return false;
+  return true;
 }
 
 bool Bot::boundaryCheck(Coord& x, Coord& y) const
 {
-	if (_field->pointsSeq.size() == 0)
-	{
-		x = _field->getWidth() / 2;
-		y = _field->getHeight() / 2;
-		return true;
-	}
-	if (isFieldOccupied())
-	{
-		x = -1;
-		y = -1;
-		return true;
-	}
-	return false;
+  if (_field->pointsSeq.size() == 0)
+  {
+    x = _field->getWidth() / 2;
+    y = _field->getHeight() / 2;
+    return true;
+  }
+  if (isFieldOccupied())
+  {
+    x = -1;
+    y = -1;
+    return true;
+  }
+  return false;
 }
 
 void Bot::get(Coord& x, Coord& y)
 {
-	if (boundaryCheck(x, y))
-		return;
+  if (boundaryCheck(x, y))
+    return;
 #if SEARCH_TYPE == 0 // position estimate
-	auto result = position_estimate(_field);
-	x = _field->toX(result);
-	y = _field->toY(result);
+  auto result = position_estimate(_field);
+  x = _field->toX(result);
+  y = _field->toY(result);
 #elif SEARCH_TYPE == 1 // minimax
-	auto result =  minimax(_field, DEFAULT_MINIMAX_DEPTH);
-	if (result == -1)
-		result = position_estimate(_field);
-	x = _field->toX(result);
-	y = _field->toY(result);
+  auto result =  minimax(_field, DEFAULT_MINIMAX_DEPTH);
+  if (result == -1)
+    result = position_estimate(_field);
+  x = _field->toX(result);
+  y = _field->toY(result);
 #elif SEARCH_TYPE == 2 // uct
-	auto result = uct(_field, _gen, DEFAULT_UCT_ITERATIONS);
-	if (result == -1)
-		result = position_estimate(_field);
-	x = _field->toX(result);
-	y = _field->toY(result);
+  auto result = uct(_field, _gen, DEFAULT_UCT_ITERATIONS);
+  if (result == -1)
+    result = position_estimate(_field);
+  x = _field->toX(result);
+  y = _field->toY(result);
 #elif SEARCH_TYPE == 3 // minimax with uct
-	auto result =  minimax(_field, DEFAULT_MINIMAX_DEPTH);
-	if (result == -1)
-		result = uct(_field, _gen, DEFAULT_UCT_ITERATIONS);
-	if (result == -1)
-		result = position_estimate(_field);
-	x = _field->toX(result);
-	y = _field->toY(result);
+  auto result =  minimax(_field, DEFAULT_MINIMAX_DEPTH);
+  if (result == -1)
+    result = uct(_field, _gen, DEFAULT_UCT_ITERATIONS);
+  if (result == -1)
+    result = position_estimate(_field);
+  x = _field->toX(result);
+  y = _field->toY(result);
 #elif SEARCH_TYPE == 4 // MTD(f)
-	auto result =  mtdf(_field, DEFAULT_MTDF_DEPTH);
-	if (result == -1)
-		result = position_estimate(_field);
-	x = _field->toX(result);
-	y = _field->toY(result);
+  auto result =  mtdf(_field, DEFAULT_MTDF_DEPTH);
+  if (result == -1)
+    result = position_estimate(_field);
+  x = _field->toX(result);
+  y = _field->toY(result);
 #elif SEARCH_TYPE == 5 // MTD(f) with uct
-	auto result =  mtdf(_field, DEFAULT_MTDF_DEPTH);
-	if (result == -1)
-		result = uct(_field, _gen, DEFAULT_UCT_ITERATIONS);
-	if (result == -1)
-		result = position_estimate(_field);
-	x = _field->toX(result);
-	y = _field->toY(result);
+  auto result =  mtdf(_field, DEFAULT_MTDF_DEPTH);
+  if (result == -1)
+    result = uct(_field, _gen, DEFAULT_UCT_ITERATIONS);
+  if (result == -1)
+    result = position_estimate(_field);
+  x = _field->toX(result);
+  y = _field->toY(result);
 #else
 #error Invalid SEARCH_TYPE.
 #endif
@@ -133,46 +133,46 @@ void Bot::get(Coord& x, Coord& y)
 
 void Bot::getWithComplexity(Coord& x, Coord& y, Complexity complexity)
 {
-	if (boundaryCheck(x, y))
-		return;
+  if (boundaryCheck(x, y))
+    return;
 #if SEARCH_WITH_COMPLEXITY_TYPE == 0 // positon estimate
-	auto result = position_estimate(_field);
-	x = _field->toX(result);
-	y = _field->toY(result);
+  auto result = position_estimate(_field);
+  x = _field->toX(result);
+  y = _field->toY(result);
 #elif SEARCH_WITH_COMPLEXITY_TYPE == 1 // minimax
-	auto result =  minimax(_field, getMinimaxDepth(complexity));
-	if (result == -1)
-		result = position_estimate(_field);
-	x = _field->toX(result);
-	y = _field->toY(result);
+  auto result =  minimax(_field, getMinimaxDepth(complexity));
+  if (result == -1)
+    result = position_estimate(_field);
+  x = _field->toX(result);
+  y = _field->toY(result);
 #elif SEARCH_WITH_COMPLEXITY_TYPE == 2 // uct
-	auto result = uct(_field, _gen, getUctIterations(complexity));
-	if (result == -1)
-		result = position_estimate(_field);
-	x = _field->toX(result);
-	y = _field->toY(result);
+  auto result = uct(_field, _gen, getUctIterations(complexity));
+  if (result == -1)
+    result = position_estimate(_field);
+  x = _field->toX(result);
+  y = _field->toY(result);
 #elif SEARCH_WITH_COMPLEXITY_TYPE == 3 // minimax with uct
-	auto result =  minimax(_field, getMinimaxDepth(complexity));
-	if (result == -1)
-		result = uct(_field, _gen, getUctIterations(complexity));
-	if (result == -1)
-		result = position_estimate(_field);
-	x = _field->toX(result);
-	y = _field->toY(result);
+  auto result =  minimax(_field, getMinimaxDepth(complexity));
+  if (result == -1)
+    result = uct(_field, _gen, getUctIterations(complexity));
+  if (result == -1)
+    result = position_estimate(_field);
+  x = _field->toX(result);
+  y = _field->toY(result);
 #elif SEARCH_WITH_COMPLEXITY_TYPE == 4 // MTD(f)
-	auto result =  mtdf(_field, getMtdfDepth(complexity));
-	if (result == -1)
-		result = position_estimate(_field);
-	x = _field->toX(result);
-	y = _field->toY(result);
+  auto result =  mtdf(_field, getMtdfDepth(complexity));
+  if (result == -1)
+    result = position_estimate(_field);
+  x = _field->toX(result);
+  y = _field->toY(result);
 #elif SEARCH_WITH_COMPLEXITY_TYPE == 5 // MTD(f) with uct
-	auto result =  mtdf(_field, getMtdfDepth(complexity));
-	if (result == -1)
-		result = uct(_field, _gen, getUctIterations(complexity));
-	if (result == -1)
-		result = position_estimate(_field);
-	x = _field->toX(result);
-	y = _field->toY(result);
+  auto result =  mtdf(_field, getMtdfDepth(complexity));
+  if (result == -1)
+    result = uct(_field, _gen, getUctIterations(complexity));
+  if (result == -1)
+    result = position_estimate(_field);
+  x = _field->toX(result);
+  y = _field->toY(result);
 #else
 #error Invalid SEARCH_WITH_COMPLEXITY_TYPE.
 #endif
@@ -180,20 +180,20 @@ void Bot::getWithComplexity(Coord& x, Coord& y, Complexity complexity)
 
 void Bot::getWithTime(Coord& x, Coord& y, Time time)
 {
-	if (boundaryCheck(x, y))
-		return;
+  if (boundaryCheck(x, y))
+    return;
 #if SEARCH_WITH_TIME_TYPE == 0 // position estimate
-	auto result = position_estimate(_field);
-	x = _field->toX(result);
-	y = _field->toY(result);
+  auto result = position_estimate(_field);
+  x = _field->toX(result);
+  y = _field->toY(result);
 #elif SEARCH_WITH_TIME_TYPE == 1 // minimax
 #error Invalid SEARCH_WITH_TIME_TYPE.
 #elif SEARCH_WITH_TIME_TYPE == 2 // uct
-	auto result = uctWithTime(_field, _gen, time);
-	if (result == -1)
-		result = position_estimate(_field);
-	x = _field->toX(result);
-	y = _field->toY(result);
+  auto result = uctWithTime(_field, _gen, time);
+  if (result == -1)
+    result = position_estimate(_field);
+  x = _field->toX(result);
+  y = _field->toY(result);
 #elif SEARCH_WITH_TIME_TYPE == 3 // minimax with uct
 #error Invalid SEARCH_WITH_TIME_TYPE.
 #elif SEARCH_WITH_TIME_TYPE == 4 // MTD(f)
