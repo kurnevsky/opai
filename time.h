@@ -12,7 +12,7 @@
 
 using namespace std;
 
-inline Time getTime()
+Time getTime()
 {
 #if WINDOWS
   return GetTickCount();
@@ -35,7 +35,7 @@ public:
   void set() { _lastTime = getTime(); }
   Time get()
   {
-    auto curTime = getTime();
+    Time curTime = getTime();
     if (curTime > _lastTime)
       return curTime - _lastTime;
     else
