@@ -184,9 +184,7 @@ Pos uct(Field* field, mt* gen, Iterations maxSimulations)
     random::uniform_int_distribution<size_t> localDist(numeric_limits<size_t>::min(), numeric_limits<size_t>::max());
     mt* localGen;
     #pragma omp critical
-    {
-      localGen = new mt(localDist(*gen));
-    }
+    localGen = new mt(localDist(*gen));
     uctNode** curChild = &n.child;
     for (auto i = moves.begin() + omp_get_thread_num(); i < moves.end(); i += omp_get_num_threads())
     {
@@ -242,9 +240,7 @@ Pos uctWithTime(Field* field, mt* gen, Time time)
     random::uniform_int_distribution<size_t> localDist(numeric_limits<size_t>::min(), numeric_limits<size_t>::max());
     mt* localGen;
     #pragma omp critical
-    {
-      localGen = new mt(localDist(*gen));
-    }
+    localGen = new mt(localDist(*gen));
     uctNode** curChild = &n.child;
     for (auto i = moves.begin() + omp_get_thread_num(); i < moves.end(); i += omp_get_num_threads())
     {

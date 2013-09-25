@@ -12,7 +12,7 @@
 
 using namespace std;
 
-Time getTime()
+inline Time getTime()
 {
 #if WINDOWS
   return GetTickCount();
