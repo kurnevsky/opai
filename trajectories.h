@@ -9,7 +9,7 @@
 class Trajectories
 {
 private:
-  Depth _depth[2];
+  int _depth[2];
   Field* _field;
   list<Trajectory> _trajectories[2];
   int* _trajectoriesBoard;
@@ -49,7 +49,7 @@ private:
       if (*i != pos)
         _trajectories[player].back().pushBack(*i);
   }
-  void buildTrajectoriesRecursive(Depth depth, Player player)
+  void buildTrajectoriesRecursive(int depth, Player player)
   {
     for (auto pos = _field->minPos(); pos <= _field->maxPos(); pos++)
     {
@@ -188,7 +188,7 @@ private:
           if (find(moves->begin(), moves->end(), *j) == moves->end())
             moves->push_back(*j);
   }
-  Score calculateMaxScore(Player player, Depth depth)
+  Score calculateMaxScore(Player player, int depth)
   {
     auto result = _field->getScore(player);
     if (depth > 0)
@@ -260,7 +260,7 @@ public:
     // После получения списка ходов обратно включаем в рассмотрение все траектории (для следующего уровня рекурсии).
     includeAllTrajectories();
   }
-  void buildTrajectories(Depth depth)
+  void buildTrajectories(int depth)
   {
     _depth[getCurPlayer()] = (depth + 1) / 2;
     _depth[getEnemyPlayer()] = depth / 2;
@@ -278,8 +278,8 @@ public:
 
     if (_depth[getEnemyPlayer()] > 0)
       for (auto i = last->_trajectories[getEnemyPlayer()].begin(); i != last->_trajectories[getEnemyPlayer()].end(); i++)
-        if ((static_cast<Depth>(i->size()) <= _depth[getEnemyPlayer()] ||
-            (static_cast<Depth>(i->size()) == _depth[getEnemyPlayer()] + 1 &&
+        if ((static_cast<int>(i->size()) <= _depth[getEnemyPlayer()] ||
+            (static_cast<int>(i->size()) == _depth[getEnemyPlayer()] + 1 &&
               find(i->begin(), i->end(), pos) != i->end())) && i->isValid(_field, pos))
           addTrajectory(&(*i), pos, getEnemyPlayer());
 
@@ -297,7 +297,7 @@ public:
 
     if (_depth[getEnemyPlayer()] > 0)
       for (auto i = last->_trajectories[getEnemyPlayer()].begin(); i != last->_trajectories[getEnemyPlayer()].end(); i++)
-        if (static_cast<Depth>(i->size()) <= _depth[getEnemyPlayer()])
+        if (static_cast<int>(i->size()) <= _depth[getEnemyPlayer()])
           addTrajectory(&(*i), getEnemyPlayer());
 
     calculateMoves();

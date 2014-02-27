@@ -5,4 +5,4 @@
 #include "field.h"
 #include "trajectories.h"
 
-Pos mtdf(Field* field, Depth depth);
+Pos mtdf(Field* field, int depth);

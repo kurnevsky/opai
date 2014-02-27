@@ -17,9 +17,9 @@ private:
   mt* _gen;
   Zobrist* _zobrist;
   Field* _field;
-  Depth getMinimaxDepth(Complexity complexity);
-  Depth getMtdfDepth(Complexity complexity);
-  Iterations getUctIterations(Complexity complexity);
+  int getMinimaxDepth(int complexity);
+  int getMtdfDepth(int complexity);
+  int getUctIterations(int complexity);
   bool isFieldOccupied() const;
   bool boundaryCheck(Coord& x, Coord& y) const;
 public:
@@ -30,6 +30,6 @@ public:
   void setPlayer(Player player);
   // Возвращает лучший найденный ход.
   void get(Coord& x, Coord& y);
-  void getWithComplexity(Coord& x, Coord& y, Complexity complexity);
-  void getWithTime(Coord& x, Coord& y, Time time);
+  void getWithComplexity(Coord& x, Coord& y, int complexity);
+  void getWithTime(Coord& x, Coord& y, int time);
 };

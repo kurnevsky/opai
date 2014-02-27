@@ -37,7 +37,7 @@ void gen_move_with_complexity(int id)
 {
   Player player;
   Coord x, y;
-  Complexity complexity;
+  int complexity;
   cin >> player >> complexity;
   if (bot == NULL)
   {
@@ -58,7 +58,7 @@ void gen_move_with_time(int id)
 {
   Player player;
   Coord x, y;
-  Time time;
+  int time;
   cin >> player >> time;
   if (bot == NULL)
   {

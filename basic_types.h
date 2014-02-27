@@ -7,20 +7,12 @@
 
 using namespace std;
 
-typedef unsigned short ushort;
-typedef unsigned int uint;
-typedef unsigned long ulong;
-
 typedef int Pos;
 typedef int PosValue;
 typedef int Player;
 typedef int Score;
 typedef int Coord;
 typedef size_t Hash;
-typedef uint Time;
-typedef uint Depth;
-typedef uint Complexity;
-typedef uint Iterations;
 
 #define SCORE_INFINITY numeric_limits<Score>::max()
 

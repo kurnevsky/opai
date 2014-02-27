@@ -9,7 +9,7 @@
 
 using namespace std;
 
-Score mtdfAlphabeta(Field** fields, vector<Pos>* moves, Depth depth, Trajectories* last, Score alpha, Score beta, int** emptyBoards, Pos* best)
+Score mtdfAlphabeta(Field** fields, vector<Pos>* moves, int depth, Trajectories* last, Score alpha, Score beta, int** emptyBoards, Pos* best)
 {
   #pragma omp parallel
   {
@@ -36,7 +36,7 @@ Score mtdfAlphabeta(Field** fields, vector<Pos>* moves, Depth depth, Trajectorie
 
 // CurField - поле, на котором производится оценка.
 // Depth - глубина оценки.
-Pos mtdf(Field* field, Depth depth)
+Pos mtdf(Field* field, int depth)
 {
   int* emptyBoard = new int[field->getLength()];
   fill_n(emptyBoard, field->getLength(), 0);

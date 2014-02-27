@@ -82,7 +82,7 @@ uctNode* uctSelect(mt* gen, uctNode* n)
   return result;
 }
 
-Player playSimulation(Field* field, mt* gen, vector<Pos>* possibleMoves, uctNode* n, Depth depth)
+Player playSimulation(Field* field, mt* gen, vector<Pos>* possibleMoves, uctNode* n, int depth)
 {
   Player randomResult;
   if (n->visits == 0 || depth == UCT_DEPTH)
@@ -96,9 +96,9 @@ Player playSimulation(Field* field, mt* gen, vector<Pos>* possibleMoves, uctNode
     uctNode* next = uctSelect(gen, n);
     if (next == NULL)
     {
-      n->visits = numeric_limits<Iterations>::max();
+      n->visits = numeric_limits<int>::max();
       if (field->getScore(nextPlayer(field->getPlayer())) > 0)
-        n->wins = numeric_limits<Iterations>::max();
+        n->wins = numeric_limits<int>::max();
       if (field->getScore(playerRed) > 0)
         return playerRed;
       else if (field->getScore(playerBlack) > 0)
@@ -167,7 +167,7 @@ void finalUct(uctNode* n)
   delete n;
 }
 
-Pos uct(Field* field, mt* gen, Iterations maxSimulations)
+Pos uct(Field* field, mt* gen, int maxSimulations)
 {
   // Список всех возможных ходов для UCT.
   vector<Pos> moves;
@@ -192,7 +192,7 @@ Pos uct(Field* field, mt* gen, Iterations maxSimulations)
       curChild = &(*curChild)->sibling;
     }
     #pragma omp for
-    for (Iterations i = 0; i < maxSimulations; i++)
+    for (int i = 0; i < maxSimulations; i++)
       playSimulation(localField, localGen, &moves, &n, 0);
     #pragma omp critical
     {
@@ -222,7 +222,7 @@ Pos uct(Field* field, mt* gen, Iterations maxSimulations)
   return result;
 }
 
-Pos uctWithTime(Field* field, mt* gen, Time time)
+Pos uctWithTime(Field* field, mt* gen, int time)
 {
   // Список всех возможных ходов для UCT.
   vector<Pos> moves;
@@ -248,7 +248,7 @@ Pos uctWithTime(Field* field, mt* gen, Time time)
       curChild = &(*curChild)->sibling;
     }
     while (t.get() < time)
-      for (Iterations i = 0; i < UCT_ITERATIONS_BEFORE_CHECK_TIME; i++)
+      for (int i = 0; i < UCT_ITERATIONS_BEFORE_CHECK_TIME; i++)
         playSimulation(localField, localGen, &moves, &n, 0);
     #pragma omp critical
     {

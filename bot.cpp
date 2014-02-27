@@ -26,17 +26,17 @@ Bot::~Bot()
   delete _gen;
 }
 
-Depth Bot::getMinimaxDepth(Complexity complexity)
+int Bot::getMinimaxDepth(int complexity)
 {
   return (complexity - MIN_COMPLEXITY) * (MAX_MINIMAX_DEPTH - MIN_MINIMAX_DEPTH) / (MAX_COMPLEXITY - MIN_COMPLEXITY) + MIN_MINIMAX_DEPTH;
 }
 
-Depth Bot::getMtdfDepth(Complexity complexity)
+int Bot::getMtdfDepth(int complexity)
 {
   return (complexity - MIN_COMPLEXITY) * (MAX_MTDF_DEPTH - MIN_MTDF_DEPTH) / (MAX_COMPLEXITY - MIN_COMPLEXITY) + MIN_MTDF_DEPTH;
 }
 
-Iterations Bot::getUctIterations(Complexity complexity)
+int Bot::getUctIterations(int complexity)
 {
   return (complexity - MIN_COMPLEXITY) * (MAX_UCT_ITERATIONS - MIN_UCT_ITERATIONS) / (MAX_COMPLEXITY - MIN_COMPLEXITY) + MIN_UCT_ITERATIONS;
 }
@@ -131,7 +131,7 @@ void Bot::get(Coord& x, Coord& y)
 #endif
 }
 
-void Bot::getWithComplexity(Coord& x, Coord& y, Complexity complexity)
+void Bot::getWithComplexity(Coord& x, Coord& y, int complexity)
 {
   if (boundaryCheck(x, y))
     return;
@@ -178,7 +178,7 @@ void Bot::getWithComplexity(Coord& x, Coord& y, Complexity complexity)
 #endif
 }
 
-void Bot::getWithTime(Coord& x, Coord& y, Time time)
+void Bot::getWithTime(Coord& x, Coord& y, int time)
 {
   if (boundaryCheck(x, y))
     return;

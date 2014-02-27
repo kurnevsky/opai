@@ -16,7 +16,7 @@ using namespace std;
 // Pos - последний выбранный, но не сделанный ход.
 // alpha, beta - интервал оценок, вне которого искать нет смысла.
 // На выходе оценка позиции для CurPlayer (до хода Pos).
-Score alphabeta(Field* field, Depth depth, Pos pos, Trajectories* last, Score alpha, Score beta, int* emptyBoard)
+Score alphabeta(Field* field, int depth, Pos pos, Trajectories* last, Score alpha, Score beta, int* emptyBoard)
 {
   Trajectories curTrajectories(field, emptyBoard);
 
@@ -64,7 +64,7 @@ Score alphabeta(Field* field, Depth depth, Pos pos, Trajectories* last, Score al
   return -alpha;
 }
 
-Score getEnemyEstimate(Field** fields, int** emptyBoards, int maxThreads, Trajectories* last, Depth depth)
+Score getEnemyEstimate(Field** fields, int** emptyBoards, int maxThreads, Trajectories* last, int depth)
 {
   Trajectories curTrajectories(fields[0], emptyBoards[0]);
   Score result;
@@ -110,7 +110,7 @@ Score getEnemyEstimate(Field** fields, int** emptyBoards, int maxThreads, Trajec
 // CurField - поле, на котором производится оценка.
 // Depth - глубина оценки.
 // Moves - на входе возможные ходы, на выходе лучшие из них.
-Pos minimax(Field* field, Depth depth)
+Pos minimax(Field* field, int depth)
 {
   int* emptyBoard = new int[field->getLength()];
   fill_n(emptyBoard, field->getLength(), 0);

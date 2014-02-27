@@ -9,8 +9,8 @@ using namespace std;
 
 struct uctNode
 {
-  Iterations wins;
-  Iterations visits;
+  int wins;
+  int visits;
   Pos move;
   uctNode* child;
   uctNode* sibling;
@@ -25,5 +25,5 @@ struct uctNode
   }
 };
 
-Pos uct(Field* field, mt* gen, Iterations max_simulations);
-Pos uctWithTime(Field* field, mt* gen, Time time);
+Pos uct(Field* field, mt* gen, int maxSimulations);
+Pos uctWithTime(Field* field, mt* gen, int time);
