@@ -3,14 +3,15 @@
 #include "uct.h"
 #include "player.h"
 #include "field.h"
-#include "time.h"
 #include <limits>
 #include <queue>
 #include <vector>
 #include <algorithm>
+#include <chrono>
 #include <omp.h>
 
 using namespace std;
+using namespace chrono;
 
 Player playRandomGame(Field* field, mt* gen, vector<Pos>* possibleMoves)
 {
@@ -228,7 +229,7 @@ Pos uctWithTime(Field* field, mt* gen, int time)
   vector<Pos> moves;
   double bestUct = 0;
   Pos result = -1;
-  Timer t;
+  auto startTime = system_clock::now();
   generatePossibleMoves(field, &moves);
   if (static_cast<size_t>(omp_get_max_threads()) > moves.size())
     omp_set_num_threads(moves.size());
@@ -247,7 +248,7 @@ Pos uctWithTime(Field* field, mt* gen, int time)
       (*curChild)->move = *i;
       curChild = &(*curChild)->sibling;
     }
-    while (t.get() < time)
+    while (duration_cast<milliseconds>(system_clock::now() - startTime).count() < time)
       for (int i = 0; i < UCT_ITERATIONS_BEFORE_CHECK_TIME; i++)
         playSimulation(localField, localGen, &moves, &n, 0);
     #pragma omp critical
