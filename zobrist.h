@@ -2,11 +2,11 @@
 
 #include "config.h"
 #include "basic_types.h"
-#include <boost/random.hpp>
+#include <random>
 #include <limits>
+#include <algorithm>
 
 using namespace std;
-using namespace boost;
 
 // Хеш Зобриста.
 class Zobrist
@@ -21,7 +21,7 @@ public:
   // Конструктор.
   Zobrist(Pos size, mt* gen)
   {
-    random::uniform_int_distribution<Hash> dist(numeric_limits<Hash>::min(), numeric_limits<Hash>::max());
+    uniform_int_distribution<Hash> dist(numeric_limits<Hash>::min(), numeric_limits<Hash>::max());
     _size = size;
     _hashes = new Hash[size];
     for (Pos i = 0; i < size; i++)

@@ -3,10 +3,9 @@
 #include "config.h"
 #include <utility>
 #include <stack>
-#include <boost/random.hpp>
+#include <random>
 
 using namespace std;
-using namespace boost;
 
 typedef unsigned short ushort;
 typedef unsigned int uint;
@@ -64,7 +63,7 @@ struct BoardChange
 };
 
 #if ENVIRONMENT_32
-typedef random::mt19937 mt;
+typedef mt19937 mt;
 #elif ENVIRONMENT_64
-typedef random::mt19937_64 mt;
+typedef mt19937_64 mt;
 #endif

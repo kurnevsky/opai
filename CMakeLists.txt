@@ -12,19 +12,11 @@ else()
   return()
 endif()
 
-find_package(Boost COMPONENTS random REQUIRED)
-if(Boost_FOUND)
-  include_directories(${Boost_INCLUDE_DIRS})
-else()
-  message(SEND_ERROR "Failed to find Boost.")
-  return()
-endif()
-
 add_executable(opai bot.cpp minimax.cpp position_estimate.cpp uct.cpp mtdf.cpp main.cpp)
 
 add_definitions("-std=c++11")
 
-add_definitions("-Ofast")
+add_definitions("-O3")
 
 add_definitions("-flto")
 

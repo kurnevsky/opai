@@ -11,7 +11,6 @@
 #include <omp.h>
 
 using namespace std;
-using namespace boost;
 
 Player playRandomGame(Field* field, mt* gen, vector<Pos>* possibleMoves)
 {
@@ -21,7 +20,7 @@ Player playRandomGame(Field* field, mt* gen, vector<Pos>* possibleMoves)
   moves[0] = (*possibleMoves)[0];
   for (size_t i = 1; i < possibleMoves->size(); i++)
   {
-    random::uniform_int_distribution<size_t> dist(0, i);
+    uniform_int_distribution<size_t> dist(0, i);
     auto j = dist(*gen);
     moves[i] = moves[j];
     moves[j] = (*possibleMoves)[i];
@@ -70,7 +69,7 @@ uctNode* uctSelect(mt* gen, uctNode* n)
     }
     else
     {
-      random::uniform_int_distribution<int> dist(0, 999);
+      uniform_int_distribution<int> dist(0, 999);
       uctValue = 10000 + dist(*gen);
     }
     if (uctValue > bestUct)
@@ -122,7 +121,7 @@ void generatePossibleMoves(Field* field, _Cont* possibleMoves)
 {
   int* rField = new int[field->getLength()];
   fill_n(rField, field->getLength(), 0);
-  std::queue<Pos> q;
+  queue<Pos> q;
   possibleMoves->clear();
   for (auto i = field->minPos(); i <= field->maxPos(); i++)
     if (field->isPutted(i)) //TODO: Класть соседей, а не сами точки.
@@ -181,7 +180,7 @@ Pos uct(Field* field, mt* gen, Iterations maxSimulations)
   {
     uctNode n;
     Field* localField = new Field(*field);
-    random::uniform_int_distribution<size_t> localDist(numeric_limits<size_t>::min(), numeric_limits<size_t>::max());
+    uniform_int_distribution<size_t> localDist(numeric_limits<size_t>::min(), numeric_limits<size_t>::max());
     mt* localGen;
     #pragma omp critical
     localGen = new mt(localDist(*gen));
@@ -237,7 +236,7 @@ Pos uctWithTime(Field* field, mt* gen, Time time)
   {
     uctNode n;
     Field* localField = new Field(*field);
-    random::uniform_int_distribution<size_t> localDist(numeric_limits<size_t>::min(), numeric_limits<size_t>::max());
+    uniform_int_distribution<size_t> localDist(numeric_limits<size_t>::min(), numeric_limits<size_t>::max());
     mt* localGen;
     #pragma omp critical
     localGen = new mt(localDist(*gen));
@@ -277,4 +276,3 @@ Pos uctWithTime(Field* field, mt* gen, Time time)
   }
   return result;
 }
-
