@@ -32,6 +32,4 @@ add_definitions("-Wshadow")
 
 add_definitions("-pedantic")
 
-add_definitions("-DLINUX")
-
 add_definitions("-DENVIRONMENT_64")
