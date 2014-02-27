@@ -1,14 +1,13 @@
 #pragma once
 
-#include "config.h"
 #include "basic_types.h"
 
 using namespace std;
 
 // Значение бита первого игрока.
-const Player playerRed = 0x0;
+const Player playerRed = 0;
 // Значение бита второго игрока.
-const Player playerBlack = 0x1;
+const Player playerBlack = 1;
 
 // Получить по игроку следующего игрока.
 inline Player nextPlayer(const Player player)
