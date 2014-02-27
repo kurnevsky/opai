@@ -9,7 +9,7 @@
 
 using namespace std;
 
-Score mtdfAlphabeta(Field** fields, vector<Pos>* moves, int depth, Trajectories* last, Score alpha, Score beta, int** emptyBoards, Pos* best)
+int mtdfAlphabeta(Field** fields, vector<Pos>* moves, int depth, Trajectories* last, int alpha, int beta, int** emptyBoards, Pos* best)
 {
   #pragma omp parallel
   {
@@ -19,7 +19,7 @@ Score mtdfAlphabeta(Field** fields, vector<Pos>* moves, int depth, Trajectories*
     {
       if (alpha < beta)
       {
-        Score curEstimate = alphabeta(fields[threadNum], depth - 1, *i, last, -beta, -alpha, emptyBoards[threadNum]);
+        int curEstimate = alphabeta(fields[threadNum], depth - 1, *i, last, -beta, -alpha, emptyBoards[threadNum]);
         #pragma omp critical
         {
           if (curEstimate > alpha)
@@ -59,8 +59,8 @@ Pos mtdf(Field* field, int depth)
     delete emptyBoard;
     return -1;
   }
-  Score alpha = -curTrajectories.getMaxScore(nextPlayer(field->getPlayer()));
-  Score beta = curTrajectories.getMaxScore(field->getPlayer());
+  int alpha = -curTrajectories.getMaxScore(nextPlayer(field->getPlayer()));
+  int beta = curTrajectories.getMaxScore(field->getPlayer());
   int maxThreads = omp_get_max_threads();
   int** emptyBoards = new int*[maxThreads];
   emptyBoards[0] = emptyBoard;
@@ -75,10 +75,10 @@ Pos mtdf(Field* field, int depth)
     fields[i] = new Field(*field);
   do
   {
-    Score center = (alpha + beta) / 2;
+    int center = (alpha + beta) / 2;
     if ((alpha + beta) % 2 == -1)
       center--;
-    Score curEstimate = mtdfAlphabeta(fields, &moves, depth, &curTrajectories, center, center + 1, emptyBoards, &result);
+    int curEstimate = mtdfAlphabeta(fields, &moves, depth, &curTrajectories, center, center + 1, emptyBoards, &result);
     if (curEstimate > center)
       alpha = curEstimate;
     else

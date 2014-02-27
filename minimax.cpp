@@ -16,7 +16,7 @@ using namespace std;
 // Pos - последний выбранный, но не сделанный ход.
 // alpha, beta - интервал оценок, вне которого искать нет смысла.
 // На выходе оценка позиции для CurPlayer (до хода Pos).
-Score alphabeta(Field* field, int depth, Pos pos, Trajectories* last, Score alpha, Score beta, int* emptyBoard)
+int alphabeta(Field* field, int depth, Pos pos, Trajectories* last, int alpha, int beta, int* emptyBoard)
 {
   Trajectories curTrajectories(field, emptyBoard);
 
@@ -33,7 +33,7 @@ Score alphabeta(Field* field, int depth, Pos pos, Trajectories* last, Score alph
   if (field->getDScore() < 0) // Если точка поставлена в окружение.
   {
     field->undoStep();
-    return -SCORE_INFINITY; // Для CurPlayer это хорошо, то есть оценка Infinity.
+    return -numeric_limits<int>::max(); // Для CurPlayer это хорошо, то есть оценка Infinity.
   }
 
   curTrajectories.buildTrajectories(last, pos);
@@ -64,10 +64,10 @@ Score alphabeta(Field* field, int depth, Pos pos, Trajectories* last, Score alph
   return -alpha;
 }
 
-Score getEnemyEstimate(Field** fields, int** emptyBoards, int maxThreads, Trajectories* last, int depth)
+int getEnemyEstimate(Field** fields, int** emptyBoards, int maxThreads, Trajectories* last, int depth)
 {
   Trajectories curTrajectories(fields[0], emptyBoards[0]);
-  Score result;
+  int result;
   vector<Pos> moves;
   for (auto i = 0; i < maxThreads; i++)
     fields[i]->setNextPlayer();

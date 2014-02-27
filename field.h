@@ -110,7 +110,7 @@ private:
   Player _player;
   // Capture points count.
   // Количество захваченных точек.
-  Score _captureCount[2];
+  int _captureCount[2];
   Zobrist* _zobrist;
   Hash _hash;
 
@@ -265,7 +265,7 @@ private:
     }
   }
   // Изменение счета игроков.
-  void addSubCapturedFreed(const Player player, const Score captured, const Score freed)
+  void addSubCapturedFreed(const Player player, const int captured, const int freed)
   {
     if (captured == -1)
     {
@@ -278,7 +278,7 @@ private:
     }
   }
   // Изменяет Captured/Free в зависимости от того, захвачена или окружена точка.
-  void checkCapturedAndFreed(const Pos pos, const Player player, Score &captured, Score &freed)
+  void checkCapturedAndFreed(const Pos pos, const Player player, int &captured, int &freed)
   {
     if (isPutted(pos))
     {
@@ -484,11 +484,11 @@ public:
   {
     delete _points;
   }
-  Score getScore(Player player) const { return _captureCount[player] - _captureCount[nextPlayer(player)]; }
-  Score getPrevScore(Player player) const { return _changes.back().captureCount[player] - _changes.back().captureCount[nextPlayer(player)]; }
+  int getScore(Player player) const { return _captureCount[player] - _captureCount[nextPlayer(player)]; }
+  int getPrevScore(Player player) const { return _changes.back().captureCount[player] - _changes.back().captureCount[nextPlayer(player)]; }
   Player getLastPlayer() const { return getPlayer(pointsSeq.back()); }
-  Score getDScore(Player player) const { return getScore(player) - getPrevScore(player); }
-  Score getDScore() const { return getDScore(getLastPlayer()); }
+  int getDScore(Player player) const { return getScore(player) - getPrevScore(player); }
+  int getDScore() const { return getDScore(getLastPlayer()); }
   Player getPlayer() const { return _player; }
   Hash getHash() const { return _hash; }
   Zobrist& getZobrist() const { return *_zobrist; };

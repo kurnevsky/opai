@@ -188,7 +188,7 @@ private:
           if (find(moves->begin(), moves->end(), *j) == moves->end())
             moves->push_back(*j);
   }
-  Score calculateMaxScore(Player player, int depth)
+  int calculateMaxScore(Player player, int depth)
   {
     auto result = _field->getScore(player);
     if (depth > 0)
@@ -307,7 +307,7 @@ public:
   {
     return &_allMoves;
   }
-  Score getMaxScore(Player player)
+  int getMaxScore(Player player)
   {
     return calculateMaxScore(player, _depth[player]) + _depth[nextPlayer(player)];
   }

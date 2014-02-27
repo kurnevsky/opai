@@ -10,11 +10,8 @@ using namespace std;
 typedef int Pos;
 typedef int PosValue;
 typedef int Player;
-typedef int Score;
 typedef int Coord;
 typedef size_t Hash;
-
-#define SCORE_INFINITY numeric_limits<Score>::max()
 
 // Структура координат точки.
 struct Point
@@ -45,7 +42,7 @@ enum IntersectionState
 struct BoardChange
 {
   // Предыдущий счет захваченных точек.
-  Score captureCount[2];
+  int captureCount[2];
   // Предыдущий игрок.
   Player player;
   // Предыдущий хеш.
