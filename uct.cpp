@@ -13,7 +13,7 @@
 using namespace std;
 using namespace chrono;
 
-int playRandomGame(Field* field, mt* gen, vector<Pos>* possibleMoves)
+int playRandomGame(Field* field, mt19937* gen, vector<Pos>* possibleMoves)
 {
   vector<Pos> moves(possibleMoves->size());
   int putted = 0, result;
@@ -54,7 +54,7 @@ void createChildren(Field* field, vector<Pos>* possibleMoves, uctNode* n)
     }
 }
 
-uctNode* uctSelect(mt* gen, uctNode* n)
+uctNode* uctSelect(mt19937* gen, uctNode* n)
 {
   double bestUct = 0, uctValue;
   uctNode* result = NULL;
@@ -82,7 +82,7 @@ uctNode* uctSelect(mt* gen, uctNode* n)
   return result;
 }
 
-int playSimulation(Field* field, mt* gen, vector<Pos>* possibleMoves, uctNode* n, int depth)
+int playSimulation(Field* field, mt19937* gen, vector<Pos>* possibleMoves, uctNode* n, int depth)
 {
   int randomResult;
   if (n->visits == 0 || depth == UCT_DEPTH)
@@ -167,7 +167,7 @@ void finalUct(uctNode* n)
   delete n;
 }
 
-Pos uct(Field* field, mt* gen, int maxSimulations)
+Pos uct(Field* field, mt19937_64* gen, int maxSimulations)
 {
   // Список всех возможных ходов для UCT.
   vector<Pos> moves;
@@ -180,10 +180,10 @@ Pos uct(Field* field, mt* gen, int maxSimulations)
   {
     uctNode n;
     Field* localField = new Field(*field);
-    uniform_int_distribution<size_t> localDist(numeric_limits<size_t>::min(), numeric_limits<size_t>::max());
-    mt* localGen;
+    uniform_int_distribution<int> localDist(numeric_limits<int>::min(), numeric_limits<int>::max());
+    mt19937* localGen;
     #pragma omp critical
-    localGen = new mt(localDist(*gen));
+    localGen = new mt19937(localDist(*gen));
     uctNode** curChild = &n.child;
     for (auto i = moves.begin() + omp_get_thread_num(); i < moves.end(); i += omp_get_num_threads())
     {
@@ -222,7 +222,7 @@ Pos uct(Field* field, mt* gen, int maxSimulations)
   return result;
 }
 
-Pos uctWithTime(Field* field, mt* gen, int time)
+Pos uctWithTime(Field* field, mt19937_64* gen, int time)
 {
   // Список всех возможных ходов для UCT.
   vector<Pos> moves;
@@ -236,10 +236,10 @@ Pos uctWithTime(Field* field, mt* gen, int time)
   {
     uctNode n;
     Field* localField = new Field(*field);
-    uniform_int_distribution<size_t> localDist(numeric_limits<size_t>::min(), numeric_limits<size_t>::max());
-    mt* localGen;
+    uniform_int_distribution<int> localDist(numeric_limits<int>::min(), numeric_limits<int>::max());
+    mt19937* localGen;
     #pragma omp critical
-    localGen = new mt(localDist(*gen));
+    localGen = new mt19937(localDist(*gen));
     uctNode** curChild = &n.child;
     for (auto i = moves.begin() + omp_get_thread_num(); i < moves.end(); i += omp_get_num_threads())
     {

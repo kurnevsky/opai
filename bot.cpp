@@ -12,9 +12,9 @@
 
 using namespace std;
 
-Bot::Bot(const int width, const int height, const BeginPattern beginPattern, ptrdiff_t seed)
+Bot::Bot(const int width, const int height, const BeginPattern beginPattern, int64_t seed)
 {
-  _gen = new mt(seed);
+  _gen = new mt19937_64(seed);
   _zobrist = new Zobrist((width + 2) * (height + 2), _gen);
   _field = new Field(width, height, beginPattern, _zobrist);
 }

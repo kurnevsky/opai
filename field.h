@@ -112,7 +112,7 @@ private:
   // Количество захваченных точек.
   int _captureCount[2];
   Zobrist* _zobrist;
-  Hash _hash;
+  int64_t _hash;
 
 public:
   // History points sequance.
@@ -490,7 +490,7 @@ public:
   int getDScore(Player player) const { return getScore(player) - getPrevScore(player); }
   int getDScore() const { return getDScore(getLastPlayer()); }
   Player getPlayer() const { return _player; }
-  Hash getHash() const { return _hash; }
+  int64_t getHash() const { return _hash; }
   Zobrist& getZobrist() const { return *_zobrist; };
   int getWidth() const { return _width; }
   int getHeight() const { return _height; }

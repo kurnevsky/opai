@@ -15,15 +15,15 @@ private:
   // Размер таблицы хешей.
   Pos _size;
   // Хеши.
-  Hash* _hashes;
+  int64_t* _hashes;
 
 public:
   // Конструктор.
-  Zobrist(Pos size, mt* gen)
+  Zobrist(Pos size, mt19937_64* gen)
   {
-    uniform_int_distribution<Hash> dist(numeric_limits<Hash>::min(), numeric_limits<Hash>::max());
+    uniform_int_distribution<int64_t> dist(numeric_limits<int64_t>::min(), numeric_limits<int64_t>::max());
     _size = size;
-    _hashes = new Hash[size];
+    _hashes = new int64_t[size];
     for (Pos i = 0; i < size; i++)
       _hashes[i] = dist(*gen);
   }
@@ -31,7 +31,7 @@ public:
   Zobrist(const Zobrist &other)
   {
     _size = other._size;
-    _hashes = new Hash[other._size];
+    _hashes = new int64_t[other._size];
     copy_n(other._hashes, other._size, _hashes);
   }
   // Деструктор.
@@ -40,7 +40,7 @@ public:
     delete _hashes;
   }
   // Возвращает хеш Зобриста элемента pos.
-  Hash getHash(Pos pos)
+  int64_t getHash(Pos pos)
   {
     return _hashes[pos];
   }

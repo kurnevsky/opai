@@ -25,5 +25,6 @@ struct uctNode
   }
 };
 
-Pos uct(Field* field, mt* gen, int maxSimulations);
-Pos uctWithTime(Field* field, mt* gen, int time);
+Pos uct(Field* field, mt19937_64* gen, int maxSimulations);
+
+Pos uctWithTime(Field* field, mt19937_64* gen, int time);

@@ -14,7 +14,7 @@ using namespace std;
 class Bot
 {
 private:
-  mt* _gen;
+  mt19937_64* _gen;
   Zobrist* _zobrist;
   Field* _field;
   int getMinimaxDepth(int complexity);
@@ -23,7 +23,7 @@ private:
   bool isFieldOccupied() const;
   bool boundaryCheck(int& x, int& y) const;
 public:
-  Bot(const int width, const int height, const BeginPattern beginPattern, ptrdiff_t seed);
+  Bot(const int width, const int height, const BeginPattern beginPattern, int64_t seed);
   ~Bot();
   bool doStep(int x, int y, Player player);
   bool undoStep();

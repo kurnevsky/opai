@@ -10,7 +10,6 @@ using namespace std;
 typedef int Pos;
 typedef int PosValue;
 typedef int Player;
-typedef size_t Hash;
 
 // Структура координат точки.
 struct Point
@@ -45,13 +44,7 @@ struct BoardChange
   // Предыдущий игрок.
   Player player;
   // Предыдущий хеш.
-  Hash hash;
+  int64_t hash;
   // Список изменных точек (координата - значение до изменения).
   stack<pair<Pos, PosValue>> changes;
 };
-
-#if ENVIRONMENT_32
-typedef mt19937 mt;
-#elif ENVIRONMENT_64
-typedef mt19937_64 mt;
-#endif

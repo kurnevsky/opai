@@ -21,7 +21,7 @@ private:
   template<typename _InIt>
   void addTrajectory(_InIt begin, _InIt end, Player player)
   {
-    Hash hash = 0;
+    int64_t hash = 0;
     // Эвристические проверки.
     // Каждая точка траектории должна окружать что-либо и иметь рядом хотя бы 2 группы точек.
     // Если нет - не добавляем эту траекторию.
@@ -130,7 +130,7 @@ private:
     includeAllTrajectories(playerBlack);
   }
   // Возвращает хеш Зобриста пересечения двух траекторий.
-  Hash getIntersectHash(Trajectory* t1, Trajectory* t2)
+  int64_t getIntersectHash(Trajectory* t1, Trajectory* t2)
   {
     auto resultHash = t1->getHash();
     for (auto i = t2->begin(); i != t2->end(); i++)

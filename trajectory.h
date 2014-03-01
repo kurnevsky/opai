@@ -10,7 +10,7 @@ class Trajectory
 private:
   list<Pos> _points;
   Zobrist* _zobrist;
-  Hash _hash;
+  int64_t _hash;
   bool _excluded;
 
 public:
@@ -29,7 +29,7 @@ public:
     assign(first, last);
   }
   template<typename _InIt>
-  Trajectory(_InIt first, _InIt last, Zobrist* zobrist, Hash hash)
+  Trajectory(_InIt first, _InIt last, Zobrist* zobrist, int64_t hash)
   {
     _excluded = false;
     _zobrist = zobrist;
@@ -114,12 +114,12 @@ public:
       push_back(*i, _zobrist->getHash(*i));
   }
   template<typename _InIt>
-  void assign(_InIt first, _InIt last, Hash hash)
+  void assign(_InIt first, _InIt last, int64_t hash)
   {
     _points.assign(first, last);
     _hash = hash;
   }
-  Hash getHash() const
+  int64_t getHash() const
   {
     return _hash;
   }

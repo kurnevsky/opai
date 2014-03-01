@@ -76,7 +76,7 @@ void gen_move_with_time(int id)
 void init(int id)
 {
   int x, y;
-  ptrdiff_t seed;
+  int64_t seed;
   cin >> x >> y >> seed;
   // Если существовало поле - удаляем его.
   if (bot != NULL)
