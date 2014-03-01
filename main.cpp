@@ -16,7 +16,7 @@ void author(int id)
 void gen_move(int id)
 {
   Player player;
-  Coord x, y;
+  int x, y;
   cin >> player;
   if (bot == NULL)
   {
@@ -36,8 +36,7 @@ void gen_move(int id)
 void gen_move_with_complexity(int id)
 {
   Player player;
-  Coord x, y;
-  int complexity;
+  int x, y, complexity;
   cin >> player >> complexity;
   if (bot == NULL)
   {
@@ -57,8 +56,7 @@ void gen_move_with_complexity(int id)
 void gen_move_with_time(int id)
 {
   Player player;
-  Coord x, y;
-  int time;
+  int x, y, time;
   cin >> player >> time;
   if (bot == NULL)
   {
@@ -77,7 +75,7 @@ void gen_move_with_time(int id)
 
 void init(int id)
 {
-  Coord x, y;
+  int x, y;
   ptrdiff_t seed;
   cin >> x >> y >> seed;
   // Если существовало поле - удаляем его.
@@ -104,7 +102,7 @@ void name(int id)
 
 void play(int id)
 {
-  Coord x, y;
+  int x, y;
   Player player;
   cin >> x >> y >> player;
   if (bot == NULL || !bot->doStep(x, y, player))

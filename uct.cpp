@@ -13,16 +13,15 @@
 using namespace std;
 using namespace chrono;
 
-Player playRandomGame(Field* field, mt* gen, vector<Pos>* possibleMoves)
+int playRandomGame(Field* field, mt* gen, vector<Pos>* possibleMoves)
 {
   vector<Pos> moves(possibleMoves->size());
-  auto putted = 0;
-  Player result;
+  int putted = 0, result;
   moves[0] = (*possibleMoves)[0];
   for (size_t i = 1; i < possibleMoves->size(); i++)
   {
     uniform_int_distribution<size_t> dist(0, i);
-    auto j = dist(*gen);
+    size_t j = dist(*gen);
     moves[i] = moves[j];
     moves[j] = (*possibleMoves)[i];
   }
@@ -38,7 +37,7 @@ Player playRandomGame(Field* field, mt* gen, vector<Pos>* possibleMoves)
     result = playerBlack;
   else
     result = -1;
-  for (auto i = 0; i < putted; i++)
+  for (int i = 0; i < putted; i++)
     field->undoStep();
   return result;
 }
@@ -64,8 +63,8 @@ uctNode* uctSelect(mt* gen, uctNode* n)
   {
     if (next->visits > 0)
     {
-      auto winRate = static_cast<double>(next->wins)/next->visits;
-      auto uct = UCTK * sqrt(2 * log(static_cast<double>(n->visits)) / next->visits);
+      double winRate = static_cast<double>(next->wins)/next->visits;
+      double uct = UCTK * sqrt(2 * log(static_cast<double>(n->visits)) / next->visits);
       uctValue = winRate + uct;
     }
     else
@@ -83,9 +82,9 @@ uctNode* uctSelect(mt* gen, uctNode* n)
   return result;
 }
 
-Player playSimulation(Field* field, mt* gen, vector<Pos>* possibleMoves, uctNode* n, int depth)
+int playSimulation(Field* field, mt* gen, vector<Pos>* possibleMoves, uctNode* n, int depth)
 {
-  Player randomResult;
+  int randomResult;
   if (n->visits == 0 || depth == UCT_DEPTH)
   {
     randomResult = playRandomGame(field, gen, possibleMoves);
@@ -124,7 +123,7 @@ void generatePossibleMoves(Field* field, _Cont* possibleMoves)
   fill_n(rField, field->getLength(), 0);
   queue<Pos> q;
   possibleMoves->clear();
-  for (auto i = field->minPos(); i <= field->maxPos(); i++)
+  for (Pos i = field->minPos(); i <= field->maxPos(); i++)
     if (field->isPutted(i)) //TODO: Класть соседей, а не сами точки.
       q.push(i);
   while (!q.empty())

@@ -101,10 +101,10 @@ private:
   PosValue* _points;
   // Real field width.
   // Действительная ширина поля.
-  Coord _width;
+  int _width;
   // Real field height.
   // Действительная высота поля.
-  Coord _height;
+  int _height;
   // Current player color.
   // Текущий цвет игроков.
   Player _player;
@@ -437,7 +437,7 @@ private:
 
 public:
   // Конструктор.
-  Field(const Coord width, const Coord height, const BeginPattern begin_pattern, Zobrist* zobrist)
+  Field(const int width, const int height, const BeginPattern begin_pattern, Zobrist* zobrist)
   {
     _width = width;
     _height = height;
@@ -446,12 +446,12 @@ public:
     _captureCount[playerBlack] = 0;
     _points = new PosValue[getLength()];
     fill_n(_points, getLength(), 0);
-    for (Coord x = -1; x <= width; x++)
+    for (int x = -1; x <= width; x++)
     {
       setBad(toPos(x, -1));
       setBad(toPos(x, height));
     }
-    for (Coord y = -1; y <= height; y++)
+    for (int y = -1; y <= height; y++)
     {
       setBad(toPos(-1, y));
       setBad(toPos(width, y));
@@ -492,8 +492,8 @@ public:
   Player getPlayer() const { return _player; }
   Hash getHash() const { return _hash; }
   Zobrist& getZobrist() const { return *_zobrist; };
-  Coord getWidth() const { return _width; }
-  Coord getHeight() const { return _height; }
+  int getWidth() const { return _width; }
+  int getHeight() const { return _height; }
   Pos getLength() const { return (_width + 2) * (_height + 2); }
   Pos minPos() const { return toPos(0, 0); }
   Pos maxPos() const { return toPos(_width - 1, _height - 1); }
@@ -505,11 +505,11 @@ public:
   Pos ne(Pos pos) const { return pos - (_width + 2) + 1; }
   Pos sw(Pos pos) const { return pos + (_width + 2) - 1; }
   Pos se(Pos pos) const { return pos + (_width + 2) + 1; }
-  Pos toPos(const Coord x, const Coord y) const { return (y + 1) * (_width + 2) + x + 1; }
-  Coord toX(const Pos pos) const { return static_cast<Coord>(pos % (_width + 2) - 1); }
-  Coord toY(const Pos pos) const { return static_cast<Coord>(pos / (_width + 2) - 1); }
+  Pos toPos(const int x, const int y) const { return (y + 1) * (_width + 2) + x + 1; }
+  int toX(const Pos pos) const { return pos % (_width + 2) - 1; }
+  int toY(const Pos pos) const { return pos / (_width + 2) - 1; }
   // Конвертация из Pos в XY.
-  void toXY(const Pos pos, Coord &x, Coord &y) const { x = toX(pos); y = toY(pos); }
+  void toXY(const Pos pos, int &x, int &y) const { x = toX(pos); y = toY(pos); }
   void setPlayer(const Player player) { _player = player; }
   // Установить следующего игрока как текущего.
   void setNextPlayer() { setPlayer(nextPlayer(_player)); }

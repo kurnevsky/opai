@@ -19,37 +19,30 @@ using namespace std;
 int alphabeta(Field* field, int depth, Pos pos, Trajectories* last, int alpha, int beta, int* emptyBoard)
 {
   Trajectories curTrajectories(field, emptyBoard);
-
   // Делаем ход, выбранный на предыдущем уровне рекурсии, после чего этот ход становится вражеским.
   field->doUnsafeStep(pos);
-
   if (depth == 0)
   {
-    auto bestEstimate = field->getScore(field->getPlayer());
+    int bestEstimate = field->getScore(field->getPlayer());
     field->undoStep();
     return -bestEstimate;
   }
-
   if (field->getDScore() < 0) // Если точка поставлена в окружение.
   {
     field->undoStep();
     return -numeric_limits<int>::max(); // Для CurPlayer это хорошо, то есть оценка Infinity.
   }
-
   curTrajectories.buildTrajectories(last, pos);
-
   list<Pos>* moves = curTrajectories.getPoints();
-
   if (moves->size() == 0)
   {
-    auto bestEstimate = field->getScore(field->getPlayer());
+    int bestEstimate = field->getScore(field->getPlayer());
     field->undoStep();
     return -bestEstimate;
   }
-
   for (auto i = moves->begin(); i != moves->end(); i++)
   {
-    auto curEstimate = alphabeta(field, depth - 1, *i, &curTrajectories, -alpha - 1, -alpha, emptyBoard);
+    int curEstimate = alphabeta(field, depth - 1, *i, &curTrajectories, -alpha - 1, -alpha, emptyBoard);
     if (curEstimate > alpha && curEstimate < beta)
       curEstimate = alphabeta(field, depth - 1, *i, &curTrajectories, -beta, -curEstimate, emptyBoard);
     if (curEstimate > alpha)
@@ -59,7 +52,6 @@ int alphabeta(Field* field, int depth, Pos pos, Trajectories* last, int alpha, i
         break;
     }
   }
-
   field->undoStep();
   return -alpha;
 }
@@ -69,7 +61,7 @@ int getEnemyEstimate(Field** fields, int** emptyBoards, int maxThreads, Trajecto
   Trajectories curTrajectories(fields[0], emptyBoards[0]);
   int result;
   vector<Pos> moves;
-  for (auto i = 0; i < maxThreads; i++)
+  for (int i = 0; i < maxThreads; i++)
     fields[i]->setNextPlayer();
   curTrajectories.buildTrajectories(last);
   moves.assign(curTrajectories.getPoints()->begin(), curTrajectories.getPoints()->end());
@@ -79,17 +71,17 @@ int getEnemyEstimate(Field** fields, int** emptyBoards, int maxThreads, Trajecto
   }
   else
   {
-    auto alpha = -curTrajectories.getMaxScore(nextPlayer(fields[0]->getPlayer()));
-    auto beta = curTrajectories.getMaxScore(fields[0]->getPlayer());
+    int alpha = -curTrajectories.getMaxScore(nextPlayer(fields[0]->getPlayer()));
+    int beta = curTrajectories.getMaxScore(fields[0]->getPlayer());
     #pragma omp parallel
     {
-      auto threadNum = omp_get_thread_num();
+      int threadNum = omp_get_thread_num();
       #pragma omp for schedule(dynamic, 1)
       for (auto i = moves.begin(); i < moves.end(); i++)
       {
         if (alpha < beta)
         {
-          auto curEstimate = alphabeta(fields[threadNum], depth - 1, *i, &curTrajectories, -alpha - 1, -alpha, emptyBoards[threadNum]);
+          int curEstimate = alphabeta(fields[threadNum], depth - 1, *i, &curTrajectories, -alpha - 1, -alpha, emptyBoards[threadNum]);
           if (curEstimate > alpha && curEstimate < beta)
             curEstimate = alphabeta(fields[threadNum], depth - 1, *i, &curTrajectories, -beta, -curEstimate, emptyBoards[threadNum]);
           #pragma omp critical
@@ -102,7 +94,7 @@ int getEnemyEstimate(Field** fields, int** emptyBoards, int maxThreads, Trajecto
     }
     result = alpha;
   }
-  for (auto i = 0; i < maxThreads; i++)
+  for (int i = 0; i < maxThreads; i++)
     fields[i]->setNextPlayer();
   return -result;
 }
@@ -112,18 +104,14 @@ int getEnemyEstimate(Field** fields, int** emptyBoards, int maxThreads, Trajecto
 // Moves - на входе возможные ходы, на выходе лучшие из них.
 Pos minimax(Field* field, int depth)
 {
+  if (depth <= 0)
+    return -1;
   int* emptyBoard = new int[field->getLength()];
   fill_n(emptyBoard, field->getLength(), 0);
   // Главные траектории - свои и вражеские.
   Trajectories curTrajectories(field, emptyBoard);
   Pos result;
   vector<Pos> moves;
-  // Делаем что-то только когда глубина просчета положительная и колическтво возможных ходов на входе не равно 0.
-  if (depth <= 0)
-  {
-    delete emptyBoard;
-    return -1;
-  }
   // Получаем ходы из траекторий (которые имеет смысл рассматривать), и находим пересечение со входными возможными точками.
   curTrajectories.buildTrajectories(depth);
   moves.assign(curTrajectories.getPoints()->begin(), curTrajectories.getPoints()->end());

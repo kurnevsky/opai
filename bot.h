@@ -21,15 +21,15 @@ private:
   int getMtdfDepth(int complexity);
   int getUctIterations(int complexity);
   bool isFieldOccupied() const;
-  bool boundaryCheck(Coord& x, Coord& y) const;
+  bool boundaryCheck(int& x, int& y) const;
 public:
-  Bot(const Coord width, const Coord height, const BeginPattern beginPattern, ptrdiff_t seed);
+  Bot(const int width, const int height, const BeginPattern beginPattern, ptrdiff_t seed);
   ~Bot();
-  bool doStep(Coord x, Coord y, Player player);
+  bool doStep(int x, int y, Player player);
   bool undoStep();
   void setPlayer(Player player);
   // Возвращает лучший найденный ход.
-  void get(Coord& x, Coord& y);
-  void getWithComplexity(Coord& x, Coord& y, int complexity);
-  void getWithTime(Coord& x, Coord& y, int time);
+  void get(int& x, int& y);
+  void getWithComplexity(int& x, int& y, int complexity);
+  void getWithTime(int& x, int& y, int time);
 };

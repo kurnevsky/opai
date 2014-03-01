@@ -12,7 +12,7 @@
 
 using namespace std;
 
-Bot::Bot(const Coord width, const Coord height, const BeginPattern beginPattern, ptrdiff_t seed)
+Bot::Bot(const int width, const int height, const BeginPattern beginPattern, ptrdiff_t seed)
 {
   _gen = new mt(seed);
   _zobrist = new Zobrist((width + 2) * (height + 2), _gen);
@@ -41,7 +41,7 @@ int Bot::getUctIterations(int complexity)
   return (complexity - MIN_COMPLEXITY) * (MAX_UCT_ITERATIONS - MIN_UCT_ITERATIONS) / (MAX_COMPLEXITY - MIN_COMPLEXITY) + MIN_UCT_ITERATIONS;
 }
 
-bool Bot::doStep(Coord x, Coord y, Player player)
+bool Bot::doStep(int x, int y, Player player)
 {
   return _field->doStep(_field->toPos(x, y), player);
 }
@@ -67,7 +67,7 @@ bool Bot::isFieldOccupied() const
   return true;
 }
 
-bool Bot::boundaryCheck(Coord& x, Coord& y) const
+bool Bot::boundaryCheck(int& x, int& y) const
 {
   if (_field->pointsSeq.size() == 0)
   {
@@ -84,7 +84,7 @@ bool Bot::boundaryCheck(Coord& x, Coord& y) const
   return false;
 }
 
-void Bot::get(Coord& x, Coord& y)
+void Bot::get(int& x, int& y)
 {
   if (boundaryCheck(x, y))
     return;
@@ -131,7 +131,7 @@ void Bot::get(Coord& x, Coord& y)
 #endif
 }
 
-void Bot::getWithComplexity(Coord& x, Coord& y, int complexity)
+void Bot::getWithComplexity(int& x, int& y, int complexity)
 {
   if (boundaryCheck(x, y))
     return;
@@ -178,7 +178,7 @@ void Bot::getWithComplexity(Coord& x, Coord& y, int complexity)
 #endif
 }
 
-void Bot::getWithTime(Coord& x, Coord& y, int time)
+void Bot::getWithTime(int& x, int& y, int time)
 {
   if (boundaryCheck(x, y))
     return;

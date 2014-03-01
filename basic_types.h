@@ -10,13 +10,12 @@ using namespace std;
 typedef int Pos;
 typedef int PosValue;
 typedef int Player;
-typedef int Coord;
 typedef size_t Hash;
 
 // Структура координат точки.
 struct Point
 {
-  Coord x, y;
+  int x, y;
 };
 
 // Используемый шаблон в начале игры.
