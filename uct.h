@@ -10,6 +10,7 @@ using namespace std;
 struct uctNode
 {
   int wins;
+  int draws;
   int visits;
   Pos move;
   uctNode* child;
@@ -18,6 +19,7 @@ struct uctNode
   uctNode()
   {
     wins = 0;
+    draws = 0;
     visits = 0;
     move = 0;
     child = NULL;

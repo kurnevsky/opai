@@ -63,7 +63,7 @@ uctNode* uctSelect(mt19937* gen, uctNode* n)
   {
     if (next->visits > 0)
     {
-      double winRate = static_cast<double>(next->wins)/next->visits;
+      double winRate = (next->wins + static_cast<double>(next->draws) / 2)/next->visits;
       double uct = UCTK * sqrt(2 * log(n->visits) / next->visits);
       uctValue = winRate + uct;
     }
@@ -113,6 +113,8 @@ int playSimulation(Field* field, mt19937* gen, vector<Pos>* possibleMoves, uctNo
   n->visits++;
   if (randomResult == nextPlayer(field->getPlayer()))
     n->wins++;
+  else if (randomResult == -1)
+    n->draws++;
   return randomResult;
 }
 
@@ -201,9 +203,9 @@ Pos uct(Field* field, mt19937_64* gen, int maxSimulations)
       {
         if (next->visits != 0)
         {
-          auto winRate = static_cast<double>(next->wins)/next->visits;
-          auto uct = UCTK * sqrt(2 * log(n.visits) / next->visits);
-          auto uctValue = winRate + uct;
+          double winRate = (next->wins + static_cast<double>(next->draws) / 2)/next->visits;
+          double uct = UCTK * sqrt(2 * log(n.visits) / next->visits);
+          double uctValue = winRate + uct;
           if (uctValue > bestUct)
           {
             bestUct = uctValue;
@@ -257,9 +259,9 @@ Pos uctWithTime(Field* field, mt19937_64* gen, int time)
       {
         if (next->visits != 0)
         {
-          auto winRate = static_cast<double>(next->wins)/next->visits;
-          auto uct = UCTK * sqrt(2 * log(n.visits) / next->visits);
-          auto uctValue = winRate + uct;
+          double winRate = (next->wins + static_cast<double>(next->draws) / 2)/next->visits;
+          double uct = UCTK * sqrt(2 * log(n.visits) / next->visits);
+          double uctValue = winRate + uct;
           if (uctValue > bestUct)
           {
             bestUct = uctValue;
