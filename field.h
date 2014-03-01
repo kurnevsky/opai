@@ -19,23 +19,23 @@ private:
 
   // State bits and masks
   // Бит, указывающий номер игрока.
-  static const PosValue playerBit = 0x1;
+  static const int playerBit = 1;
   // Бит, указывающий на наличие точки в поле.
-  static const PosValue putBit = 0x2;
+  static const int putBit = 2;
   // Бит, указывающий на захваченность точки.
-  static const PosValue surBit = 0x4;
+  static const int surBit = 4;
   // Бит, указывающий на то, захватывает ли что-нибудь точка на поле.
-  static const PosValue boundBit = 0x8;
+  static const int boundBit = 8;
   // Бит, указывающий на пустую базу.
-  static const PosValue emptyBaseBit = 0x10;
+  static const int emptyBaseBit = 16;
   // Бит для временных пометок полей.
-  static const PosValue tagBit = 0x20;
+  static const int tagBit = 32;
   // Бит, которым помечаются границы поля.
-  static const PosValue badBit = 0x40;
+  static const int badBit = 64;
 
   // Маски для определения условий.
-  static const PosValue enableMask = badBit | surBit | putBit | playerBit;
-  static const PosValue boundMask = badBit | boundBit | surBit | putBit | playerBit;
+  static const int enableMask = badBit | surBit | putBit | playerBit;
+  static const int boundMask = badBit | boundBit | surBit | putBit | playerBit;
 
 public:
   // Get state functions.
@@ -54,15 +54,15 @@ public:
   // Проверить по координате, помечено ли поле.
   bool isTagged(const Pos pos) const { return (_points[pos] & tagBit) != 0; }
   // Получить условие по координате.
-  PosValue getEnableCond(const Pos pos) const { return _points[pos] & enableMask; }
+  int getEnableCond(const Pos pos) const { return _points[pos] & enableMask; }
   // Проверка незанятости поля по условию.
-  bool isEnable(const Pos pos, const PosValue enableCond) const { return (_points[pos] & enableMask) == enableCond; }
+  bool isEnable(const Pos pos, const int enableCond) const { return (_points[pos] & enableMask) == enableCond; }
   // Проверка занятости поля по условию.
-  bool isNotEnable(const Pos pos, const PosValue enableCond) const { return (_points[pos] & enableMask) != enableCond; }
+  bool isNotEnable(const Pos pos, const int enableCond) const { return (_points[pos] & enableMask) != enableCond; }
   // Проверка на то, захвачено ли поле.
-  bool isBound(const Pos pos, const PosValue boundCond) const { return (_points[pos] & boundMask) == boundCond; }
+  bool isBound(const Pos pos, const int boundCond) const { return (_points[pos] & boundMask) == boundCond; }
   // Проверка на то, не захвачено ли поле.
-  bool isNotBound(const Pos pos, const PosValue boundCond) const { return (_points[pos] & boundMask) != boundCond; }
+  bool isNotBound(const Pos pos, const int boundCond) const { return (_points[pos] & boundMask) != boundCond; }
   // Провека на то, возможно ли поставить точку в полке.
   bool puttingAllow(const Pos pos) const { return !(_points[pos] & (putBit | surBit | badBit)); }
 
@@ -98,7 +98,7 @@ private:
   vector<BoardChange> _changes;
   // Main points array (game board).
   // Основной массив точек (игровая доска).
-  PosValue* _points;
+  int* _points;
   // Real field width.
   // Действительная ширина поля.
   int _width;
@@ -178,7 +178,7 @@ private:
   }
   // Возвращает количество групп точек рядом с CenterPos.
   // InpChainPoints - возможные точки цикла, InpSurPoints - возможные окруженные точки.
-  int getInputPoints(const Pos centerPos, const PosValue enableCond, Pos inpChainPoints[], Pos inpSurPoints[]) const
+  int getInputPoints(const Pos centerPos, const int enableCond, Pos inpChainPoints[], Pos inpSurPoints[]) const
   {
     int result = 0;
     if (isNotEnable(w(centerPos), enableCond))
@@ -311,7 +311,7 @@ private:
         {
           if (isInEmptyBase(pos))
           {
-            _changes.back().changes.push(pair<Pos, PosValue>(pos, _points[pos] & !tagBit));
+            _changes.back().changes.push(pair<Pos, int>(pos, _points[pos] & !tagBit));
             clearEmptyBase(pos);
             return true;
           }
@@ -321,7 +321,7 @@ private:
           }
         });
   }
-  bool buildChain(const Pos startPos, const PosValue enableCond, const Pos directionPos, list<Pos> &chain)
+  bool buildChain(const Pos startPos, const int enableCond, const Pos directionPos, list<Pos> &chain)
   {
     chain.clear();
     chain.push_back(startPos);
@@ -389,13 +389,13 @@ private:
       {
         clearTag(*i);
         // Добавляем в список изменений точки цепочки.
-        _changes.back().changes.push(pair<Pos, PosValue>(*i, _points[*i]));
+        _changes.back().changes.push(pair<Pos, int>(*i, _points[*i]));
         // Помечаем точки цепочки.
         setBaseBound(*i);
       }
       for (auto i = surPoints.begin(); i != surPoints.end(); i++)
       {
-        _changes.back().changes.push(pair<Pos, PosValue>(*i, _points[*i]));
+        _changes.back().changes.push(pair<Pos, int>(*i, _points[*i]));
 
         setCaptureFreeState(*i, player);
       }
@@ -406,7 +406,7 @@ private:
         clearTag(*i);
       for (auto i = surPoints.begin(); i != surPoints.end(); i++)
       {
-        _changes.back().changes.push(pair<Pos, PosValue>(*i, _points[*i]));
+        _changes.back().changes.push(pair<Pos, int>(*i, _points[*i]));
 
         if (!isPutted(*i))
           setEmptyBase(*i);
@@ -444,7 +444,7 @@ public:
     _player = playerRed;
     _captureCount[playerRed] = 0;
     _captureCount[playerBlack] = 0;
-    _points = new PosValue[getLength()];
+    _points = new int[getLength()];
     fill_n(_points, getLength(), 0);
     for (int x = -1; x <= width; x++)
     {
@@ -470,7 +470,7 @@ public:
     _player = orig._player;
     _captureCount[playerRed] = orig._captureCount[playerRed];
     _captureCount[playerBlack] = orig._captureCount[playerBlack];
-    _points = new PosValue[getLength()];
+    _points = new int[getLength()];
     copy_n(orig._points, getLength(), _points);
     _changes.reserve(getLength());
     pointsSeq.reserve(getLength());
@@ -546,7 +546,7 @@ public:
     _changes.back().captureCount[1] = _captureCount[1];
     _changes.back().player = _player;
     // Добавляем в изменения поставленную точку.
-    _changes.back().changes.push(pair<Pos, PosValue>(pos, _points[pos]));
+    _changes.back().changes.push(pair<Pos, int>(pos, _points[pos]));
     setPlayerPutted(pos, player);
     pointsSeq.push_back(pos);
     checkClosure(pos, player);

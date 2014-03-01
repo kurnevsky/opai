@@ -8,7 +8,6 @@
 using namespace std;
 
 typedef int Pos;
-typedef int PosValue;
 typedef int Player;
 
 // Структура координат точки.
@@ -46,5 +45,5 @@ struct BoardChange
   // Предыдущий хеш.
   int64_t hash;
   // Список изменных точек (координата - значение до изменения).
-  stack<pair<Pos, PosValue>> changes;
+  stack<pair<Pos, int>> changes;
 };
