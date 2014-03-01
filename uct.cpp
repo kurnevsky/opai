@@ -54,6 +54,13 @@ void createChildren(Field* field, vector<Pos>* possibleMoves, uctNode* n)
     }
 }
 
+double ucb(uctNode* n, uctNode* next)
+{
+  double winRate = (next->wins + static_cast<double>(next->draws) / 2)/next->visits;
+  double uct = UCTK * sqrt(2 * log(n->visits) / next->visits);
+  return winRate + uct;
+}
+
 uctNode* uctSelect(mt19937* gen, uctNode* n)
 {
   double bestUct = 0, uctValue;
@@ -63,9 +70,7 @@ uctNode* uctSelect(mt19937* gen, uctNode* n)
   {
     if (next->visits > 0)
     {
-      double winRate = (next->wins + static_cast<double>(next->draws) / 2)/next->visits;
-      double uct = UCTK * sqrt(2 * log(n->visits) / next->visits);
-      uctValue = winRate + uct;
+      uctValue = ucb(n, next);
     }
     else
     {
@@ -203,9 +208,7 @@ Pos uct(Field* field, mt19937_64* gen, int maxSimulations)
       {
         if (next->visits != 0)
         {
-          double winRate = (next->wins + static_cast<double>(next->draws) / 2)/next->visits;
-          double uct = UCTK * sqrt(2 * log(n.visits) / next->visits);
-          double uctValue = winRate + uct;
+          double uctValue = ucb(&n, next);
           if (uctValue > bestUct)
           {
             bestUct = uctValue;
@@ -259,9 +262,7 @@ Pos uctWithTime(Field* field, mt19937_64* gen, int time)
       {
         if (next->visits != 0)
         {
-          double winRate = (next->wins + static_cast<double>(next->draws) / 2)/next->visits;
-          double uct = UCTK * sqrt(2 * log(n.visits) / next->visits);
-          double uctValue = winRate + uct;
+          double uctValue = ucb(&n, next);
           if (uctValue > bestUct)
           {
             bestUct = uctValue;
