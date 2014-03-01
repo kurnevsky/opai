@@ -56,7 +56,7 @@ void createChildren(Field* field, vector<Pos>* possibleMoves, uctNode* n)
 
 double ucb(uctNode* n, uctNode* next)
 {
-  double winRate = (next->wins + static_cast<double>(next->draws) / 2)/next->visits;
+  double winRate = static_cast<double>(next->wins + next->draws * UCT_DRAW_WEIGHT) / next->visits;
   double uct = UCTK * sqrt(2 * log(n->visits) / next->visits);
   return winRate + uct;
 }

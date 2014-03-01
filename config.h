@@ -17,6 +17,8 @@
 // Smaller values give very selective search.
 #define UCTK 1
 
+#define UCT_DRAW_WEIGHT 0.4
+
 // Радиус, внутри которого происходит анализ UCT.
 #define UCT_RADIUS 2
 
