@@ -202,7 +202,7 @@ Pos uct(Field* field, mt19937_64* gen, int maxSimulations)
         if (next->visits != 0)
         {
           auto winRate = static_cast<double>(next->wins)/next->visits;
-          auto uct = UCTK * sqrt(2 * log(static_cast<double>(n.visits)) / next->visits);
+          auto uct = UCTK * sqrt(2 * log(n.visits) / next->visits);
           auto uctValue = winRate + uct;
           if (uctValue > bestUct)
           {
@@ -258,7 +258,7 @@ Pos uctWithTime(Field* field, mt19937_64* gen, int time)
         if (next->visits != 0)
         {
           auto winRate = static_cast<double>(next->wins)/next->visits;
-          auto uct = UCTK * sqrt(2 * log(static_cast<double>(n.visits)) / next->visits);
+          auto uct = UCTK * sqrt(2 * log(n.visits) / next->visits);
           auto uctValue = winRate + uct;
           if (uctValue > bestUct)
           {
