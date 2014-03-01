@@ -85,7 +85,7 @@ uctNode* uctSelect(mt19937* gen, uctNode* n)
 int playSimulation(Field* field, mt19937* gen, vector<Pos>* possibleMoves, uctNode* n, int depth)
 {
   int randomResult;
-  if (n->visits == 0 || depth == UCT_DEPTH)
+  if (n->visits < UCT_WHEN_CREATE_CHILDREN || depth == UCT_DEPTH)
   {
     randomResult = playRandomGame(field, gen, possibleMoves);
   }

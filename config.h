@@ -9,7 +9,9 @@
 // Включает сортировку по вероятностям для улучшения альфабета-отсечения.
 #define ALPHABETA_SORT 0
 
-#define UCT_DEPTH 4
+#define UCT_DEPTH 6
+
+#define UCT_WHEN_CREATE_CHILDREN 2
 
 // Larger values give uniform search.
 // Smaller values give very selective search.
