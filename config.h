@@ -17,6 +17,7 @@
 // Smaller values give very selective search.
 #define UCTK 1
 
+// Must be double!
 #define UCT_DRAW_WEIGHT 0.4
 
 // Радиус, внутри которого происходит анализ UCT.
@@ -24,6 +25,10 @@
 
 // Количество итераций uct перед проверкой времени.
 #define UCT_ITERATIONS_BEFORE_CHECK_TIME 100
+
+// 0 - UCB1
+// 1 - UCT1-tuned
+#define UCB_TYPE 1
 
 // Способ поиска лучшего хода.
 // 0 - position estimate

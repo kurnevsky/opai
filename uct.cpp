@@ -56,9 +56,18 @@ void createChildren(Field* field, vector<Pos>* possibleMoves, uctNode* n)
 
 double ucb(uctNode* n, uctNode* next)
 {
-  double winRate = static_cast<double>(next->wins + next->draws * UCT_DRAW_WEIGHT) / next->visits;
+#if UCB_TYPE == 0
+  double winRate = (next->wins + next->draws * UCT_DRAW_WEIGHT) / next->visits;
   double uct = UCTK * sqrt(2 * log(n->visits) / next->visits);
   return winRate + uct;
+#elif UCB_TYPE == 1
+  double winRate = (next->wins + next->draws * UCT_DRAW_WEIGHT) / next->visits;
+  double v = (next->wins + next->draws * UCT_DRAW_WEIGHT * UCT_DRAW_WEIGHT) / next->visits - winRate * winRate + sqrt(2 * log(n->visits) / next->visits);
+  double uct = UCTK * sqrt(min(0.25, v) * log(n->visits) / next->visits);
+  return winRate + uct;
+#else
+#error Invalid UCB_TYPE.
+#endif
 }
 
 uctNode* uctSelect(mt19937* gen, uctNode* n)
