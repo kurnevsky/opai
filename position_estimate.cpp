@@ -10,7 +10,7 @@ using namespace std;
 const int cgSumma[] = {-5, -1, 0, 0, 1, 2, 5, 20, 30};
 
 // Учет позиционных эвристик.
-int position_estimate(Field* field, Pos pos, Player player)
+int positionEstimate(Field* field, Pos pos, int player)
 {
   int g1 = field->numberNearGroups(pos, player);
   int g2 = field->numberNearGroups(pos, nextPlayer(player));
@@ -22,17 +22,17 @@ int position_estimate(Field* field, Pos pos, Player player)
   return result;
 }
 
-Pos position_estimate(Field* field)
+Pos positionEstimate(Field* field)
 {
-  int best_estimate = numeric_limits<int>::min();
+  int bestEstimate = numeric_limits<int>::min();
   Pos result = -1;
   for (Pos i = field->minPos(); i <= field->maxPos(); i++)
     if (field->puttingAllow(i))
     {
-      int cur_estimate = position_estimate(field, i, field->getPlayer());
-      if (cur_estimate > best_estimate)
+      int curEstimate = positionEstimate(field, i, field->getPlayer());
+      if (curEstimate > bestEstimate)
       {
-        best_estimate = cur_estimate;
+        bestEstimate = curEstimate;
         result = i;
       }
     }

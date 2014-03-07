@@ -42,7 +42,7 @@ public:
   // Функции получения состояния.
 
   // Получить по координате игрока, чья точка там поставлена.
-  Player getPlayer(const Pos pos) const { return _points[pos] & playerBit; }
+  int getPlayer(const Pos pos) const { return _points[pos] & playerBit; }
   // Проверить по координате, поставлена ли там точка.
   bool isPutted(const Pos pos) const { return (_points[pos] & putBit) != 0; }
   // Прверить по координате, является ли точка окружающей базу.
@@ -74,9 +74,9 @@ public:
   // Убрать с поля по координате put_bit.
   void clearPuted(const Pos pos) { _points[pos] &= ~putBit; }
   // Пометить поле по координате как принадлежащее игроку.
-  void setPlayer(const Pos pos, const Player player) { _points[pos] = (_points[pos] & ~playerBit) | player; }
+  void setPlayer(const Pos pos, const int player) { _points[pos] = (_points[pos] & ~playerBit) | player; }
   // Пометить поле по координате как содержащее точку игрока.
-  void setPlayerPutted(const Pos pos, const Player player) { _points[pos] = (_points[pos] & ~playerBit) | player | putBit; }
+  void setPlayerPutted(const Pos pos, const int player) { _points[pos] = (_points[pos] & ~playerBit) | player | putBit; }
   // Пометить битом SurBit (захватить).
   void capture(const Pos pos) { _points[pos] |= surBit; }
   // Убрать бит SurBit.
@@ -107,7 +107,7 @@ private:
   int _height;
   // Current player color.
   // Текущий цвет игроков.
-  Player _player;
+  int _player;
   // Capture points count.
   // Количество захваченных точек.
   int _captureCount[2];
@@ -265,7 +265,7 @@ private:
     }
   }
   // Изменение счета игроков.
-  void addSubCapturedFreed(const Player player, const int captured, const int freed)
+  void addSubCapturedFreed(const int player, const int captured, const int freed)
   {
     if (captured == -1)
     {
@@ -278,7 +278,7 @@ private:
     }
   }
   // Изменяет Captured/Free в зависимости от того, захвачена или окружена точка.
-  void checkCapturedAndFreed(const Pos pos, const Player player, int &captured, int &freed)
+  void checkCapturedAndFreed(const Pos pos, const int player, int &captured, int &freed)
   {
     if (isPutted(pos))
     {
@@ -289,7 +289,7 @@ private:
     }
   }
   // Захватывает/освобождает окруженную точку.
-  void setCaptureFreeState(const Pos pos, const Player player)
+  void setCaptureFreeState(const Pos pos, const int player)
   {
     if (isPutted(pos))
     {
@@ -355,7 +355,7 @@ private:
       clearTag(*i);
     return (baseSquare < 0 && chain.size() > 2);
   }
-  void findSurround(list<Pos> &chain, Pos insidePoint, Player player)
+  void findSurround(list<Pos> &chain, Pos insidePoint, int player)
   {
     // Количество захваченных точек.
     int curCaptureCount = 0;
@@ -413,7 +413,7 @@ private:
       }
     }
   }
-  void updateHash(Player player, Pos pos) { _hash ^= _zobrist->getHash((player + 1) * pos); }
+  void updateHash(int player, Pos pos) { _hash ^= _zobrist->getHash((player + 1) * pos); }
   IntersectionState getIntersectionState(const Pos pos, const Pos nextPos) const
   {
     Point a, b;
@@ -484,12 +484,12 @@ public:
   {
     delete _points;
   }
-  int getScore(Player player) const { return _captureCount[player] - _captureCount[nextPlayer(player)]; }
-  int getPrevScore(Player player) const { return _changes.back().captureCount[player] - _changes.back().captureCount[nextPlayer(player)]; }
-  Player getLastPlayer() const { return getPlayer(pointsSeq.back()); }
-  int getDScore(Player player) const { return getScore(player) - getPrevScore(player); }
+  int getScore(int player) const { return _captureCount[player] - _captureCount[nextPlayer(player)]; }
+  int getPrevScore(int player) const { return _changes.back().captureCount[player] - _changes.back().captureCount[nextPlayer(player)]; }
+  int getLastPlayer() const { return getPlayer(pointsSeq.back()); }
+  int getDScore(int player) const { return getScore(player) - getPrevScore(player); }
   int getDScore() const { return getDScore(getLastPlayer()); }
-  Player getPlayer() const { return _player; }
+  int getPlayer() const { return _player; }
   int64_t getHash() const { return _hash; }
   Zobrist& getZobrist() const { return *_zobrist; };
   int getWidth() const { return _width; }
@@ -510,7 +510,7 @@ public:
   int toY(const Pos pos) const { return pos / (_width + 2) - 1; }
   // Конвертация из Pos в XY.
   void toXY(const Pos pos, int &x, int &y) const { x = toX(pos); y = toY(pos); }
-  void setPlayer(const Player player) { _player = player; }
+  void setPlayer(const int player) { _player = player; }
   // Установить следующего игрока как текущего.
   void setNextPlayer() { setPlayer(nextPlayer(_player)); }
   // Поставить точку на поле следующего по очереди игрока.
@@ -524,7 +524,7 @@ public:
     return false;
   }
   // Поставить точку на поле.
-  bool doStep(const Pos pos, const Player player)
+  bool doStep(const Pos pos, const int player)
   {
     if (puttingAllow(pos))
     {
@@ -539,7 +539,7 @@ public:
     doUnsafeStep(pos, _player);
     setNextPlayer();
   }
-  void doUnsafeStep(const Pos pos, const Player player)
+  void doUnsafeStep(const Pos pos, const int player)
   {
     _changes.push_back(BoardChange());
     _changes.back().captureCount[0] = _captureCount[0];
@@ -581,7 +581,7 @@ public:
       return false;
   }
   // Проверяет, есть ли рядом с centerPos точки цвета player.
-  bool isNearPoints(const Pos centerPos, const Player player) const
+  bool isNearPoints(const Pos centerPos, const int player) const
   {
     if (isEnable(n(centerPos), putBit | player)  ||
       isEnable(s(centerPos), putBit | player)  ||
@@ -596,7 +596,7 @@ public:
       return false;
   }
   // Возвращает количество точек рядом с centerPos цвета player.
-  int numberNearPoints(const Pos centerPos, const Player player) const
+  int numberNearPoints(const Pos centerPos, const int player) const
   {
     int result = 0;
     if (isEnable(n(centerPos), putBit | player))
@@ -618,7 +618,7 @@ public:
     return result;
   }
   // Возвращает количество групп точек рядом с centerPos.
-  int numberNearGroups(const Pos centerPos, const Player player) const
+  int numberNearGroups(const Pos centerPos, const int player) const
   {
     int result = 0;
     if (isNotEnable(w(centerPos), player | putBit) && (isEnable(nw(centerPos), player | putBit) || isEnable(n(centerPos), player | putBit)))
@@ -708,7 +708,7 @@ public:
     return intersections % 2 == 1;
   }
   // Проверяет поставленную точку на наличие созданных ею окружений, и окружает, если они есть.
-  void checkClosure(const Pos startPos, Player player)
+  void checkClosure(const Pos startPos, int player)
   {
     int inpPointsCount;
     Pos inpChainPoints[4], inpSurPoints[4];

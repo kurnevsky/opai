@@ -6,4 +6,4 @@
 
 using namespace std;
 
-Pos position_estimate(Field* field);
+Pos positionEstimate(Field* field);

@@ -15,8 +15,7 @@ void author(int id)
 
 void gen_move(int id)
 {
-  Player player;
-  int x, y;
+  int x, y, player;
   cin >> player;
   if (bot == NULL)
   {
@@ -35,8 +34,7 @@ void gen_move(int id)
 
 void gen_move_with_complexity(int id)
 {
-  Player player;
-  int x, y, complexity;
+  int x, y, player, complexity;
   cin >> player >> complexity;
   if (bot == NULL)
   {
@@ -55,8 +53,7 @@ void gen_move_with_complexity(int id)
 
 void gen_move_with_time(int id)
 {
-  Player player;
-  int x, y, time;
+  int x, y, player, time;
   cin >> player >> time;
   if (bot == NULL)
   {
@@ -102,8 +99,7 @@ void name(int id)
 
 void play(int id)
 {
-  int x, y;
-  Player player;
+  int x, y, player;
   cin >> x >> y >> player;
   if (bot == NULL || !bot->doStep(x, y, player))
     cout << "?" << " " << id << " " << "play" << endl;

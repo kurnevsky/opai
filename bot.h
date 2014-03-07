@@ -25,9 +25,9 @@ private:
 public:
   Bot(const int width, const int height, const BeginPattern beginPattern, int64_t seed);
   ~Bot();
-  bool doStep(int x, int y, Player player);
+  bool doStep(int x, int y, int player);
   bool undoStep();
-  void setPlayer(Player player);
+  void setPlayer(int player);
   // Возвращает лучший найденный ход.
   void get(int& x, int& y);
   void getWithComplexity(int& x, int& y, int complexity);

@@ -19,7 +19,7 @@ private:
 
 private:
   template<typename _InIt>
-  void addTrajectory(_InIt begin, _InIt end, Player player)
+  void addTrajectory(_InIt begin, _InIt end, int player)
   {
     int64_t hash = 0;
     // Эвристические проверки.
@@ -36,11 +36,11 @@ private:
         return; // В теории возможны коллизии. Неплохо было бы сделать точную проверку.
     _trajectories[player].push_back(Trajectory(begin, end, _zobrist, hash));
   }
-  void addTrajectory(Trajectory* trajectory, Player player)
+  void addTrajectory(Trajectory* trajectory, int player)
   {
     _trajectories[player].push_back(Trajectory(*trajectory));
   }
-  void addTrajectory(Trajectory* trajectory, Pos pos, Player player)
+  void addTrajectory(Trajectory* trajectory, Pos pos, int player)
   {
     if (trajectory->size() == 1)
       return;
@@ -49,7 +49,7 @@ private:
       if (*i != pos)
         _trajectories[player].back().pushBack(*i);
   }
-  void buildTrajectoriesRecursive(int depth, Player player)
+  void buildTrajectoriesRecursive(int depth, int player)
   {
     for (auto pos = _field->minPos(); pos <= _field->maxPos(); pos++)
     {
@@ -91,7 +91,7 @@ private:
   }
   // Проецирует траектории на доску TrajectoriesBoard (для каждой точки Pos очередной траектории инкрементирует TrajectoriesBoard[Pos]).
   // Для оптимизации в данной реализации функции не проверяются траектории на исключенность (поле Excluded).
-  void project(Player player)
+  void project(int player)
   {
     for (auto i = _trajectories[player].begin(); i != _trajectories[player].end(); i++)
       if (!i->excluded())
@@ -108,7 +108,7 @@ private:
       _trajectoriesBoard[*j]--;
   }
   // Удаляет проекцию траекторий с доски TrajectoriesBoard.
-  void unproject(Player player)
+  void unproject(int player)
   {
     for (auto i = _trajectories[player].begin(); i != _trajectories[player].end(); i++)
       if (!i->excluded())
@@ -119,7 +119,7 @@ private:
     unproject(playerRed);
     unproject(playerBlack);
   }
-  void includeAllTrajectories(Player player)
+  void includeAllTrajectories(int player)
   {
     for (auto i = _trajectories[player].begin(); i != _trajectories[player].end(); i++)
       i->include();
@@ -138,7 +138,7 @@ private:
         resultHash ^= _zobrist->getHash(*i);
     return resultHash;
   }
-  bool excludeUnnecessaryTrajectories(Player player)
+  bool excludeUnnecessaryTrajectories(int player)
   {
     auto need_exclude = false;
     for (auto i = _trajectories[player].begin(); i != _trajectories[player].end(); i++)
@@ -165,7 +165,7 @@ private:
     while (excludeUnnecessaryTrajectories(playerRed) || excludeUnnecessaryTrajectories(playerBlack));
   }
   // Исключает составные траектории.
-  void excludeCompositeTrajectories(Player player)
+  void excludeCompositeTrajectories(int player)
   {
     list<Trajectory>::iterator i, j, k;
     for (k = _trajectories[player].begin(); k != _trajectories[player].end(); k++)
@@ -180,7 +180,7 @@ private:
     excludeCompositeTrajectories(playerRed);
     excludeCompositeTrajectories(playerBlack);
   }
-  void getPoints(list<Pos>* moves, Player player)
+  void getPoints(list<Pos>* moves, int player)
   {
     for (auto i = _trajectories[player].begin(); i != _trajectories[player].end(); i++)
       if (!i->excluded())
@@ -188,7 +188,7 @@ private:
           if (find(moves->begin(), moves->end(), *j) == moves->end())
             moves->push_back(*j);
   }
-  int calculateMaxScore(Player player, int depth)
+  int calculateMaxScore(int player, int depth)
   {
     auto result = _field->getScore(player);
     if (depth > 0)
@@ -216,15 +216,15 @@ public:
     _trajectoriesBoard = emptyBoard;
     _zobrist = &field->getZobrist();
   }
-  Player getCurPlayer()
+  int getCurPlayer()
   {
     return _field->getPlayer();
   }
-  Player getEnemyPlayer()
+  int getEnemyPlayer()
   {
     return nextPlayer(_field->getPlayer());
   }
-  void clear(Player player)
+  void clear(int player)
   {
     _trajectories[player].clear();
   }
@@ -233,7 +233,7 @@ public:
     clear(playerRed);
     clear(playerBlack);
   }
-  void buildPlayerTrajectories(Player player)
+  void buildPlayerTrajectories(int player)
   {
     if (_depth[player] > 0)
       buildTrajectoriesRecursive(_depth[player] - 1, player);
@@ -307,7 +307,7 @@ public:
   {
     return &_allMoves;
   }
-  int getMaxScore(Player player)
+  int getMaxScore(int player)
   {
     return calculateMaxScore(player, _depth[player]) + _depth[nextPlayer(player)];
   }
