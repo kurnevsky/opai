@@ -1,7 +1,5 @@
 #pragma once
 
-#include "config.h"
-#include "basic_types.h"
 #include "zobrist.h"
 #include <list>
 

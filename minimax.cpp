@@ -123,7 +123,7 @@ int minimax(Field* field, int depth)
   }
   // Для почти всех возможных точек, не входящих в траектории оценка будет такая же, как если бы игрок CurPlayer пропустил ход.
   //int enemy_estimate = get_enemy_estimate(cur_field, Trajectories[cur_field.get_player()], Trajectories[next_player(cur_field.get_player())], depth);
-  auto maxThreads = omp_get_max_threads();
+  int maxThreads = omp_get_max_threads();
   int** emptyBoards = new int*[maxThreads];
   emptyBoards[0] = emptyBoard;
   for (auto i = 1; i < maxThreads; i++)
@@ -133,19 +133,19 @@ int minimax(Field* field, int depth)
   }
   Field** fields = new Field*[maxThreads];
   fields[0] = field;
-  for (auto i = 1; i < maxThreads; i++)
+  for (int i = 1; i < maxThreads; i++)
     fields[i] = new Field(*field);
-  auto alpha = -curTrajectories.getMaxScore(nextPlayer(field->getPlayer()));
-  auto beta = curTrajectories.getMaxScore(field->getPlayer());
+  int alpha = -curTrajectories.getMaxScore(nextPlayer(field->getPlayer()));
+  int beta = curTrajectories.getMaxScore(field->getPlayer());
   #pragma omp parallel
   {
-    auto threadNum = omp_get_thread_num();
+    int threadNum = omp_get_thread_num();
     #pragma omp for schedule(dynamic, 1)
     for (auto i = moves.begin(); i < moves.end(); i++)
     {
       if (alpha < beta)
       {
-        auto curEstimate = alphabeta(fields[threadNum], depth - 1, *i, &curTrajectories, -alpha - 1, -alpha, emptyBoards[threadNum]);
+        int curEstimate = alphabeta(fields[threadNum], depth - 1, *i, &curTrajectories, -alpha - 1, -alpha, emptyBoards[threadNum]);
         if (curEstimate > alpha && curEstimate < beta)
           curEstimate = alphabeta(fields[threadNum], depth - 1, *i, &curTrajectories, -beta, -curEstimate, emptyBoards[threadNum]);
         #pragma omp critical
@@ -160,10 +160,10 @@ int minimax(Field* field, int depth)
     }
   }
   result = alpha == getEnemyEstimate(fields, emptyBoards, maxThreads, &curTrajectories, depth - 1) ? -1 : result;
-  for (auto i = 0; i < maxThreads; i++)
+  for (int i = 0; i < maxThreads; i++)
     delete emptyBoards[i];
   delete emptyBoards;
-  for (auto i = 1; i < maxThreads; i++)
+  for (int i = 1; i < maxThreads; i++)
     delete fields[i];
   delete fields;
   return result;
