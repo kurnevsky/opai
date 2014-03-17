@@ -16,7 +16,7 @@ using namespace std;
 // Pos - последний выбранный, но не сделанный ход.
 // alpha, beta - интервал оценок, вне которого искать нет смысла.
 // На выходе оценка позиции для CurPlayer (до хода Pos).
-int alphabeta(Field* field, int depth, Pos pos, Trajectories* last, int alpha, int beta, int* emptyBoard)
+int alphabeta(Field* field, int depth, int pos, Trajectories* last, int alpha, int beta, int* emptyBoard)
 {
   Trajectories curTrajectories(field, emptyBoard);
   // Делаем ход, выбранный на предыдущем уровне рекурсии, после чего этот ход становится вражеским.
@@ -33,7 +33,7 @@ int alphabeta(Field* field, int depth, Pos pos, Trajectories* last, int alpha, i
     return -numeric_limits<int>::max(); // Для CurPlayer это хорошо, то есть оценка Infinity.
   }
   curTrajectories.buildTrajectories(last, pos);
-  list<Pos>* moves = curTrajectories.getPoints();
+  list<int>* moves = curTrajectories.getPoints();
   if (moves->size() == 0)
   {
     int bestEstimate = field->getScore(field->getPlayer());
@@ -60,7 +60,7 @@ int getEnemyEstimate(Field** fields, int** emptyBoards, int maxThreads, Trajecto
 {
   Trajectories curTrajectories(fields[0], emptyBoards[0]);
   int result;
-  vector<Pos> moves;
+  vector<int> moves;
   for (int i = 0; i < maxThreads; i++)
     fields[i]->setNextPlayer();
   curTrajectories.buildTrajectories(last);
@@ -102,7 +102,7 @@ int getEnemyEstimate(Field** fields, int** emptyBoards, int maxThreads, Trajecto
 // CurField - поле, на котором производится оценка.
 // Depth - глубина оценки.
 // Moves - на входе возможные ходы, на выходе лучшие из них.
-Pos minimax(Field* field, int depth)
+int minimax(Field* field, int depth)
 {
   if (depth <= 0)
     return -1;
@@ -110,8 +110,8 @@ Pos minimax(Field* field, int depth)
   fill_n(emptyBoard, field->getLength(), 0);
   // Главные траектории - свои и вражеские.
   Trajectories curTrajectories(field, emptyBoard);
-  Pos result;
-  vector<Pos> moves;
+  int result;
+  vector<int> moves;
   // Получаем ходы из траекторий (которые имеет смысл рассматривать), и находим пересечение со входными возможными точками.
   curTrajectories.buildTrajectories(depth);
   moves.assign(curTrajectories.getPoints()->begin(), curTrajectories.getPoints()->end());

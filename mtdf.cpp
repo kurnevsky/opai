@@ -9,7 +9,7 @@
 
 using namespace std;
 
-int mtdfAlphabeta(Field** fields, vector<Pos>* moves, int depth, Trajectories* last, int alpha, int beta, int** emptyBoards, Pos* best)
+int mtdfAlphabeta(Field** fields, vector<int>* moves, int depth, Trajectories* last, int alpha, int beta, int** emptyBoards, int* best)
 {
   #pragma omp parallel
   {
@@ -36,14 +36,14 @@ int mtdfAlphabeta(Field** fields, vector<Pos>* moves, int depth, Trajectories* l
 
 // CurField - поле, на котором производится оценка.
 // Depth - глубина оценки.
-Pos mtdf(Field* field, int depth)
+int mtdf(Field* field, int depth)
 {
   int* emptyBoard = new int[field->getLength()];
   fill_n(emptyBoard, field->getLength(), 0);
   // Главные траектории - свои и вражеские.
   Trajectories curTrajectories(field, emptyBoard);
-  vector<Pos> moves;
-  Pos result;
+  vector<int> moves;
+  int result;
   // Делаем что-то только когда глубина просчета положительная и колическтво возможных ходов на входе не равно 0.
   if (depth <= 0)
   {

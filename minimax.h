@@ -7,6 +7,6 @@
 
 using namespace std;
 
-int alphabeta(Field* field, int depth, Pos pos, Trajectories* last, int alpha, int beta, int* emptyBoard);
+int alphabeta(Field* field, int depth, int pos, Trajectories* last, int alpha, int beta, int* emptyBoard);
 int getEnemyEstimate(Field** fields, int** emptyBoards, int maxThreads, Trajectories* last, int depth);
-Pos minimax(Field* field, int depth);
+int minimax(Field* field, int depth);

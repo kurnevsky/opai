@@ -8,7 +8,7 @@
 class Trajectory
 {
 private:
-  list<Pos> _points;
+  list<int> _points;
   Zobrist* _zobrist;
   int64_t _hash;
   bool _excluded;
@@ -50,7 +50,7 @@ public:
   {
     return _points.empty();
   }
-  void pushBack(Pos pos)
+  void pushBack(int pos)
   {
     _points.push_back(pos);
     _hash ^= _zobrist->getHash(pos);
@@ -75,35 +75,35 @@ public:
     *this = other;
     other = tmp;
   }
-  list<Pos>::iterator begin()
+  list<int>::iterator begin()
   {
     return _points.begin();
   }
-  list<Pos>::const_iterator begin() const
+  list<int>::const_iterator begin() const
   {
     return _points.begin();
   }
-  list<Pos>::iterator end()
+  list<int>::iterator end()
   {
     return _points.end();
   }
-  list<Pos>::const_iterator end() const
+  list<int>::const_iterator end() const
   {
     return _points.end();
   }
-  list<Pos>::reverse_iterator rbegin()
+  list<int>::reverse_iterator rbegin()
   {
     return _points.rbegin();
   }
-  list<Pos>::reverse_iterator rend()
+  list<int>::reverse_iterator rend()
   {
     return _points.rend();
   }
-  list<Pos>::const_reverse_iterator rbegin() const
+  list<int>::const_reverse_iterator rbegin() const
   {
     return _points.rbegin();
   }
-  list<Pos>::const_reverse_iterator rend() const
+  list<int>::const_reverse_iterator rend() const
   {
     return _points.rend();
   }
@@ -144,7 +144,7 @@ public:
     return true;
   }
   // Проверяет, во все ли точки траектории можно сделать ход, кроме, возможно, точки cur_pos.
-  bool isValid(Field* field, Pos pos) const
+  bool isValid(Field* field, int pos) const
   {
     for (auto i = _points.begin(); i != _points.end(); i++)
       if (*i != pos && !field->puttingAllow(*i))

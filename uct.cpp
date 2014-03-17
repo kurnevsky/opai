@@ -1,5 +1,4 @@
 #include "config.h"
-#include "basic_types.h"
 #include "uct.h"
 #include "player.h"
 #include "field.h"
@@ -13,9 +12,14 @@
 using namespace std;
 using namespace chrono;
 
-int playRandomGame(Field* field, mt19937* gen, vector<Pos>* possibleMoves)
+// Play random game and get result.
+// field - field to play.
+// gen - random number generator.
+// possibleMoves - allowed positions of moves.
+// Returns number of winner, or -1 if draw.
+int playRandomGame(Field* field, mt19937* gen, vector<int>* possibleMoves)
 {
-  vector<Pos> moves(possibleMoves->size());
+  vector<int> moves(possibleMoves->size());
   int putted = 0, result;
   moves[0] = (*possibleMoves)[0];
   for (size_t i = 1; i < possibleMoves->size(); i++)
@@ -42,9 +46,13 @@ int playRandomGame(Field* field, mt19937* gen, vector<Pos>* possibleMoves)
   return result;
 }
 
-void createChildren(Field* field, vector<Pos>* possibleMoves, uctNode* n)
+// Create children of UCT node.
+// field - field for creating children.
+// possibleMoves - allowed positions of moves.
+// node - UCT node for creating children.
+void createChildren(Field* field, vector<int>* possibleMoves, uctNode* node)
 {
-  uctNode** curChild = &n->child;
+  uctNode** curChild = &node->child;
   for (auto i = possibleMoves->begin(); i < possibleMoves->end(); i++)
     if (field->puttingAllow(*i))
     {
@@ -54,32 +62,40 @@ void createChildren(Field* field, vector<Pos>* possibleMoves, uctNode* n)
     }
 }
 
-double ucb(uctNode* n, uctNode* next)
+// Calculate UCB estimation of UCT node.
+// parent - parent of UCT node.
+// node - node for calculating UCB estimate.
+// Returns UCB estimate.
+double ucb(uctNode* parent, uctNode* node)
 {
 #if UCB_TYPE == 0
-  double winRate = (next->wins + next->draws * UCT_DRAW_WEIGHT) / next->visits;
-  double uct = UCTK * sqrt(2 * log(n->visits) / next->visits);
+  double winRate = (node->wins + node->draws * UCT_DRAW_WEIGHT) / node->visits;
+  double uct = UCTK * sqrt(2 * log(parent->visits) / node->visits);
   return winRate + uct;
 #elif UCB_TYPE == 1
-  double winRate = (next->wins + next->draws * UCT_DRAW_WEIGHT) / next->visits;
-  double v = (next->wins + next->draws * UCT_DRAW_WEIGHT * UCT_DRAW_WEIGHT) / next->visits - winRate * winRate + sqrt(2 * log(n->visits) / next->visits);
-  double uct = UCTK * sqrt(min(0.25, v) * log(n->visits) / next->visits);
+  double winRate = (node->wins + node->draws * UCT_DRAW_WEIGHT) / node->visits;
+  double v = (node->wins + node->draws * UCT_DRAW_WEIGHT * UCT_DRAW_WEIGHT) / node->visits - winRate * winRate + sqrt(2 * log(parent->visits) / node->visits);
+  double uct = UCTK * sqrt(min(0.25, v) * log(parent->visits) / node->visits);
   return winRate + uct;
 #else
 #error Invalid UCB_TYPE.
 #endif
 }
 
-uctNode* uctSelect(mt19937* gen, uctNode* n)
+// Find child of UCT node with best UCB estimation.
+// gen - random number generator.
+// node - node to find.
+// Returns child with best UCB estimation.
+uctNode* uctSelect(mt19937* gen, uctNode* node)
 {
   double bestUct = 0, uctValue;
   uctNode* result = NULL;
-  uctNode* next = n->child;
+  uctNode* next = node->child;
   while (next != NULL)
   {
     if (next->visits > 0)
     {
-      uctValue = ucb(n, next);
+      uctValue = ucb(node, next);
     }
     else
     {
@@ -96,23 +112,30 @@ uctNode* uctSelect(mt19937* gen, uctNode* n)
   return result;
 }
 
-int playSimulation(Field* field, mt19937* gen, vector<Pos>* possibleMoves, uctNode* n, int depth)
+// Play one UCT simulation.
+// field - field to play simulation.
+// gen - random number generator.
+// possibleMoves - allowed positions of moves.
+// node - UCT node to play simulation.
+// depth - current depth of UCT simulation.
+// Returns number of winner, or -1 if draw.
+int playSimulation(Field* field, mt19937* gen, vector<int>* possibleMoves, uctNode* node, int depth)
 {
   int randomResult;
-  if (n->visits < UCT_WHEN_CREATE_CHILDREN || depth == UCT_DEPTH)
+  if (node->visits < UCT_WHEN_CREATE_CHILDREN || depth == UCT_DEPTH)
   {
     randomResult = playRandomGame(field, gen, possibleMoves);
   }
   else
   {
-    if (n->child == NULL)
-      createChildren(field, possibleMoves, n);
-    uctNode* next = uctSelect(gen, n);
+    if (node->child == NULL)
+      createChildren(field, possibleMoves, node);
+    uctNode* next = uctSelect(gen, node);
     if (next == NULL)
     {
-      n->visits = numeric_limits<int>::max();
+      node->visits = numeric_limits<int>::max();
       if (field->getScore(nextPlayer(field->getPlayer())) > 0)
-        n->wins = numeric_limits<int>::max();
+        node->wins = numeric_limits<int>::max();
       if (field->getScore(playerRed) > 0)
         return playerRed;
       else if (field->getScore(playerBlack) > 0)
@@ -124,49 +147,58 @@ int playSimulation(Field* field, mt19937* gen, vector<Pos>* possibleMoves, uctNo
     randomResult = playSimulation(field, gen, possibleMoves, next, depth + 1);
     field->undoStep();
   }
-  n->visits++;
+  node->visits++;
   if (randomResult == nextPlayer(field->getPlayer()))
-    n->wins++;
+    node->wins++;
   else if (randomResult == -1)
-    n->draws++;
+    node->draws++;
   return randomResult;
 }
 
+// Generate possible moves for UCT. It is moves which are spaced by not more than UCT_RADIUS cells from the putted points.
+// field - field to generate possible moves.
+// possibleMoves - container to put possible moves.
 template<typename _Cont>
 void generatePossibleMoves(Field* field, _Cont* possibleMoves)
 {
-  int* rField = new int[field->getLength()];
-  fill_n(rField, field->getLength(), 0);
-  queue<Pos> q;
+  int length = field->getLength();
+  int* rField = new int[length];
+  fill_n(rField, length, 0);
+  queue<int> q;
   possibleMoves->clear();
-  for (Pos i = field->minPos(); i <= field->maxPos(); i++)
-    if (field->isPutted(i)) //TODO: Класть соседей, а не сами точки.
+  for (int i = field->minPos(); i <= field->maxPos(); i++)
+    if (field->isPutted(i))
       q.push(i);
   while (!q.empty())
   {
-    if (field->puttingAllow(q.front())) //TODO: Убрать условие.
-      possibleMoves->push_back(q.front());
-    if (rField[q.front()] < UCT_RADIUS)
+    int front = q.front();
+    if (field->puttingAllow(front))
+      possibleMoves->push_back(front);
+    if (rField[front] < UCT_RADIUS)
     {
-      if (field->puttingAllow(field->n(q.front())) && rField[field->n(q.front())] == 0)
+      int nFront = field->n(front);
+      if (field->puttingAllow(nFront) && rField[nFront] == 0)
       {
-        rField[field->n(q.front())] = rField[q.front()] + 1;
-        q.push(field->n(q.front()));
+        rField[nFront] = rField[front] + 1;
+        q.push(nFront);
       }
-      if (field->puttingAllow(field->s(q.front())) && rField[field->s(q.front())] == 0)
+      int sFront = field->s(front);
+      if (field->puttingAllow(sFront) && rField[sFront] == 0)
       {
-        rField[field->s(q.front())] = rField[q.front()] + 1;
-        q.push(field->s(q.front()));
+        rField[sFront] = rField[front] + 1;
+        q.push(sFront);
       }
-      if (field->puttingAllow(field->w(q.front())) && rField[field->w(q.front())] == 0)
+      int wFront = field->w(front);
+      if (field->puttingAllow(wFront) && rField[wFront] == 0)
       {
-        rField[field->w(q.front())] = rField[q.front()] + 1;
-        q.push(field->w(q.front()));
+        rField[wFront] = rField[front] + 1;
+        q.push(wFront);
       }
-      if (field->puttingAllow(field->e(q.front())) && rField[field->e(q.front())] == 0)
+      int eFront = field->e(front);
+      if (field->puttingAllow(eFront) && rField[eFront] == 0)
       {
-        rField[field->e(q.front())] = rField[q.front()] + 1;
-        q.push(field->e(q.front()));
+        rField[eFront] = rField[front] + 1;
+        q.push(eFront);
       }
     }
     q.pop();
@@ -174,6 +206,8 @@ void generatePossibleMoves(Field* field, _Cont* possibleMoves)
   delete rField;
 }
 
+// Delete UCT tree.
+// n - start UCT node.
 void finalUct(uctNode* n)
 {
   if (n->child != NULL)
@@ -183,12 +217,17 @@ void finalUct(uctNode* n)
   delete n;
 }
 
-Pos uct(Field* field, mt19937_64* gen, int maxSimulations)
+// Get best move by UCT analysis.
+// field - field to find best move.
+// gen - random number generator.
+// maxSimulations - number of UCT simulations.
+// Returns position of best move, or -1 if not found.
+int uct(Field* field, mt19937_64* gen, int maxSimulations)
 {
-  // Список всех возможных ходов для UCT.
-  vector<Pos> moves;
+  // List of all possible moves for UCT.
+  vector<int> moves;
   double bestUct = 0;
-  Pos result = -1;
+  int result = -1;
   generatePossibleMoves(field, &moves);
   if (static_cast<size_t>(omp_get_max_threads()) > moves.size())
     omp_set_num_threads(moves.size());
@@ -227,7 +266,6 @@ Pos uct(Field* field, mt19937_64* gen, int maxSimulations)
         next = next->sibling;
       }
     }
-
     if (n.child != NULL)
       finalUct(n.child);
     delete localGen;
@@ -236,12 +274,17 @@ Pos uct(Field* field, mt19937_64* gen, int maxSimulations)
   return result;
 }
 
-Pos uctWithTime(Field* field, mt19937_64* gen, int time)
+// Get best move by UCT analysis.
+// field - field to find best move.
+// gen - random number generator.
+// time - number of milliseconds to thinking.
+// Returns position of best move, or -1 if not found.
+int uctWithTime(Field* field, mt19937_64* gen, int time)
 {
-  // Список всех возможных ходов для UCT.
-  vector<Pos> moves;
+  // List of all possible moves for UCT.
+  vector<int> moves;
   double bestUct = 0;
-  Pos result = -1;
+  int result = -1;
   auto startTime = system_clock::now();
   generatePossibleMoves(field, &moves);
   if (static_cast<size_t>(omp_get_max_threads()) > moves.size())

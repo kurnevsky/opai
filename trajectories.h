@@ -14,8 +14,8 @@ private:
   list<Trajectory> _trajectories[2];
   int* _trajectoriesBoard;
   Zobrist* _zobrist;
-  list<Pos> _moves[2];
-  list<Pos> _allMoves;
+  list<int> _moves[2];
+  list<int> _allMoves;
 
 private:
   template<typename _InIt>
@@ -40,7 +40,7 @@ private:
   {
     _trajectories[player].push_back(Trajectory(*trajectory));
   }
-  void addTrajectory(Trajectory* trajectory, Pos pos, int player)
+  void addTrajectory(Trajectory* trajectory, int pos, int player)
   {
     if (trajectory->size() == 1)
       return;
@@ -59,7 +59,7 @@ private:
         {
           _field->doUnsafeStep(pos, player);
           if (_field->getDScore(player) > 0)
-            addTrajectory(_field->pointsSeq.end() - (_depth[player] - depth), _field->pointsSeq.end(), player);
+            addTrajectory(_field->getPointsSeq().end() - (_depth[player] - depth), _field->getPointsSeq().end(), player);
           _field->undoStep();
         }
         else
@@ -75,7 +75,7 @@ private:
 #endif
 
           if (_field->getDScore(player) > 0)
-            addTrajectory(_field->pointsSeq.end() - (_depth[player] - depth), _field->pointsSeq.end(), player);
+            addTrajectory(_field->getPointsSeq().end() - (_depth[player] - depth), _field->getPointsSeq().end(), player);
           else if (depth > 0)
             buildTrajectoriesRecursive(depth - 1, player);
 
@@ -180,7 +180,7 @@ private:
     excludeCompositeTrajectories(playerRed);
     excludeCompositeTrajectories(playerBlack);
   }
-  void getPoints(list<Pos>* moves, int player)
+  void getPoints(list<int>* moves, int player)
   {
     for (auto i = _trajectories[player].begin(); i != _trajectories[player].end(); i++)
       if (!i->excluded())
@@ -268,7 +268,7 @@ public:
     buildPlayerTrajectories(getEnemyPlayer());
     calculateMoves();
   }
-  void buildTrajectories(Trajectories* last, Pos pos)
+  void buildTrajectories(Trajectories* last, int pos)
   {
     _depth[getCurPlayer()] = last->_depth[getCurPlayer()];
     _depth[getEnemyPlayer()] = last->_depth[getEnemyPlayer()] - 1;
@@ -303,7 +303,7 @@ public:
     calculateMoves();
   }
   // Получить список ходов.
-  list<Pos>* getPoints()
+  list<int>* getPoints()
   {
     return &_allMoves;
   }

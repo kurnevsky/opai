@@ -7,8 +7,6 @@
 
 using namespace std;
 
-typedef int Pos;
-
 // Структура координат точки.
 struct Point
 {
