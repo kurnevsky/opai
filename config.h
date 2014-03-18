@@ -23,9 +23,6 @@
 // Радиус, внутри которого происходит анализ UCT.
 #define UCT_RADIUS 2
 
-// Количество итераций uct перед проверкой времени.
-#define UCT_ITERATIONS_BEFORE_CHECK_TIME 100
-
 // 0 - UCB1
 // 1 - UCT1-tuned
 #define UCB_TYPE 1

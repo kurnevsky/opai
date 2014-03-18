@@ -12,7 +12,17 @@ else()
   return()
 endif()
 
+find_package(Boost COMPONENTS system thread REQUIRED)
+if(Boost_FOUND)
+  include_directories(${Boost_INCLUDE_DIRS})
+else()
+  message(SEND_ERROR "Failed to find Boost.")
+  return()
+endif()
+
 add_executable(opai bot.cpp minimax.cpp position_estimate.cpp uct.cpp mtdf.cpp main.cpp)
+
+target_link_libraries(opai ${Boost_LIBRARIES})
 
 add_definitions("-std=c++11")
 

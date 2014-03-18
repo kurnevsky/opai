@@ -6,11 +6,13 @@
 #include <queue>
 #include <vector>
 #include <algorithm>
-#include <chrono>
+#include <boost/thread.hpp>
+#include <boost/asio.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <omp.h>
 
 using namespace std;
-using namespace chrono;
+using namespace boost;
 
 // Play random game and get result.
 // field - field to play.
@@ -221,13 +223,15 @@ void finalUct(uctNode* n)
 // field - field to find best move.
 // gen - random number generator.
 // maxSimulations - number of UCT simulations.
+// needBreak - true if break is needed.
 // Returns position of best move, or -1 if not found.
-int uct(Field* field, mt19937_64* gen, int maxSimulations)
+int uct(Field* field, mt19937_64* gen, int maxSimulations, bool* needBreak)
 {
   // List of all possible moves for UCT.
   vector<int> moves;
   double bestUct = 0;
   int result = -1;
+  int simulations = 0;
   generatePossibleMoves(field, &moves);
   if (static_cast<size_t>(omp_get_max_threads()) > moves.size())
     omp_set_num_threads(moves.size());
@@ -246,9 +250,12 @@ int uct(Field* field, mt19937_64* gen, int maxSimulations)
       (*curChild)->move = *i;
       curChild = &(*curChild)->sibling;
     }
-    #pragma omp for
-    for (int i = 0; i < maxSimulations; i++)
+    while (simulations < maxSimulations && !*needBreak)
+    {
       playSimulation(localField, localGen, &moves, &n, 0);
+      #pragma omp atomic
+      simulations++;
+    }
     #pragma omp critical
     {
       uctNode* next = n.child;
@@ -277,57 +284,24 @@ int uct(Field* field, mt19937_64* gen, int maxSimulations)
 // Get best move by UCT analysis.
 // field - field to find best move.
 // gen - random number generator.
+// maxSimulations - number of UCT simulations.
+// Returns position of best move, or -1 if not found.
+int uct(Field* field, mt19937_64* gen, int maxSimulations)
+{
+  bool needBreak = false;
+  return uct(field, gen, maxSimulations, &needBreak);
+}
+
+// Get best move by UCT analysis.
+// field - field to find best move.
+// gen - random number generator.
 // time - number of milliseconds to thinking.
 // Returns position of best move, or -1 if not found.
 int uctWithTime(Field* field, mt19937_64* gen, int time)
 {
-  // List of all possible moves for UCT.
-  vector<int> moves;
-  double bestUct = 0;
-  int result = -1;
-  auto startTime = system_clock::now();
-  generatePossibleMoves(field, &moves);
-  if (static_cast<size_t>(omp_get_max_threads()) > moves.size())
-    omp_set_num_threads(moves.size());
-  #pragma omp parallel
-  {
-    uctNode n;
-    Field* localField = new Field(*field);
-    uniform_int_distribution<int> localDist(numeric_limits<int>::min(), numeric_limits<int>::max());
-    mt19937* localGen;
-    #pragma omp critical
-    localGen = new mt19937(localDist(*gen));
-    uctNode** curChild = &n.child;
-    for (auto i = moves.begin() + omp_get_thread_num(); i < moves.end(); i += omp_get_num_threads())
-    {
-      *curChild = new uctNode();
-      (*curChild)->move = *i;
-      curChild = &(*curChild)->sibling;
-    }
-    while (duration_cast<milliseconds>(system_clock::now() - startTime).count() < time)
-      for (int i = 0; i < UCT_ITERATIONS_BEFORE_CHECK_TIME; i++)
-        playSimulation(localField, localGen, &moves, &n, 0);
-    #pragma omp critical
-    {
-      uctNode* next = n.child;
-      while (next != NULL)
-      {
-        if (next->visits != 0)
-        {
-          double uctValue = ucb(&n, next);
-          if (uctValue > bestUct)
-          {
-            bestUct = uctValue;
-            result = next->move;
-          }
-        }
-        next = next->sibling;
-      }
-    }
-    if (n.child != NULL)
-      finalUct(n.child);
-    delete localGen;
-    delete localField;
-  }
-  return result;
+  bool needBreak = false;
+  asio::io_service io;
+  asio::deadline_timer timer(io, posix_time::milliseconds(time));
+  thread thread([&]() { timer.wait(); needBreak = true; });
+  return uct(field, gen, numeric_limits<int>::max(), &needBreak);
 }
