@@ -38,18 +38,14 @@ int mtdfAlphabeta(Field** fields, vector<int>* moves, int depth, Trajectories* l
 // Depth - глубина оценки.
 int mtdf(Field* field, int depth)
 {
+  if (depth <= 0)
+    return -1;
   int* emptyBoard = new int[field->getLength()];
   fill_n(emptyBoard, field->getLength(), 0);
   // Главные траектории - свои и вражеские.
   Trajectories curTrajectories(field, emptyBoard);
   vector<int> moves;
   int result;
-  // Делаем что-то только когда глубина просчета положительная и колическтво возможных ходов на входе не равно 0.
-  if (depth <= 0)
-  {
-    delete emptyBoard;
-    return -1;
-  }
   // Получаем ходы из траекторий (которые имеет смысл рассматривать), и находим пересечение со входными возможными точками.
   curTrajectories.buildTrajectories(depth);
   moves.assign(curTrajectories.getPoints()->begin(), curTrajectories.getPoints()->end());
