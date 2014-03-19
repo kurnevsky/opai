@@ -219,7 +219,7 @@ void finalUct(uctNode* n)
   delete n;
 }
 
-// Get best move by UCT analysis.
+// Get best move by UCT analysis. If maxSimulations != numeric_limits<int>::max() then needBreak ignored for optimization.
 // field - field to find best move.
 // gen - random number generator.
 // maxSimulations - number of UCT simulations.
@@ -231,7 +231,6 @@ int uct(Field* field, mt19937_64* gen, int maxSimulations, bool* needBreak)
   vector<int> moves;
   double bestUct = 0;
   int result = -1;
-  int simulations = 0;
   generatePossibleMoves(field, &moves);
   if (static_cast<size_t>(omp_get_max_threads()) > moves.size())
     omp_set_num_threads(moves.size());
@@ -244,17 +243,23 @@ int uct(Field* field, mt19937_64* gen, int maxSimulations, bool* needBreak)
     #pragma omp critical
     localGen = new mt19937(localDist(*gen));
     uctNode** curChild = &n.child;
-    for (auto i = moves.begin() + omp_get_thread_num(); i < moves.end(); i += omp_get_num_threads())
+    int numThreads = omp_get_num_threads();
+    for (auto i = moves.begin() + omp_get_thread_num(); i < moves.end(); i += numThreads)
     {
       *curChild = new uctNode();
       (*curChild)->move = *i;
       curChild = &(*curChild)->sibling;
     }
-    while (simulations < maxSimulations && !*needBreak)
+    if (maxSimulations == numeric_limits<int>::max())
     {
-      playSimulation(localField, localGen, &moves, &n, 0);
-      #pragma omp atomic
-      simulations++;
+      while (!*needBreak)
+        playSimulation(localField, localGen, &moves, &n, 0);
+    }
+    else
+    {
+      #pragma omp for
+      for (int i = 0; i < maxSimulations; i++)
+        playSimulation(localField, localGen, &moves, &n, 0);
     }
     #pragma omp critical
     {
