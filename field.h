@@ -135,21 +135,21 @@ private:
   //  o - center pos
   //  x - pos
   //  * - result
-  void getFirstNextPos(const int centerPos, int &pos) const
+  int getFirstNextPos(const int centerPos, int pos) const
   {
     if (pos < centerPos)
     {
       if ((pos == nw(centerPos)) || (pos == centerPos - 1))
-        pos = ne(centerPos);
+        return ne(centerPos);
       else
-        pos = se(centerPos);
+        return se(centerPos);
     }
     else
     {
       if ((pos == centerPos + 1) || (pos == se(centerPos)))
-        pos = sw(centerPos);
+        return sw(centerPos);
       else
-        pos = nw(centerPos);
+        return nw(centerPos);
     }
   }
   //  . . .   * . .   x * .   . x *   . . x   . . .   . . .   . . .
@@ -158,29 +158,29 @@ private:
   //  o - center pos
   //  x - pos
   //  * - result
-  void getNextPos(const int centerPos, int &pos) const
+  int getNextPos(const int centerPos, int pos) const
   {
     if (pos < centerPos)
     {
       if (pos == nw(centerPos))
-        pos = n(centerPos);
+        return n(centerPos);
       else if (pos == n(centerPos))
-        pos = ne(centerPos);
+        return ne(centerPos);
       else if (pos == ne(centerPos))
-        pos = e(centerPos);
+        return e(centerPos);
       else
-        pos = nw(centerPos);
+        return nw(centerPos);
     }
     else
     {
       if (pos == e(centerPos))
-        pos = se(centerPos);
+        return se(centerPos);
       else if (pos == se(centerPos))
-        pos = s(centerPos);
+        return s(centerPos);
       else if (pos == s(centerPos))
-        pos = sw(centerPos);
+        return sw(centerPos);
       else
-        pos = w(centerPos);
+        return w(centerPos);
     }
   }
   // Возвращает количество групп точек рядом с CenterPos.
@@ -305,7 +305,7 @@ private:
     {
       if (isInEmptyBase(pos))
       {
-        _changes.back().changes.push(pair<int, int>(pos, _points[pos]));
+        _changes.back().changes.emplace(pos, _points[pos]);
         clearEmptyBase(pos);
         return true;
       }
@@ -339,9 +339,9 @@ private:
         chain.push_back(pos);
       }
       swap(pos, centerPos);
-      getFirstNextPos(centerPos, pos);
+      pos = getFirstNextPos(centerPos, pos);
       while (isNotEnable(pos, enableCond))
-        getNextPos(centerPos, pos);
+        pos = getNextPos(centerPos, pos);
       baseSquare += square(centerPos, pos);
     }
     while (pos != startPos);
@@ -390,13 +390,13 @@ private:
       {
         clearTag(*i);
         // Добавляем в список изменений точки цепочки.
-        _changes.back().changes.push(pair<int, int>(*i, _points[*i]));
+        _changes.back().changes.emplace(*i, _points[*i]);
         // Помечаем точки цепочки.
         setBound(*i);
       }
       for (auto i = surPoints.begin(); i != surPoints.end(); i++)
       {
-        _changes.back().changes.push(pair<int, int>(*i, _points[*i]));
+        _changes.back().changes.emplace(*i, _points[*i]);
         if (!isPutted(*i) || getPlayer(*i) != player)
           setCaptured(*i);
         else
@@ -409,8 +409,7 @@ private:
         clearTag(*i);
       for (auto i = surPoints.begin(); i != surPoints.end(); i++)
       {
-        _changes.back().changes.push(pair<int, int>(*i, _points[*i]));
-
+        _changes.back().changes.emplace(*i, _points[*i]);
         if (!isPutted(*i))
           setEmptyBase(*i);
       }
@@ -912,12 +911,11 @@ public:
   }
   void doUnsafeStep(const int pos, const int player)
   {
-    BoardChange change;
-    change.captureCount[0] = _captureCount[0];
-    change.captureCount[1] = _captureCount[1];
-    change.player = _player;
-    change.changes.push(pair<int, int>(pos, _points[pos]));
-    _changes.push_back(change);
+    _changes.emplace_back();
+    _changes.back().captureCount[0] = _captureCount[0];
+    _changes.back().captureCount[1] = _captureCount[1];
+    _changes.back().player = _player;
+    _changes.back().changes.emplace(pos, _points[pos]);
     _pointsSeq.push_back(pos);
     // Добавляем в изменения поставленную точку.
     setPlayerPutted(pos, player);
