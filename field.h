@@ -625,7 +625,7 @@ public:
   }
   int getPrevScore(int player) const
   {
-    BoardChange lastChange = _changes.back();
+    BoardChange& lastChange = _changes.back();
     return lastChange.captureCount[player] - lastChange.captureCount[nextPlayer(player)];
   }
   int getLastPlayer() const
