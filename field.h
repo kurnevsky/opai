@@ -929,9 +929,10 @@ public:
       _points[top.first] = top.second;
       change.changes.pop();
     }
-    _player = change.player;
     _captureCount[0] = change.captureCount[0];
     _captureCount[1] = change.captureCount[1];
+    _player = change.player;
+    _hash = change.hash;
     _changes.pop_back();
   }
 };
