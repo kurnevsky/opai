@@ -636,7 +636,7 @@ public:
   {
     return _pointsSeq.size();
   }
-  const vector<int> getPointsSeq() const
+  const vector<int>& getPointsSeq() const
   {
     return _pointsSeq;
   }
