@@ -24,7 +24,7 @@ int positionEstimate(Field* field)
   int bestEstimate = numeric_limits<int>::min();
   int result = -1;
   for (int i = field->minPos(); i <= field->maxPos(); i++)
-    if (field->puttingAllow(i))
+    if (field->isPuttingAllowed(i))
     {
       int curEstimate = positionEstimate(field, i, field->getPlayer());
       if (curEstimate > bestEstimate)

@@ -26,7 +26,7 @@ private:
     // Каждая точка траектории должна окружать что-либо и иметь рядом хотя бы 2 группы точек.
     // Если нет - не добавляем эту траекторию.
     for (auto i = begin; i < end; i++)
-      if (!_field->isBaseBound(*i) || (_field->numberNearGroups(*i, player) < 2))
+      if (!_field->isBound(*i) || (_field->numberNearGroups(*i, player) < 2))
         return;
     // Высчитываем хеш траектории и сравниваем с уже существующими для исключения повторов.
     for (auto i = begin; i < end; i++)
@@ -53,12 +53,12 @@ private:
   {
     for (auto pos = _field->minPos(); pos <= _field->maxPos(); pos++)
     {
-      if (_field->puttingAllow(pos) && _field->isNearPoints(pos, player))
+      if (_field->isPuttingAllowed(pos) && _field->isNearPoints(pos, player))
       {
         if (_field->isInEmptyBase(pos)) // Если поставили в пустую базу (свою или нет), то дальше строить траекторию нет нужды.
         {
           _field->doUnsafeStep(pos, player);
-          if (_field->getDScore(player) > 0)
+          if (_field->getDeltaScore(player) > 0)
             addTrajectory(_field->getPointsSeq().end() - (_depth[player] - depth), _field->getPointsSeq().end(), player);
           _field->undoStep();
         }
@@ -67,14 +67,14 @@ private:
           _field->doUnsafeStep(pos, player);
 
 #if SUR_COND == 1
-          if (_field->isBaseBound(pos) && _field->getDScore(player) == 0)
+          if (_field->isBaseBound(pos) && _field->getDeltaScore(player) == 0)
           {
             _field->undoStep();
             continue;
           }
 #endif
 
-          if (_field->getDScore(player) > 0)
+          if (_field->getDeltaScore(player) > 0)
             addTrajectory(_field->getPointsSeq().end() - (_depth[player] - depth), _field->getPointsSeq().end(), player);
           else if (depth > 0)
             buildTrajectoriesRecursive(depth - 1, player);
@@ -194,10 +194,10 @@ private:
     if (depth > 0)
     {
       for (auto i = _moves[player].begin(); i != _moves[player].end(); i++)
-        if (_field->puttingAllow(*i))
+        if (_field->isPuttingAllowed(*i))
         {
           _field->doUnsafeStep(*i, player);
-          if (_field->getDScore(player) >= 0)
+          if (_field->getDeltaScore(player) >= 0)
           {
             auto curScore = calculateMaxScore(player, depth - 1);
             if (curScore > result)

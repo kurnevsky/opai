@@ -32,7 +32,7 @@ int playRandomGame(Field* field, mt19937* gen, vector<int>* possibleMoves)
     moves[j] = (*possibleMoves)[i];
   }
   for (auto i = moves.begin(); i < moves.end(); i++)
-    if (field->puttingAllow(*i))
+    if (field->isPuttingAllowed(*i))
     {
       field->doUnsafeStep(*i);
       putted++;
@@ -56,7 +56,7 @@ void createChildren(Field* field, vector<int>* possibleMoves, uctNode* node)
 {
   uctNode** curChild = &node->child;
   for (auto i = possibleMoves->begin(); i < possibleMoves->end(); i++)
-    if (field->puttingAllow(*i))
+    if (field->isPuttingAllowed(*i))
     {
       *curChild = new uctNode();
       (*curChild)->move = *i;
@@ -174,30 +174,30 @@ void generatePossibleMoves(Field* field, _Cont* possibleMoves)
   while (!q.empty())
   {
     int front = q.front();
-    if (field->puttingAllow(front))
+    if (field->isPuttingAllowed(front))
       possibleMoves->push_back(front);
     if (rField[front] < UCT_RADIUS)
     {
       int nFront = field->n(front);
-      if (field->puttingAllow(nFront) && rField[nFront] == 0)
+      if (field->isPuttingAllowed(nFront) && rField[nFront] == 0)
       {
         rField[nFront] = rField[front] + 1;
         q.push(nFront);
       }
       int sFront = field->s(front);
-      if (field->puttingAllow(sFront) && rField[sFront] == 0)
+      if (field->isPuttingAllowed(sFront) && rField[sFront] == 0)
       {
         rField[sFront] = rField[front] + 1;
         q.push(sFront);
       }
       int wFront = field->w(front);
-      if (field->puttingAllow(wFront) && rField[wFront] == 0)
+      if (field->isPuttingAllowed(wFront) && rField[wFront] == 0)
       {
         rField[wFront] = rField[front] + 1;
         q.push(wFront);
       }
       int eFront = field->e(front);
-      if (field->puttingAllow(eFront) && rField[eFront] == 0)
+      if (field->isPuttingAllowed(eFront) && rField[eFront] == 0)
       {
         rField[eFront] = rField[front] + 1;
         q.push(eFront);

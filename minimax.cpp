@@ -27,7 +27,7 @@ int alphabeta(Field* field, int depth, int pos, Trajectories* last, int alpha, i
     field->undoStep();
     return -bestEstimate;
   }
-  if (field->getDScore() < 0) // Если точка поставлена в окружение.
+  if (field->getDeltaScore() < 0) // Если точка поставлена в окружение.
   {
     field->undoStep();
     return -numeric_limits<int>::max(); // Для CurPlayer это хорошо, то есть оценка Infinity.

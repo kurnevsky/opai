@@ -15,7 +15,11 @@ using namespace std;
 class Field
 {
 private:
-  // State bits and masks.
+
+  /** Constants **/
+
+  /* State bits and masks */
+
   // Бит, указывающий номер игрока.
   static const int playerBit = 1;
   // Бит, указывающий на наличие точки в поле.
@@ -31,138 +35,10 @@ private:
   // Бит, которым помечаются границы поля.
   static const int badBit = 64;
   static const int enableMask = badBit | surBit | putBit | playerBit;
-  static const int boundMask = badBit | boundBit | surBit | putBit | playerBit;
-public:
-  // Get state functions.
-  // Получить по координате игрока, чья точка там поставлена.
-  int getPlayer(const int pos) const
-  {
-    return _points[pos] & playerBit;
-  }
-  // Проверить по координате, поставлена ли там точка.
-  bool isPutted(const int pos) const
-  {
-    return (_points[pos] & putBit) != 0;
-  }
-  // Прверить по координате, является ли точка окружающей базу.
-  bool isBaseBound(const int pos) const
-  {
-    return (_points[pos] & boundBit) != 0;
-  }
-  // Проверить по координате, захвачено ли поле.
-  bool isCaptured(const int pos) const
-  {
-    return (_points[pos] & surBit) != 0;
-  }
-  // Проверить по координате, лежит ли она в пустой базе.
-  bool isInEmptyBase(const int pos) const
-  {
-    return (_points[pos] & emptyBaseBit) != 0;
-  }
-  // Проверить по координате, помечено ли поле.
-  bool isTagged(const int pos) const
-  {
-    return (_points[pos] & tagBit) != 0;
-  }
-  // Получить условие по координате.
-  int getEnableCond(const int pos) const
-  {
-    return _points[pos] & enableMask;
-  }
-  // Проверка незанятости поля по условию.
-  bool isEnable(const int pos, const int enableCond) const
-  {
-    return (_points[pos] & enableMask) == enableCond;
-  }
-  // Проверка занятости поля по условию.
-  bool isNotEnable(const int pos, const int enableCond) const
-  {
-    return (_points[pos] & enableMask) != enableCond;
-  }
-  // Проверка на то, захвачено ли поле.
-  bool isBound(const int pos, const int boundCond) const
-  {
-    return (_points[pos] & boundMask) == boundCond;
-  }
-  // Проверка на то, не захвачено ли поле.
-  bool isNotBound(const int pos, const int boundCond) const
-  {
-    return (_points[pos] & boundMask) != boundCond;
-  }
-  // Провека на то, возможно ли поставить точку в полке.
-  bool puttingAllow(const int pos) const
-  {
-    return (_points[pos] & (putBit | surBit | badBit)) == 0;
-  }
-  // Set state functions.
-  // Пометить поле по координате как содержащее точку.
-  void setPutted(const int pos)
-  {
-    _points[pos] |= putBit;
-  }
-  // Убрать с поля по координате put_bit.
-  void clearPutted(const int pos)
-  {
-    _points[pos] &= ~putBit;
-  }
-  // Пометить поле по координате как принадлежащее игроку.
-  void setPlayer(const int pos, const int player)
-  {
-    _points[pos] = (_points[pos] & ~playerBit) | player;
-  }
-  // Пометить поле по координате как содержащее точку игрока.
-  void setPlayerPutted(const int pos, const int player)
-  {
-    _points[pos] = (_points[pos] & ~playerBit) | player | putBit;
-  }
-  // Пометить битом SurBit (захватить).
-  void capture(const int pos)
-  {
-    _points[pos] |= surBit;
-  }
-  // Убрать бит SurBit.
-  void free(const int pos)
-  {
-    _points[pos] &= ~surBit;
-  }
-  // Пометить точку как окружающую базу.
-  void setBaseBound(const int pos)
-  {
-    _points[pos] |= boundBit;
-  }
-  // Пометить точку как не окружающую базу.
-  void clearBaseBound(const int pos)
-  {
-    _points[pos] &= ~boundBit;
-  }
-  void setEmptyBase(const int pos)
-  {
-    _points[pos] |= emptyBaseBit;
-  }
-  void clearEmptyBase(const int pos)
-  {
-    _points[pos] &= ~emptyBaseBit;
-  }
-  // Установить бит TagBit.
-  void setTag(const int pos)
-  {
-    _points[pos] |= tagBit;
-  }
-  // Убрать бит TagBit.
-  void clearTag(const int pos)
-  {
-    _points[pos] &= ~tagBit;
-  }
-  void setBad(const int pos)
-  {
-    _points[pos] |= badBit;
-  }
-  void clearBad(const int pos)
-  {
-    _points[pos] &= ~badBit;
-  }
+  static const int boundMask = enableMask | boundBit;
 
-private:
+  /** Fields **/
+
   vector<BoardChange> _changes;
   // Main points array (game board).
   // Основной массив точек (игровая доска).
@@ -185,7 +61,70 @@ private:
   // Последовательность поставленных точек.
   vector<int> _pointsSeq;
 
-  // Возвращает косое произведение векторов Pos1 и Pos2.
+  /** Private methods **/
+
+  /* Set state functions */
+
+  // Пометить поле по координате как содержащее точку.
+  void setPutted(const int pos)
+  {
+    _points[pos] |= putBit;
+  }
+  // Убрать с поля по координате put_bit.
+  void clearPutted(const int pos)
+  {
+    _points[pos] &= ~putBit;
+  }
+  // Пометить поле по координате как принадлежащее игроку.
+  void setPlayer(const int pos, const int player)
+  {
+    _points[pos] = (_points[pos] & ~playerBit) | player;
+  }
+  // Пометить поле по координате как содержащее точку игрока.
+  void setPlayerPutted(const int pos, const int player)
+  {
+    _points[pos] = (_points[pos] & ~playerBit) | player | putBit;
+  }
+  // Пометить битом SurBit (захватить).
+  void setCaptured(const int pos)
+  {
+    _points[pos] |= surBit;
+  }
+  // Убрать бит SurBit.
+  void clearCaptured(const int pos)
+  {
+    _points[pos] &= ~surBit;
+  }
+  // Пометить точку как окружающую базу.
+  void setBound(const int pos)
+  {
+    _points[pos] |= boundBit;
+  }
+  // Пометить точку как не окружающую базу.
+  void clearBound(const int pos)
+  {
+    _points[pos] &= ~boundBit;
+  }
+  void setEmptyBase(const int pos)
+  {
+    _points[pos] |= emptyBaseBit;
+  }
+  void clearEmptyBase(const int pos)
+  {
+    _points[pos] &= ~emptyBaseBit;
+  }
+  void setBad(const int pos)
+  {
+    _points[pos] |= badBit;
+  }
+  void clearBad(const int pos)
+  {
+    _points[pos] &= ~badBit;
+  }
+
+  /* Other */
+
+  // Skew product of vectors pos1 and pos2.
   int square(const int pos1, const int pos2) const
   {
     return toX(pos1) * toY(pos2) - toY(pos1) * toX(pos2);
@@ -311,6 +250,26 @@ private:
     }
     return result;
   }
+  IntersectionState getIntersectionState(const int pos, const int nextPos) const
+  {
+    Point a, b;
+    toXY(pos, a.x, a.y);
+    toXY(nextPos, b.x, b.y);
+    if (b.x <= a.x)
+      switch (b.y - a.y)
+      {
+        case (1):
+          return INTERSECTION_STATE_UP;
+        case (0):
+          return INTERSECTION_STATE_TARGET;
+        case (-1):
+          return INTERSECTION_STATE_DOWN;
+        default:
+          return INTERSECTION_STATE_NONE;
+      }
+    else
+      return INTERSECTION_STATE_NONE;
+  }
   // Поставить начальные точки.
   void placeBeginPattern(BeginPattern pattern)
   {
@@ -332,62 +291,29 @@ private:
       break;
     }
   }
-  // Изменение счета игроков.
-  void addSubCapturedFreed(const int player, const int captured, const int freed)
+  void updateHash(int player, int pos)
   {
-    if (captured == -1)
-    {
-      _captureCount[nextPlayer(player)]++;
-    }
+    if (player == 0)
+      _hash ^= _zobrist->getHash(pos);
     else
-    {
-      _captureCount[player] += captured;
-      _captureCount[nextPlayer(player)] -= freed;
-    }
-  }
-  // Изменяет Captured/Free в зависимости от того, захвачена или окружена точка.
-  void checkCapturedAndFreed(const int pos, const int player, int &captured, int &freed)
-  {
-    if (isPutted(pos))
-    {
-      if (getPlayer(pos) != player)
-        captured++;
-      else if (isCaptured(pos))
-        freed++;
-    }
-  }
-  // Захватывает/освобождает окруженную точку.
-  void setCaptureFreeState(const int pos, const int player)
-  {
-    if (isPutted(pos))
-    {
-      if (getPlayer(pos) != player)
-        capture(pos);
-      else
-        free(pos);
-    }
-    else
-    {
-      capture(pos);
-    }
+      _hash ^= _zobrist->getHash(getLength() + pos);
   }
   // Удаляет пометку пустой базы с поля точек, начиная с позиции StartPos.
   void removeEmptyBase(const int startPos)
   {
-    wave(startPos,
-        [&](int pos)->bool
-        {
-          if (isInEmptyBase(pos))
-          {
-            _changes.back().changes.push(pair<int, int>(pos, _points[pos] & !tagBit));
-            clearEmptyBase(pos);
-            return true;
-          }
-          else
-          {
-            return false;
-          }
-        });
+    wave(startPos, [&](int pos)->bool
+    {
+      if (isInEmptyBase(pos))
+      {
+        _changes.back().changes.push(pair<int, int>(pos, _points[pos]));
+        clearEmptyBase(pos);
+        return true;
+      }
+      else
+      {
+        return false;
+      }
+    });
   }
   bool buildChain(const int startPos, const int enableCond, const int directionPos, list<int> &chain)
   {
@@ -426,7 +352,7 @@ private:
   void findSurround(list<int> &chain, int insidePoint, int player)
   {
     // Количество захваченных точек.
-    int curCaptureCount = 0;
+    int curCaptureCount = 0; //captured
     // Количество захваченных пустых полей.
     int curFreedCount = 0;
     list<int> surPoints;
@@ -438,7 +364,13 @@ private:
         {
           if (isNotBound(pos, player | putBit | boundBit))
           {
-            checkCapturedAndFreed(pos, player, curCaptureCount, curFreedCount);
+            if (isPutted(pos))
+            {
+              if (getPlayer(pos) != player)
+                curCaptureCount++;
+              else if (isCaptured(pos))
+                curFreedCount++;
+            }
             surPoints.push_back(pos);
             return true;
           }
@@ -448,7 +380,8 @@ private:
           }
         });
     // Изменение счета игроков.
-    addSubCapturedFreed(player, curCaptureCount, curFreedCount);
+    _captureCount[player] += curCaptureCount;
+    _captureCount[nextPlayer(player)] -= curFreedCount;
 #if SUR_COND != 1
     if (curCaptureCount != 0) // Если захватили точки.
 #endif
@@ -459,13 +392,15 @@ private:
         // Добавляем в список изменений точки цепочки.
         _changes.back().changes.push(pair<int, int>(*i, _points[*i]));
         // Помечаем точки цепочки.
-        setBaseBound(*i);
+        setBound(*i);
       }
       for (auto i = surPoints.begin(); i != surPoints.end(); i++)
       {
         _changes.back().changes.push(pair<int, int>(*i, _points[*i]));
-
-        setCaptureFreeState(*i, player);
+        if (!isPutted(*i) || getPlayer(*i) != player)
+          setCaptured(*i);
+        else
+          clearCaptured(*i);
       }
     }
     else // Если ничего не захватили.
@@ -481,33 +416,83 @@ private:
       }
     }
   }
-  void updateHash(int player, int pos)
+  // Проверяет поставленную точку на наличие созданных ею окружений, и окружает, если они есть.
+  void checkClosure(const int startPos, const int player)
   {
-    _hash ^= _zobrist->getHash((player + 1) * pos);
-  }
-  IntersectionState getIntersectionState(const int pos, const int nextPos) const
-  {
-    Point a, b;
-    toXY(pos, a.x, a.y);
-    toXY(nextPos, b.x, b.y);
-    if (b.x <= a.x)
-      switch (b.y - a.y)
+    int inpPointsCount;
+    int inpChainPoints[4], inpSurPoints[4];
+    list<int> chain;
+    if (isInEmptyBase(startPos)) // Если точка поставлена в пустую базу.
+    {
+      // Проверяем, в чью пустую базу поставлена точка.
+      int pos = startPos - 1;
+      while (!isPutted(pos))
+        pos--;
+      if (getPlayer(pos) == getPlayer(startPos)) // Если поставили в свою пустую базу.
       {
-        case (1):
-          return INTERSECTION_STATE_UP;
-        case (0):
-          return INTERSECTION_STATE_TARGET;
-        case (-1):
-          return INTERSECTION_STATE_DOWN;
-        default:
-          return INTERSECTION_STATE_NONE;
+        clearEmptyBase(startPos);
+        return;
       }
+#if SUR_COND != 2 // Если приоритет не всегда у врага.
+      inpPointsCount = getInputPoints(startPos, player | putBit, inpChainPoints, inpSurPoints);
+      if (inpPointsCount > 1)
+      {
+        int chainsCount = 0;
+        for (int i = 0; i < inpPointsCount; i++)
+          if (buildChain(startPos, getPlayer(startPos) | putBit, inpChainPoints[i], chain))
+          {
+            findSurround(chain, inpSurPoints[i], player);
+            chainsCount++;
+            if (chainsCount == inpPointsCount - 1)
+              break;
+          }
+        if (chainsCount > 0)
+        {
+          removeEmptyBase(startPos);
+          return;
+        }
+      }
+#endif
+      pos++;
+      do
+      {
+        pos--;
+        while (!isEnable(pos, nextPlayer(player) | putBit))
+          pos--;
+        inpPointsCount = getInputPoints(pos, nextPlayer(player) | putBit, inpChainPoints, inpSurPoints);
+        for (int i = 0; i < inpPointsCount; i++)
+          if (buildChain(pos, nextPlayer(player) | putBit, inpChainPoints[i], chain))
+            if (isPointInsideRing(startPos, chain))
+            {
+              findSurround(chain, inpSurPoints[i], nextPlayer(player));
+              break;
+            }
+      } while (!isCaptured(startPos));
+    }
     else
-      return INTERSECTION_STATE_NONE;
+    {
+      inpPointsCount = getInputPoints(startPos, player | putBit, inpChainPoints, inpSurPoints);
+      if (inpPointsCount > 1)
+      {
+        int chainsCount = 0;
+        for (int i = 0; i < inpPointsCount; i++)
+          if (buildChain(startPos, player | putBit, inpChainPoints[i], chain))
+          {
+            findSurround(chain, inpSurPoints[i], player);
+            chainsCount++;
+            if (chainsCount == inpPointsCount - 1)
+              break;
+          }
+      }
+    }
   }
 
 public:
-  // Конструктор.
+
+  /** Public methods **/
+
+  /* Constructors and destructor */
+
   Field(const int width, const int height, const BeginPattern begin_pattern, Zobrist* zobrist)
   {
     _width = width;
@@ -553,6 +538,80 @@ public:
   {
     delete _points;
   }
+
+  /* Set state functions */
+
+  // Установить бит TagBit.
+  void setTag(const int pos)
+  {
+    _points[pos] |= tagBit;
+  }
+  // Убрать бит TagBit.
+  void clearTag(const int pos)
+  {
+    _points[pos] &= ~tagBit;
+  }
+
+  /* Get state functions */
+
+  // Получить по координате игрока, чья точка там поставлена.
+  int getPlayer(const int pos) const
+  {
+    return _points[pos] & playerBit;
+  }
+  // Проверить по координате, поставлена ли там точка.
+  bool isPutted(const int pos) const
+  {
+    return (_points[pos] & putBit) != 0;
+  }
+  // Прверить по координате, является ли точка окружающей базу.
+  bool isBound(const int pos) const
+  {
+    return (_points[pos] & boundBit) != 0;
+  }
+  // Проверить по координате, захвачено ли поле.
+  bool isCaptured(const int pos) const
+  {
+    return (_points[pos] & surBit) != 0;
+  }
+  // Проверить по координате, лежит ли она в пустой базе.
+  bool isInEmptyBase(const int pos) const
+  {
+    return (_points[pos] & emptyBaseBit) != 0;
+  }
+  // Проверить по координате, помечено ли поле.
+  bool isTagged(const int pos) const
+  {
+    return (_points[pos] & tagBit) != 0;
+  }
+  // Проверка незанятости поля по условию.
+  bool isEnable(const int pos, const int enableCond) const
+  {
+    return (_points[pos] & enableMask) == enableCond;
+  }
+  // Проверка занятости поля по условию.
+  bool isNotEnable(const int pos, const int enableCond) const
+  {
+    return (_points[pos] & enableMask) != enableCond;
+  }
+  // Проверка на то, захвачено ли поле.
+  bool isBound(const int pos, const int boundCond) const
+  {
+    return (_points[pos] & boundMask) == boundCond;
+  }
+  // Проверка на то, не захвачено ли поле.
+  bool isNotBound(const int pos, const int boundCond) const
+  {
+    return (_points[pos] & boundMask) != boundCond;
+  }
+  // Провека на то, возможно ли поставить точку в полке.
+  bool isPuttingAllowed(const int pos) const
+  {
+    return (_points[pos] & (putBit | surBit | badBit)) == 0;
+  }
+
+  /** Getters **/
+
   int getMovesCount() const
   {
     return _pointsSeq.size();
@@ -574,13 +633,13 @@ public:
   {
     return getPlayer(_pointsSeq.back());
   }
-  int getDScore(int player) const
+  int getDeltaScore(int player) const
   {
     return getScore(player) - getPrevScore(player);
   }
-  int getDScore() const
+  int getDeltaScore() const
   {
-    return getDScore(getLastPlayer());
+    return getDeltaScore(getLastPlayer());
   }
   int getPlayer() const
   {
@@ -590,80 +649,86 @@ public:
   {
     return _hash;
   }
-  Zobrist& getZobrist() const { return *_zobrist; };
-  int getWidth() const { return _width; }
-  int getHeight() const { return _height; }
-  int getLength() const { return (_width + 2) * (_height + 2); }
-  int minPos() const { return toPos(0, 0); }
-  int maxPos() const { return toPos(_width - 1, _height - 1); }
-  int n(int pos) const { return pos - (_width + 2); }
-  int s(int pos) const { return pos + (_width + 2); }
-  int w(int pos) const { return pos - 1; }
-  int e(int pos) const { return pos + 1; }
-  int nw(int pos) const { return pos - (_width + 2) - 1; }
-  int ne(int pos) const { return pos - (_width + 2) + 1; }
-  int sw(int pos) const { return pos + (_width + 2) - 1; }
-  int se(int pos) const { return pos + (_width + 2) + 1; }
-  int toPos(const int x, const int y) const { return (y + 1) * (_width + 2) + x + 1; }
-  int toX(const int pos) const { return pos % (_width + 2) - 1; }
-  int toY(const int pos) const { return pos / (_width + 2) - 1; }
+  int getWidth() const
+  {
+    return _width;
+  }
+  int getHeight() const
+  {
+    return _height;
+  }
+  int getLength() const
+  {
+    return (_width + 2) * (_height + 2);
+  }
+  Zobrist& getZobrist() const
+  {
+    return *_zobrist;
+  };
+  int minPos() const
+  {
+    return toPos(0, 0);
+  }
+  int maxPos() const
+  {
+    return toPos(_width - 1, _height - 1);
+  }
+
+  /** Position functions **/
+
+  int n(const int pos) const
+  {
+    return pos - (_width + 2);
+  }
+  int s(const int pos) const
+  {
+    return pos + (_width + 2);
+  }
+  int w(const int pos) const
+  {
+    return pos - 1;
+  }
+  int e(const int pos) const
+  {
+    return pos + 1;
+  }
+  int nw(const int pos) const
+  {
+    return pos - (_width + 2) - 1;
+  }
+  int ne(const int pos) const
+  {
+    return pos - (_width + 2) + 1;
+  }
+  int sw(const int pos) const
+  {
+    return pos + (_width + 2) - 1;
+  }
+  int se(const int pos) const
+  {
+    return pos + (_width + 2) + 1;
+  }
+  int toPos(const int x, const int y) const
+  {
+    return (y + 1) * (_width + 2) + x + 1;
+  }
+  int toX(const int pos) const
+  {
+    return pos % (_width + 2) - 1;
+  }
+  int toY(const int pos) const
+  {
+    return pos / (_width + 2) - 1;
+  }
   // Конвертация из Pos в XY.
-  void toXY(const int pos, int &x, int &y) const { x = toX(pos); y = toY(pos); }
-  void setPlayer(const int player) { _player = player; }
-  // Установить следующего игрока как текущего.
-  void setNextPlayer() { setPlayer(nextPlayer(_player)); }
-  // Поставить точку на поле следующего по очереди игрока.
-  bool doStep(const int pos)
+  void toXY(const int pos, int &x, int &y) const
   {
-    if (puttingAllow(pos))
-    {
-      doUnsafeStep(pos);
-      return true;
-    }
-    return false;
+    x = toX(pos);
+    y = toY(pos);
   }
-  // Поставить точку на поле.
-  bool doStep(const int pos, const int player)
-  {
-    if (puttingAllow(pos))
-    {
-      doUnsafeStep(pos, player);
-      return true;
-    }
-    return false;
-  }
-  // Поставить точку на поле максимально быстро (без дополнительных проверок).
-  void doUnsafeStep(const int pos)
-  {
-    doUnsafeStep(pos, _player);
-    setNextPlayer();
-  }
-  void doUnsafeStep(const int pos, const int player)
-  {
-    _changes.push_back(BoardChange());
-    _changes.back().captureCount[0] = _captureCount[0];
-    _changes.back().captureCount[1] = _captureCount[1];
-    _changes.back().player = _player;
-    // Добавляем в изменения поставленную точку.
-    _changes.back().changes.push(pair<int, int>(pos, _points[pos]));
-    setPlayerPutted(pos, player);
-    _pointsSeq.push_back(pos);
-    checkClosure(pos, player);
-  }
-  // Откат хода.
-  void undoStep()
-  {
-    _pointsSeq.pop_back();
-    while (!_changes.back().changes.empty())
-    {
-      _points[_changes.back().changes.top().first] = _changes.back().changes.top().second;
-      _changes.back().changes.pop();
-    }
-    _player = _changes.back().player;
-    _captureCount[0] = _changes.back().captureCount[0];
-    _captureCount[1] = _changes.back().captureCount[1];
-    _changes.pop_back();
-  }
+
+  /** Other **/
+
   // Проверяет, находятся ли две точки рядом.
   bool isNear(const int pos1, const int pos2) const
   {
@@ -730,42 +795,6 @@ public:
       result++;
     return result;
   }
-  void wave(int startPos, function<bool(int)> cond)
-  {
-    // Очередь для волнового алгоритма (обхода в ширину).
-    list<int> q;
-    if (!cond(startPos))
-      return;
-    q.push_back(startPos);
-    setTag(startPos);
-    auto it = q.begin();
-    while (it != q.end())
-    {
-      if (!isTagged(w(*it)) && cond(w(*it)))
-      {
-        q.push_back(w(*it));
-        setTag(w(*it));
-      }
-      if (!isTagged(n(*it)) && cond(n(*it)))
-      {
-        q.push_back(n(*it));
-        setTag(n(*it));
-      }
-      if (!isTagged(e(*it)) && cond(e(*it)))
-      {
-        q.push_back(e(*it));
-        setTag(e(*it));
-      }
-      if (!isTagged(s(*it)) && cond(s(*it)))
-      {
-        q.push_back(s(*it));
-        setTag(s(*it));
-      }
-      it++;
-    }
-    for (it = q.begin(); it != q.end(); it++)
-      clearTag(*it);
-  }
   bool isPointInsideRing(const int pos, const list<int> &ring) const
   {
     int intersections = 0;
@@ -806,75 +835,109 @@ public:
     }
     return intersections % 2 == 1;
   }
-  // Проверяет поставленную точку на наличие созданных ею окружений, и окружает, если они есть.
-  void checkClosure(const int startPos, int player)
+  void wave(const int startPos, const function<bool(int)> cond)
   {
-    int inpPointsCount;
-    int inpChainPoints[4], inpSurPoints[4];
-    list<int> chain;
-    if (isInEmptyBase(startPos)) // Если точка поставлена в пустую базу.
+    // Очередь для волнового алгоритма (обхода в ширину).
+    list<int> q;
+    if (!cond(startPos))
+      return;
+    q.push_back(startPos);
+    setTag(startPos);
+    auto it = q.begin();
+    while (it != q.end())
     {
-      // Проверяем, в чью пустую базу поставлена точка.
-      int pos = startPos - 1;
-      while (!isPutted(pos))
-        pos--;
-
-      if (getPlayer(pos) == getPlayer(startPos)) // Если поставили в свою пустую базу.
+      int wPos = w(*it);
+      if (!isTagged(wPos) && cond(wPos))
       {
-        clearEmptyBase(startPos);
-        return;
+        q.push_back(wPos);
+        setTag(wPos);
       }
-#if SUR_COND != 2 // Если приоритет не всегда у врага.
-      inpPointsCount = getInputPoints(startPos, player | putBit, inpChainPoints, inpSurPoints);
-      if (inpPointsCount > 1)
+      int nPos = n(*it);
+      if (!isTagged(nPos) && cond(nPos))
       {
-        int chainsCount = 0;
-        for (int i = 0; i < inpPointsCount; i++)
-          if (buildChain(startPos, getPlayer(startPos) | putBit, inpChainPoints[i], chain))
-          {
-            findSurround(chain, inpSurPoints[i], player);
-            chainsCount++;
-            if (chainsCount == inpPointsCount - 1)
-              break;
-          }
-        if (isBaseBound(startPos))
-        {
-          removeEmptyBase(startPos);
-          return;
-        }
+        q.push_back(nPos);
+        setTag(nPos);
       }
-#endif
-      pos++;
-      do
+      int ePos = e(*it);
+      if (!isTagged(ePos) && cond(ePos))
       {
-        pos--;
-        while (!isEnable(pos, nextPlayer(player) | putBit))
-          pos--;
-        inpPointsCount = getInputPoints(pos, nextPlayer(player) | putBit, inpChainPoints, inpSurPoints);
-        for (int i = 0; i < inpPointsCount; i++)
-          if (buildChain(pos, nextPlayer(player) | putBit, inpChainPoints[i], chain))
-            if (isPointInsideRing(startPos, chain))
-            {
-              findSurround(chain, inpSurPoints[i], nextPlayer(player));
-              break;
-            }
-      } while (!isCaptured(startPos));
+        q.push_back(ePos);
+        setTag(ePos);
+      }
+      int sPos = s(*it);
+      if (!isTagged(sPos) && cond(sPos))
+      {
+        q.push_back(sPos);
+        setTag(sPos);
+      }
+      it++;
     }
-    else
+    for (it = q.begin(); it != q.end(); it++)
+      clearTag(*it);
+  }
+  void setPlayer(const int player)
+  {
+    _player = player;
+  }
+  // Установить следующего игрока как текущего.
+  void setNextPlayer()
+  {
+    setPlayer(nextPlayer(_player));
+  }
+  // Поставить точку на поле следующего по очереди игрока.
+  bool doStep(const int pos)
+  {
+    if (isPuttingAllowed(pos))
     {
-      inpPointsCount = getInputPoints(startPos, player | putBit, inpChainPoints, inpSurPoints);
-      if (inpPointsCount > 1)
-      {
-        int chainsCount = 0;
-        for (int i = 0; i < inpPointsCount; i++)
-          if (buildChain(startPos, player | putBit, inpChainPoints[i], chain))
-          {
-            findSurround(chain, inpSurPoints[i], player);
-            chainsCount++;
-            if (chainsCount == inpPointsCount - 1)
-              break;
-          }
-      }
+      doUnsafeStep(pos);
+      return true;
     }
+    return false;
+  }
+  // Поставить точку на поле.
+  bool doStep(const int pos, const int player)
+  {
+    if (isPuttingAllowed(pos))
+    {
+      doUnsafeStep(pos, player);
+      return true;
+    }
+    return false;
+  }
+  // Поставить точку на поле максимально быстро (без дополнительных проверок).
+  void doUnsafeStep(const int pos)
+  {
+    doUnsafeStep(pos, _player);
+    setNextPlayer();
+  }
+  void doUnsafeStep(const int pos, const int player)
+  {
+    BoardChange change;
+    change.captureCount[0] = _captureCount[0];
+    change.captureCount[1] = _captureCount[1];
+    change.player = _player;
+    change.changes.push(pair<int, int>(pos, _points[pos]));
+    _changes.push_back(change);
+    _pointsSeq.push_back(pos);
+    // Добавляем в изменения поставленную точку.
+    setPlayerPutted(pos, player);
+    checkClosure(pos, player);
+  }
+  // Откат хода.
+  void undoStep()
+  {
+    _pointsSeq.pop_back();
+    BoardChange change = _changes.back();
+    stack<pair<int, int>> changes = change.changes;
+    while (!changes.empty())
+    {
+      pair<int, int> top = changes.top();
+      _points[top.first] = top.second;
+      changes.pop();
+    }
+    _player = change.player;
+    _captureCount[0] = change.captureCount[0];
+    _captureCount[1] = change.captureCount[1];
+    _changes.pop_back();
   }
 };

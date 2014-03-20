@@ -16,7 +16,7 @@ private:
   int64_t* _hashes;
 public:
   // Constructor.
-  Zobrist(int size, mt19937_64* gen)
+  Zobrist(const int size, mt19937_64* gen)
   {
     uniform_int_distribution<int64_t> dist(numeric_limits<int64_t>::min(), numeric_limits<int64_t>::max());
     _size = size;
@@ -37,7 +37,7 @@ public:
     delete _hashes;
   }
   // Get hash by number.
-  int64_t getHash(int pos)
+  int64_t getHash(const int pos) const
   {
     return _hashes[pos];
   }

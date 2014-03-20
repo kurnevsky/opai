@@ -137,7 +137,7 @@ public:
   bool isValid(Field* field) const
   {
     for (auto i = _points.begin(); i != _points.end(); i++)
-      if (!field->puttingAllow(*i))
+      if (!field->isPuttingAllowed(*i))
         return false;
     return true;
   }
@@ -145,7 +145,7 @@ public:
   bool isValid(Field* field, int pos) const
   {
     for (auto i = _points.begin(); i != _points.end(); i++)
-      if (*i != pos && !field->puttingAllow(*i))
+      if (*i != pos && !field->isPuttingAllowed(*i))
         return false;
     return true;
   }
