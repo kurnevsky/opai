@@ -911,7 +911,7 @@ public:
   }
   void doUnsafeStep(const int pos, const int player)
   {
-    _changes.emplace_back();
+    _changes.emplace_back(); //TODO: Add constructor.
     _changes.back().captureCount[0] = _captureCount[0];
     _changes.back().captureCount[1] = _captureCount[1];
     _changes.back().player = _player;
@@ -925,13 +925,12 @@ public:
   void undoStep()
   {
     _pointsSeq.pop_back();
-    BoardChange change = _changes.back();
-    stack<pair<int, int>> changes = change.changes;
-    while (!changes.empty())
+    BoardChange& change = _changes.back();
+    while (!change.changes.empty())
     {
-      pair<int, int> top = changes.top();
+      pair<int, int>& top = change.changes.top();
       _points[top.first] = top.second;
-      changes.pop();
+      change.changes.pop();
     }
     _player = change.player;
     _captureCount[0] = change.captureCount[0];
