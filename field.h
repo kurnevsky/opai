@@ -911,10 +911,7 @@ public:
   }
   void doUnsafeStep(const int pos, const int player)
   {
-    _changes.emplace_back(); //TODO: Add constructor.
-    _changes.back().captureCount[0] = _captureCount[0];
-    _changes.back().captureCount[1] = _captureCount[1];
-    _changes.back().player = _player;
+    _changes.emplace_back(_captureCount[0], _captureCount[1], _player, _hash);
     _changes.back().changes.emplace(pos, _points[pos]);
     _pointsSeq.push_back(pos);
     // Добавляем в изменения поставленную точку.

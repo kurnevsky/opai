@@ -43,4 +43,11 @@ struct BoardChange
   int64_t hash;
   // Список изменных точек (координата - значение до изменения).
   stack<pair<int, int>> changes;
+  BoardChange(int redCaptureCount, int blackCaptureCount, int lastPlayer, int64_t lastHash)
+  {
+    captureCount[0] = redCaptureCount;
+    captureCount[1] = blackCaptureCount;
+    player = lastPlayer;
+    hash = lastHash;
+  }
 };
