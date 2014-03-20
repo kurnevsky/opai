@@ -291,7 +291,7 @@ private:
       break;
     }
   }
-  void updateHash(int player, int pos)
+  void updateHash(int pos, int player)
   {
     if (player == 0)
       _hash ^= _zobrist->getHash(pos);
@@ -359,26 +359,25 @@ private:
     // Помечаем точки цепочки.
     for (auto i = chain.begin(); i != chain.end(); i++)
       setTag(*i);
-    wave(insidePoint,
-        [&, player](int pos)->bool
+    wave(insidePoint, [&, player](int pos)->bool
+    {
+      if (isNotBound(pos, player | putBit | boundBit))
+      {
+        if (isPutted(pos))
         {
-          if (isNotBound(pos, player | putBit | boundBit))
-          {
-            if (isPutted(pos))
-            {
-              if (getPlayer(pos) != player)
-                curCaptureCount++;
-              else if (isCaptured(pos))
-                curFreedCount++;
-            }
-            surPoints.push_back(pos);
-            return true;
-          }
-          else
-          {
-            return false;
-          }
-        });
+          if (getPlayer(pos) != player)
+            curCaptureCount++;
+          else if (isCaptured(pos))
+            curFreedCount++;
+        }
+        surPoints.push_back(pos);
+        return true;
+      }
+      else
+      {
+        return false;
+      }
+    });
     // Изменение счета игроков.
     _captureCount[player] += curCaptureCount;
     _captureCount[nextPlayer(player)] -= curFreedCount;
@@ -388,19 +387,41 @@ private:
     {
       for (auto i = chain.begin(); i != chain.end(); i++)
       {
-        clearTag(*i);
+        int pos = *i;
+        clearTag(pos);
         // Добавляем в список изменений точки цепочки.
-        _changes.back().changes.emplace(*i, _points[*i]);
+        _changes.back().changes.emplace(pos, _points[pos]);
         // Помечаем точки цепочки.
-        setBound(*i);
+        setBound(pos);
       }
       for (auto i = surPoints.begin(); i != surPoints.end(); i++)
       {
-        _changes.back().changes.emplace(*i, _points[*i]);
-        if (!isPutted(*i) || getPlayer(*i) != player)
-          setCaptured(*i);
+        int pos = *i;
+        _changes.back().changes.emplace(pos, _points[pos]);
+        if (!isPutted(pos))
+        {
+          if (!isCaptured(pos))
+            setCaptured(pos);
+          else
+            updateHash(pos, nextPlayer(player));
+          setPlayer(pos, player);
+          updateHash(pos, player);
+        }
         else
-          clearCaptured(*i);
+        {
+          if (getPlayer(pos) != player)
+          {
+            setCaptured(pos);
+            updateHash(pos, nextPlayer(player));
+            updateHash(pos, player);
+          }
+          else if (isCaptured(pos))
+          {
+            clearCaptured(pos);
+            updateHash(pos, nextPlayer(player));
+            updateHash(pos, player);
+          }
+        }
       }
     }
     else // Если ничего не захватили.
@@ -409,9 +430,13 @@ private:
         clearTag(*i);
       for (auto i = surPoints.begin(); i != surPoints.end(); i++)
       {
-        _changes.back().changes.emplace(*i, _points[*i]);
-        if (!isPutted(*i))
-          setEmptyBase(*i);
+        int pos = *i;
+        _changes.back().changes.emplace(pos, _points[pos]);
+        if (!isPutted(pos))
+        {
+          setEmptyBase(pos);
+          setPlayer(pos, player);
+        }
       }
     }
   }
@@ -423,11 +448,7 @@ private:
     list<int> chain;
     if (isInEmptyBase(startPos)) // Если точка поставлена в пустую базу.
     {
-      // Проверяем, в чью пустую базу поставлена точка.
-      int pos = startPos - 1;
-      while (!isPutted(pos))
-        pos--;
-      if (getPlayer(pos) == getPlayer(startPos)) // Если поставили в свою пустую базу.
+      if (getPlayer(startPos - 1) == getPlayer(startPos)) // Если поставили в свою пустую базу.
       {
         clearEmptyBase(startPos);
         return;
@@ -452,7 +473,7 @@ private:
         }
       }
 #endif
-      pos++;
+      int pos = startPos;
       do
       {
         pos--;
@@ -829,7 +850,7 @@ public:
         beginState = getIntersectionState(pos, *i);
       }
       if ((state == INTERSECTION_STATE_UP && beginState == INTERSECTION_STATE_DOWN) ||
-        (state == INTERSECTION_STATE_DOWN && beginState == INTERSECTION_STATE_UP))
+          (state == INTERSECTION_STATE_DOWN && beginState == INTERSECTION_STATE_UP))
         intersections++;
     }
     return intersections % 2 == 1;
@@ -907,7 +928,6 @@ public:
   void doUnsafeStep(const int pos)
   {
     doUnsafeStep(pos, _player);
-    setNextPlayer();
   }
   void doUnsafeStep(const int pos, const int player)
   {
@@ -916,7 +936,9 @@ public:
     _pointsSeq.push_back(pos);
     // Добавляем в изменения поставленную точку.
     setPlayerPutted(pos, player);
+    updateHash(pos, player);
     checkClosure(pos, player);
+    setPlayer(nextPlayer(player));
   }
   // Откат хода.
   void undoStep()
