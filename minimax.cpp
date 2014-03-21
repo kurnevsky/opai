@@ -33,7 +33,7 @@ int alphabeta(Field* field, int depth, int pos, Trajectories* last, int alpha, i
     return -numeric_limits<int>::max(); // Для CurPlayer это хорошо, то есть оценка Infinity.
   }
   curTrajectories.buildTrajectories(last, pos);
-  list<int>* moves = curTrajectories.getPoints();
+  const list<int>* moves = curTrajectories.getPoints();
   if (moves->size() == 0)
   {
     int bestEstimate = field->getScore(field->getPlayer());
