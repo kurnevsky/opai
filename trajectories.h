@@ -34,17 +34,17 @@ private:
     for (auto i = _trajectories[player].begin(); i != _trajectories[player].end(); i++)
       if (hash == i->getHash())
         return; // В теории возможны коллизии. Неплохо было бы сделать точную проверку.
-    _trajectories[player].push_back(Trajectory(begin, end, _zobrist, hash));
+    _trajectories[player].emplace_back(begin, end, _zobrist, hash);
   }
   void addTrajectory(Trajectory* trajectory, int player)
   {
-    _trajectories[player].push_back(Trajectory(*trajectory));
+    _trajectories[player].emplace_back(*trajectory);
   }
   void addTrajectory(Trajectory* trajectory, int pos, int player)
   {
-    if (trajectory->size() == 1)
+    if (trajectory->size() == 1 && trajectory->front() == pos)
       return;
-    _trajectories[player].push_back(Trajectory(_zobrist));
+    _trajectories[player].emplace_back(_zobrist);
     for (auto i = trajectory->begin(); i != trajectory->end(); i++)
       if (*i != pos)
         _trajectories[player].back().pushBack(*i);
@@ -278,9 +278,9 @@ public:
 
     if (_depth[getEnemyPlayer()] > 0)
       for (auto i = last->_trajectories[getEnemyPlayer()].begin(); i != last->_trajectories[getEnemyPlayer()].end(); i++)
-        if ((static_cast<int>(i->size()) <= _depth[getEnemyPlayer()] ||
-            (static_cast<int>(i->size()) == _depth[getEnemyPlayer()] + 1 &&
-              find(i->begin(), i->end(), pos) != i->end())) && i->isValid(_field, pos))
+        if ((i->size() <= _depth[getEnemyPlayer()] ||
+           (i->size() == _depth[getEnemyPlayer()] + 1 &&
+           find(i->begin(), i->end(), pos) != i->end())) && i->isValid(_field, pos))
           addTrajectory(&(*i), pos, getEnemyPlayer());
 
     calculateMoves();
@@ -297,7 +297,7 @@ public:
 
     if (_depth[getEnemyPlayer()] > 0)
       for (auto i = last->_trajectories[getEnemyPlayer()].begin(); i != last->_trajectories[getEnemyPlayer()].end(); i++)
-        if (static_cast<int>(i->size()) <= _depth[getEnemyPlayer()])
+        if (i->size() <= _depth[getEnemyPlayer()])
           addTrajectory(&(*i), getEnemyPlayer());
 
     calculateMoves();

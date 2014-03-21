@@ -40,7 +40,7 @@ public:
     _excluded = other._excluded;
     _zobrist = other._zobrist;
   }
-  size_t size() const
+  int size() const
   {
     return _points.size();
   }
@@ -116,6 +116,14 @@ public:
   {
     _points.assign(first, last);
     _hash = hash;
+  }
+  int front() const
+  {
+    return _points.front();
+  }
+  int back() const
+  {
+    return _points.back();
   }
   int64_t getHash() const
   {
