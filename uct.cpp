@@ -95,7 +95,14 @@ uctNode* uctSelect(mt19937* gen, uctNode* node)
   uctNode* next = node->child;
   while (next != NULL)
   {
-    if (next->visits > 0)
+    if (next->visits == numeric_limits<int>::max())
+    {
+      if (next->wins == numeric_limits<int>::max())
+        uctValue = 100000;
+      else
+        uctValue = -1;
+    }
+    else if (next->visits > 0)
     {
       uctValue = ucb(node, next);
     }
@@ -146,8 +153,17 @@ int playSimulation(Field* field, mt19937* gen, vector<int>* possibleMoves, uctNo
         return -1;
     }
     field->doUnsafeStep(next->move);
-    randomResult = playSimulation(field, gen, possibleMoves, next, depth + 1);
-    field->undoStep();
+    if (field->getDeltaScore() >= 0)
+    {
+      randomResult = playSimulation(field, gen, possibleMoves, next, depth + 1);
+      field->undoStep();
+    }
+    else
+    {
+      field->undoStep();
+      next->visits = numeric_limits<int>::max();
+      randomResult = playSimulation(field, gen, possibleMoves, node, depth);
+    }
   }
   node->visits++;
   if (randomResult == nextPlayer(field->getPlayer()))
