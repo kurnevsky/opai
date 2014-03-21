@@ -9,6 +9,9 @@
 class Trajectories
 {
 private:
+
+  /** Fields **/
+
   int _depth[2];
   Field* _field;
   list<Trajectory> _trajectories[2];
@@ -17,7 +20,8 @@ private:
   list<int> _moves[2];
   list<int> _allMoves;
 
-private:
+  /** Private methods **/
+
   template<typename _InIt>
   void addTrajectory(_InIt begin, _InIt end, int player)
   {
@@ -33,7 +37,7 @@ private:
       hash ^= _zobrist->getHash(*i);
     for (auto i = _trajectories[player].begin(); i != _trajectories[player].end(); i++)
       if (hash == i->getHash())
-        return; // В теории возможны коллизии. Неплохо было бы сделать точную проверку.
+        return;
     _trajectories[player].emplace_back(begin, end, _zobrist, hash);
   }
   void addTrajectory(Trajectory* trajectory, int player)
@@ -65,7 +69,6 @@ private:
         else
         {
           _field->doUnsafeStep(pos, player);
-
 #if SUR_COND == 1
           if (_field->isBaseBound(pos) && _field->getDeltaScore(player) == 0)
           {
@@ -73,12 +76,10 @@ private:
             continue;
           }
 #endif
-
           if (_field->getDeltaScore(player) > 0)
             addTrajectory(_field->getPointsSeq().end() - (_depth[player] - depth), _field->getPointsSeq().end(), player);
           else if (depth > 0)
             buildTrajectoriesRecursive(depth - 1, player);
-
           _field->undoStep();
         }
       }
@@ -132,7 +133,7 @@ private:
   // Возвращает хеш Зобриста пересечения двух траекторий.
   int64_t getIntersectHash(Trajectory* t1, Trajectory* t2)
   {
-    auto resultHash = t1->getHash();
+    int64_t resultHash = t1->getHash();
     for (auto i = t2->begin(); i != t2->end(); i++)
       if (find(t1->begin(), t1->end(), *i) == t1->end())
         resultHash ^= _zobrist->getHash(*i);
@@ -190,7 +191,7 @@ private:
   }
   int calculateMaxScore(int player, int depth)
   {
-    auto result = _field->getScore(player);
+    int result = _field->getScore(player);
     if (depth > 0)
     {
       for (auto i = _moves[player].begin(); i != _moves[player].end(); i++)
@@ -199,7 +200,7 @@ private:
           _field->doUnsafeStep(*i, player);
           if (_field->getDeltaScore(player) >= 0)
           {
-            auto curScore = calculateMaxScore(player, depth - 1);
+            int curScore = calculateMaxScore(player, depth - 1);
             if (curScore > result)
               result = curScore;
           }
@@ -210,6 +211,9 @@ private:
   }
 
 public:
+
+  /** Public methods **/
+
   Trajectories(Field* field, int* emptyBoard)
   {
     _field = field;
@@ -272,17 +276,14 @@ public:
   {
     _depth[getCurPlayer()] = last->_depth[getCurPlayer()];
     _depth[getEnemyPlayer()] = last->_depth[getEnemyPlayer()] - 1;
-
     if (_depth[getCurPlayer()] > 0)
       buildTrajectoriesRecursive(_depth[getCurPlayer()] - 1, getCurPlayer());
-
     if (_depth[getEnemyPlayer()] > 0)
       for (auto i = last->_trajectories[getEnemyPlayer()].begin(); i != last->_trajectories[getEnemyPlayer()].end(); i++)
         if ((i->size() <= _depth[getEnemyPlayer()] ||
            (i->size() == _depth[getEnemyPlayer()] + 1 &&
            find(i->begin(), i->end(), pos) != i->end())) && i->isValid(_field, pos))
           addTrajectory(&(*i), pos, getEnemyPlayer());
-
     calculateMoves();
   }
   // Строит траектории с учетом предыдущих траекторий и того, что последний ход был сделан не на траектории (или не сделан вовсе).
@@ -290,20 +291,17 @@ public:
   {
     _depth[getCurPlayer()] = last->_depth[getCurPlayer()];
     _depth[getEnemyPlayer()] = last->_depth[getEnemyPlayer()] - 1;
-
     if (_depth[getCurPlayer()] > 0)
       for (auto i = last->_trajectories[getCurPlayer()].begin(); i != last->_trajectories[getCurPlayer()].end(); i++)
         addTrajectory(&(*i), getCurPlayer());
-
     if (_depth[getEnemyPlayer()] > 0)
       for (auto i = last->_trajectories[getEnemyPlayer()].begin(); i != last->_trajectories[getEnemyPlayer()].end(); i++)
         if (i->size() <= _depth[getEnemyPlayer()])
           addTrajectory(&(*i), getEnemyPlayer());
-
     calculateMoves();
   }
   // Получить список ходов.
-  list<int>* getPoints()
+  const list<int>* getPoints() const
   {
     return &_allMoves;
   }
