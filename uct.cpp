@@ -153,17 +153,14 @@ int playSimulation(Field* field, mt19937* gen, vector<int>* possibleMoves, uctNo
         return -1;
     }
     field->doUnsafeStep(next->move);
-    if (field->getDeltaScore() >= 0)
-    {
-      randomResult = playSimulation(field, gen, possibleMoves, next, depth + 1);
-      field->undoStep();
-    }
-    else
+    if (field->getDeltaScore() < 0)
     {
       field->undoStep();
       next->visits = numeric_limits<int>::max();
-      randomResult = playSimulation(field, gen, possibleMoves, node, depth);
+      return playSimulation(field, gen, possibleMoves, node, depth);
     }
+    randomResult = playSimulation(field, gen, possibleMoves, next, depth + 1);
+    field->undoStep();
   }
   node->visits++;
   if (randomResult == nextPlayer(field->getPlayer()))
