@@ -69,10 +69,61 @@ bool Bot::isFieldOccupied() const
 
 bool Bot::boundaryCheck(int& x, int& y) const
 {
+  int width = _field->getWidth();
+  int height = _field->getHeight();
+  if (width < 3 || height < 3)
+  {
+    x = -1;
+    y = -1;
+    return true;
+  }
   if (_field->getMovesCount() == 0)
   {
     x = _field->getWidth() / 2;
     y = _field->getHeight() / 2;
+    return true;
+  }
+  if (_field->getMovesCount() == 1)
+  {
+    _field->toXY(_field->getPointsSeq()[0], x, y);
+    if (x == 0 || x == width - 1 || y == 0 || y == height - 1)
+    {
+      x = width / 2;
+      y = height / 2;
+    }
+    else if (min(x, width - x - 1) < min(y, height - y - 1))
+    {
+      if (x < width - x - 1)
+        x++;
+      else
+        x--;
+    }
+    else if (min(x, width - x - 1) > min(y, height - y - 1))
+    {
+      if (y < height - y - 1)
+        y++;
+      else
+        y--;
+    }
+    else
+    {
+      int dx = x - width / 2;
+      int dy = y - height / 2;
+      if (abs(dx) > abs(dy))
+      {
+        if (dx < 0)
+          x++;
+        else
+          x--;
+      }
+      else
+      {
+        if (dy < 0)
+          y++;
+        else
+          y--;
+      }
+    }
     return true;
   }
   if (isFieldOccupied())
