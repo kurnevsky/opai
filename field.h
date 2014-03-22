@@ -135,7 +135,7 @@ private:
   //  o - center pos
   //  x - pos
   //  * - result
-  int getFirstNextPos(const int centerPos, int pos) const
+  int getFirstNextPos(const int centerPos, const int pos) const
   {
     if (pos < centerPos)
     {
@@ -158,7 +158,7 @@ private:
   //  o - center pos
   //  x - pos
   //  * - result
-  int getNextPos(const int centerPos, int pos) const
+  int getNextPos(const int centerPos, const int pos) const
   {
     if (pos < centerPos)
     {
