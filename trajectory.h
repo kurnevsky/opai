@@ -33,13 +33,7 @@ public:
     _zobrist = zobrist;
     assign(first, last, hash);
   }
-  Trajectory(const Trajectory &other)
-  {
-    _points = other._points;
-    _hash = other._hash;
-    _excluded = other._excluded;
-    _zobrist = other._zobrist;
-  }
+  Trajectory(const Trajectory &other) : _points(other._points), _hash(other._hash), _excluded(other._excluded), _zobrist(other._zobrist) { }
   int size() const
   {
     return _points.size();

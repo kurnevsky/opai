@@ -169,10 +169,10 @@ private:
   void excludeCompositeTrajectories(int player)
   {
     list<Trajectory>::iterator i, j, k;
-    for (k = _trajectories[player].begin(); k != _trajectories[player].end(); k++)
-      for (i = _trajectories[player].begin(); i != --_trajectories[player].end(); i++)
+    for (k = _trajectories[player].begin(); k != _trajectories[player].end(); ++k)
+      for (i = _trajectories[player].begin(); i != --_trajectories[player].end(); ++i)
         if (k->size() > i->size())
-          for (j = i, j++; j != _trajectories[player].end(); j++)
+          for (j = i, ++j; j != _trajectories[player].end(); ++j)
             if (k->size() > j->size() && k->getHash() == getIntersectHash(&(*i), &(*j)))
               k->exclude();
   }
@@ -214,12 +214,7 @@ public:
 
   /** Public methods **/
 
-  Trajectories(Field* field, int* emptyBoard)
-  {
-    _field = field;
-    _trajectoriesBoard = emptyBoard;
-    _zobrist = &field->getZobrist();
-  }
+  Trajectories(Field* field, int* emptyBoard) : _field(field), _trajectoriesBoard(emptyBoard), _zobrist(&field->getZobrist()) { }
   int getCurPlayer()
   {
     return _field->getPlayer();

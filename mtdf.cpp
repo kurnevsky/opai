@@ -52,7 +52,7 @@ int mtdf(Field* field, int depth)
   // Если нет возможных ходов, входящих в траектории - выходим.
   if (moves.size() == 0)
   {
-    delete emptyBoard;
+    delete[] emptyBoard;
     return -1;
   }
   int alpha = -curTrajectories.getMaxScore(nextPlayer(field->getPlayer()));

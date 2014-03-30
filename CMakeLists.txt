@@ -41,3 +41,5 @@ add_definitions("-Wextra")
 add_definitions("-Wshadow")
 
 add_definitions("-pedantic")
+
+add_definitions("-Wno-reorder")

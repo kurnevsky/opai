@@ -34,7 +34,7 @@ int alphabeta(Field* field, int depth, int pos, Trajectories* last, int alpha, i
   }
   curTrajectories.buildTrajectories(last, pos);
   const list<int>* moves = curTrajectories.getPoints();
-  if (moves->size() == 0)
+  if (moves->empty())
   {
     int bestEstimate = field->getScore(field->getPlayer());
     field->undoStep();
@@ -118,7 +118,7 @@ int minimax(Field* field, int depth)
   // Если нет возможных ходов, входящих в траектории - выходим.
   if (moves.size() == 0)
   {
-    delete emptyBoard;
+    delete[] emptyBoard;
     return -1;
   }
   // Для почти всех возможных точек, не входящих в траектории оценка будет такая же, как если бы игрок CurPlayer пропустил ход.

@@ -855,7 +855,7 @@ public:
     }
     return intersections % 2 == 1;
   }
-  void wave(const int startPos, const function<bool(int)> cond)
+  void wave(const int startPos, const function<bool(int)>& cond)
   {
     // Очередь для волнового алгоритма (обхода в ширину).
     list<int> q;

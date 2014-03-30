@@ -218,7 +218,7 @@ void generatePossibleMoves(Field* field, _Cont* possibleMoves)
     }
     q.pop();
   }
-  delete rField;
+  delete[] rField;
 }
 
 // Delete UCT tree.
