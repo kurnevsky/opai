@@ -125,7 +125,7 @@ void undo(int id)
 
 void version(int id)
 {
-  cout << "=" << " " << id << " " << "version" << " " << "2013.3.10" << endl;
+  cout << "=" << " " << id << " " << "version" << " " << "3.0.0" << endl;
 }
 
 void fill_codes(map<string, void(*)(int)> &codes)
