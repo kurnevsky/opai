@@ -21,7 +21,7 @@
 #define UCT_DRAW_WEIGHT 0.4
 
 // Радиус, внутри которого происходит анализ UCT.
-#define UCT_RADIUS 2
+#define UCT_RADIUS 3
 
 // 0 - UCB1
 // 1 - UCT1-tuned
