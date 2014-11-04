@@ -161,10 +161,10 @@ int minimax(Field* field, int depth)
   }
   result = alpha == getEnemyEstimate(fields, emptyBoards, maxThreads, &curTrajectories, depth - 1) ? -1 : result;
   for (int i = 0; i < maxThreads; i++)
-    delete emptyBoards[i];
-  delete emptyBoards;
+    delete[] emptyBoards[i];
+  delete[] emptyBoards;
   for (int i = 1; i < maxThreads; i++)
     delete fields[i];
-  delete fields;
+  delete[] fields;
   return result;
 }
