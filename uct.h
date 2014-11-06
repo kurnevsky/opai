@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include "field.h"
 
 using namespace std;
@@ -8,15 +9,15 @@ using namespace std;
 struct uctNode
 {
   // Number of wins of this node.
-  int wins;
+  atomic<int> wins;
   // Number of draws of this node
-  int draws;
+  atomic<int> draws;
   // Number of visits to this node
-  int visits;
+  atomic<int> visits;
   // Position of move.
   int move;
   // Child node.
-  uctNode* child;
+  atomic<uctNode*> child;
   // Sibling node.
   uctNode* sibling;
   // Constructor.
@@ -26,8 +27,8 @@ struct uctNode
     draws = 0;
     visits = 0;
     move = 0;
-    child = NULL;
-    sibling = NULL;
+    child = nullptr;
+    sibling = nullptr;
   }
 };
 
