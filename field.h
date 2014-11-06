@@ -747,6 +747,14 @@ public:
     y = toY(pos);
   }
 
+  int manhattan(const int pos1, const int pos2) const
+  {
+    int x1, y1, x2, y2;
+    toXY(pos1, x1, y1);
+    toXY(pos2, x2, y2);
+    return abs(x1 - x2) + abs(y1 - y2);
+  }
+
   /** Other **/
 
   // Проверяет, находятся ли две точки рядом.
