@@ -17,6 +17,7 @@ Bot::Bot(const int width, const int height, const BeginPattern beginPattern, int
   _gen = new mt19937_64(seed);
   _zobrist = new Zobrist((width + 2) * (height + 2), _gen);
   _field = new Field(width, height, beginPattern, _zobrist);
+  _uctRoot = initUct(_field);
 }
 
 Bot::~Bot()
@@ -24,6 +25,7 @@ Bot::~Bot()
   delete _field;
   delete _zobrist;
   delete _gen;
+  finalUct(_uctRoot);
 }
 
 int Bot::getMinimaxDepth(int complexity)
@@ -150,7 +152,8 @@ void Bot::get(int& x, int& y)
   x = _field->toX(result);
   y = _field->toY(result);
 #elif SEARCH_TYPE == 2 // uct
-  int result = uct(_field, _gen, DEFAULT_UCT_ITERATIONS);
+  updateUct(_field, _uctRoot);
+  int result = uct(_uctRoot, _field, _gen, DEFAULT_UCT_ITERATIONS);
   if (result == -1)
     result = positionEstimate(_field);
   x = _field->toX(result);
@@ -158,7 +161,10 @@ void Bot::get(int& x, int& y)
 #elif SEARCH_TYPE == 3 // minimax with uct
   int result =  minimax(_field, DEFAULT_MINIMAX_DEPTH);
   if (result == -1)
-    result = uct(_field, _gen, DEFAULT_UCT_ITERATIONS);
+  {
+    updateUct(_field, _uctRoot);
+    result = uct(_uctRoot, _field, _gen, DEFAULT_UCT_ITERATIONS);
+  }
   if (result == -1)
     result = positionEstimate(_field);
   x = _field->toX(result);
@@ -172,7 +178,10 @@ void Bot::get(int& x, int& y)
 #elif SEARCH_TYPE == 5 // MTD(f) with uct
   int result =  mtdf(_field, DEFAULT_MTDF_DEPTH);
   if (result == -1)
-    result = uct(_field, _gen, DEFAULT_UCT_ITERATIONS);
+  {
+    updateUct(_field, _uctRoot);
+    result = uct(_uctRoot, _field, _gen, DEFAULT_UCT_ITERATIONS);
+  }
   if (result == -1)
     result = positionEstimate(_field);
   x = _field->toX(result);
@@ -197,7 +206,8 @@ void Bot::getWithComplexity(int& x, int& y, int complexity)
   x = _field->toX(result);
   y = _field->toY(result);
 #elif SEARCH_WITH_COMPLEXITY_TYPE == 2 // uct
-  int result = uct(_field, _gen, getUctIterations(complexity));
+  updateUct(_field, _uctRoot);
+  int result = uct(_uctRoot, _field, _gen, getUctIterations(complexity));
   if (result == -1)
     result = positionEstimate(_field);
   x = _field->toX(result);
@@ -205,7 +215,10 @@ void Bot::getWithComplexity(int& x, int& y, int complexity)
 #elif SEARCH_WITH_COMPLEXITY_TYPE == 3 // minimax with uct
   int result =  minimax(_field, getMinimaxDepth(complexity));
   if (result == -1)
-    result = uct(_field, _gen, getUctIterations(complexity));
+  {
+    updateUct(_field, _uctRoot);
+    result = uct(_uctRoot, _field, _gen, getUctIterations(complexity));
+  }
   if (result == -1)
     result = positionEstimate(_field);
   x = _field->toX(result);
@@ -219,7 +232,10 @@ void Bot::getWithComplexity(int& x, int& y, int complexity)
 #elif SEARCH_WITH_COMPLEXITY_TYPE == 5 // MTD(f) with uct
   int result =  mtdf(_field, getMtdfDepth(complexity));
   if (result == -1)
-    result = uct(_field, _gen, getUctIterations(complexity));
+  {
+    updateUct(_field, _uctRoot);
+    result = uct(_uctRoot, _field, _gen, getUctIterations(complexity));
+  }
   if (result == -1)
     result = positionEstimate(_field);
   x = _field->toX(result);
@@ -240,7 +256,8 @@ void Bot::getWithTime(int& x, int& y, int time)
 #elif SEARCH_WITH_TIME_TYPE == 1 // minimax
 #error Invalid SEARCH_WITH_TIME_TYPE.
 #elif SEARCH_WITH_TIME_TYPE == 2 // uct
-  int result = uctWithTime(_field, _gen, time);
+  updateUct(_field, _uctRoot);
+  int result = uctWithTime(_uctRoot, _field, _gen, time);
   if (result == -1)
     result = positionEstimate(_field);
   x = _field->toX(result);

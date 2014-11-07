@@ -17,6 +17,7 @@ private:
   mt19937_64* _gen;
   Zobrist* _zobrist;
   Field* _field;
+  UctRoot* _uctRoot;
   int getMinimaxDepth(int complexity);
   int getMtdfDepth(int complexity);
   int getUctIterations(int complexity);

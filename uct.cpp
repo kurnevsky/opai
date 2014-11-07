@@ -9,7 +9,6 @@
 #include <boost/thread.hpp>
 #include <boost/asio.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <omp.h>
 
 using namespace std;
 using namespace boost;
@@ -258,15 +257,8 @@ void finalUctNode(uctNode* n)
 // maxSimulations - number of UCT simulations.
 // needBreak - true if break is needed.
 // Returns position of best move, or -1 if not found.
-int uct(Field* field, mt19937_64* gen, int maxSimulations, bool* needBreak)
+int uct(UctRoot* root, Field* field, mt19937_64* gen, int maxSimulations, bool* needBreak)
 {
-  // List of all possible moves for UCT.
-  vector<int> moves;
-  generatePossibleMoves(field, &moves);
-  if (static_cast<size_t>(omp_get_max_threads()) > moves.size())
-    omp_set_num_threads(moves.size());
-  uctNode n;
-  createChildren(field, &moves, &n);
   #pragma omp parallel
   {
     Field* localField = new Field(*field);
@@ -277,25 +269,25 @@ int uct(Field* field, mt19937_64* gen, int maxSimulations, bool* needBreak)
     if (maxSimulations == numeric_limits<int>::max())
     {
       while (!*needBreak)
-        playSimulation(localField, localGen, &moves, &n, 0);
+        playSimulation(localField, localGen, &root->moves, root->node, 0);
     }
     else
     {
       #pragma omp for
       for (int i = 0; i < maxSimulations; i++)
-        playSimulation(localField, localGen, &moves, &n, 0);
+        playSimulation(localField, localGen, &root->moves, root->node, 0);
     }
     delete localGen;
     delete localField;
   }
   double bestUct = 0;
   int result = -1;
-  uctNode* next = n.child;
+  uctNode* next = root->node->child.load(std::memory_order_relaxed);
   while (next != nullptr)
   {
     if (next->visits != 0)
     {
-      double uctValue = ucb(&n, next);
+      double uctValue = ucb(root->node, next);
       if (uctValue > bestUct)
       {
         bestUct = uctValue;
@@ -304,8 +296,6 @@ int uct(Field* field, mt19937_64* gen, int maxSimulations, bool* needBreak)
     }
     next = next->sibling;
   }
-  if (n.child != nullptr)
-    finalUctNode(n.child);
   return result;
 }
 
@@ -314,10 +304,10 @@ int uct(Field* field, mt19937_64* gen, int maxSimulations, bool* needBreak)
 // gen - random number generator.
 // maxSimulations - number of UCT simulations.
 // Returns position of best move, or -1 if not found.
-int uct(Field* field, mt19937_64* gen, int maxSimulations)
+int uct(UctRoot* root, Field* field, mt19937_64* gen, int maxSimulations)
 {
   bool needBreak = false;
-  return uct(field, gen, maxSimulations, &needBreak);
+  return uct(root, field, gen, maxSimulations, &needBreak);
 }
 
 // Get best move by UCT analysis.
@@ -325,11 +315,94 @@ int uct(Field* field, mt19937_64* gen, int maxSimulations)
 // gen - random number generator.
 // time - number of milliseconds to thinking.
 // Returns position of best move, or -1 if not found.
-int uctWithTime(Field* field, mt19937_64* gen, int time)
+int uctWithTime(UctRoot* root, Field* field, mt19937_64* gen, int time)
 {
   bool needBreak = false;
   asio::io_service io;
   asio::deadline_timer timer(io, posix_time::milliseconds(time));
   thread thread([&]() { timer.wait(); needBreak = true; });
-  return uct(field, gen, numeric_limits<int>::max(), &needBreak);
+  return uct(root, field, gen, numeric_limits<int>::max(), &needBreak);
+}
+
+void clearUct(UctRoot* root, int length)
+{
+  if (root->node != nullptr)
+  {
+    finalUctNode(root->node);
+    root->node = nullptr;
+  }
+  root->moves.clear();
+  fill_n(root->movesField, length, false);
+  root->player = -1;
+}
+
+void initUct(Field* field, UctRoot* root)
+{
+  root->node = new uctNode;
+  root->player = field->getPlayer();
+  root->movesCount = field->getMovesCount();
+  const vector<int>& pointsSeq = field->getPointsSeq();
+  for (auto it = pointsSeq.begin(); it != pointsSeq.end(); it++)
+  {
+    int startPos = *it;
+    field->wave(startPos, [&, startPos, field, root](int pos)->bool
+    {
+      if (field->manhattan(startPos, pos) <= UCT_RADIUS)
+      {
+        if (!root->movesField[pos])
+        {
+          root->movesField[pos] = true;
+          root->moves.push_back(pos);
+        }
+        return true;
+      }
+      else
+      {
+        return false;
+      }
+    });
+  }
+}
+
+UctRoot* initUct(Field* field)
+{
+  UctRoot* root = new UctRoot(field->getLength());
+  initUct(field, root);
+  return root;
+}
+
+bool updateUctStep(Field* field, UctRoot* root) //TODO: implement.
+{
+  clearUct(root, field->getLength());
+  initUct(field, root);
+  return false;
+}
+
+void updateUct(Field* field, UctRoot* root)
+{
+  int movesCount = field->getMovesCount();
+  if (movesCount < root->movesCount)
+  {
+    clearUct(root, field->getLength());
+    initUct(field, root);
+  }
+  else if (movesCount == root->movesCount)
+  {
+    if (field->getPlayer() != root->player)
+    {
+      clearUct(root, field->getLength());
+      initUct(field, root);
+    }
+  }
+  else
+  {
+    while (updateUctStep(field, root));
+  }
+}
+
+void finalUct(UctRoot* root)
+{
+  if (root->node != nullptr)
+    finalUctNode(root->node);
+  delete root;
 }
