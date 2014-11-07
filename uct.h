@@ -40,7 +40,7 @@ struct UctRoot
   vector<int> moves;
   bool* movesField;
   int player;
-  int movesCount;
+  int movesCount; //TODO: save moves chain instead of count only.
   UctRoot(int length) : node(nullptr), player(-1), movesCount(0)
   {
     movesField = new bool[length];

@@ -188,57 +188,6 @@ int playSimulation(Field* field, mt19937* gen, vector<int>* possibleMoves, uctNo
   return randomResult;
 }
 
-// Generate possible moves for UCT. It is moves which are spaced by not more than UCT_RADIUS cells from the putted points.
-// field - field to generate possible moves.
-// possibleMoves - container to put possible moves.
-template<typename _Cont>
-void generatePossibleMoves(Field* field, _Cont* possibleMoves)
-{
-  int length = field->getLength();
-  int* rField = new int[length];
-  fill_n(rField, length, 0);
-  queue<int> q;
-  possibleMoves->clear();
-  for (int i = field->minPos(); i <= field->maxPos(); i++)
-    if (field->isPutted(i))
-      q.push(i);
-  while (!q.empty())
-  {
-    int front = q.front();
-    if (field->isPuttingAllowed(front))
-      possibleMoves->push_back(front);
-    if (rField[front] < UCT_RADIUS)
-    {
-      int nFront = field->n(front);
-      if (field->isPuttingAllowed(nFront) && rField[nFront] == 0)
-      {
-        rField[nFront] = rField[front] + 1;
-        q.push(nFront);
-      }
-      int sFront = field->s(front);
-      if (field->isPuttingAllowed(sFront) && rField[sFront] == 0)
-      {
-        rField[sFront] = rField[front] + 1;
-        q.push(sFront);
-      }
-      int wFront = field->w(front);
-      if (field->isPuttingAllowed(wFront) && rField[wFront] == 0)
-      {
-        rField[wFront] = rField[front] + 1;
-        q.push(wFront);
-      }
-      int eFront = field->e(front);
-      if (field->isPuttingAllowed(eFront) && rField[eFront] == 0)
-      {
-        rField[eFront] = rField[front] + 1;
-        q.push(eFront);
-      }
-    }
-    q.pop();
-  }
-  delete[] rField;
-}
-
 // Delete UCT tree.
 // n - start UCT node.
 void finalUctNode(uctNode* n)
@@ -371,11 +320,51 @@ UctRoot* initUct(Field* field)
   return root;
 }
 
-bool updateUctStep(Field* field, UctRoot* root) //TODO: implement.
+void finalUctNodeExcept(uctNode* n, uctNode* except)
 {
-  clearUct(root, field->getLength());
-  initUct(field, root);
-  return false;
+  if (n == except)
+  {
+    if (n->sibling != nullptr)
+      finalUctNodeExcept(n->sibling, except);
+    n->sibling = nullptr;
+  }
+  else
+  {
+    uctNode* child = n->child.load();
+    if (child != nullptr)
+      finalUctNodeExcept(child, except);
+    if (n->sibling != nullptr)
+      finalUctNodeExcept(n->sibling, except);
+    delete n;
+  }
+}
+
+bool updateUctStep(Field* field, UctRoot* root)
+{
+  const vector<int>& pointsSeq = field->getPointsSeq();
+  int pos = pointsSeq[root->movesCount];
+  if (field->getPlayer(pos) != root->player)
+  {
+    clearUct(root, field->getLength());
+    initUct(field, root);
+    return false;
+  }
+  uctNode* next = root->node->child.load(std::memory_order_relaxed);
+  while (next != nullptr && next->move != pos)
+  {
+    next = next->sibling;
+  }
+  if (next == nullptr)
+  {
+    clearUct(root, field->getLength());
+    initUct(field, root);
+    return false;
+  }
+  finalUctNodeExcept(root->node, next);
+  root->node = next;
+  root->movesCount++;
+  root->player = nextPlayer(root->player);
+  return root->movesCount < field->getMovesCount();
 }
 
 void updateUct(Field* field, UctRoot* root)
