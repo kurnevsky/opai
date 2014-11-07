@@ -149,20 +149,20 @@ uctNode* uctSelect(mt19937* gen, uctNode* node)
 int playSimulation(Field* field, mt19937* gen, vector<int>* possibleMoves, uctNode* node, int depth)
 {
   int randomResult;
-  if (node->visits < UCT_WHEN_CREATE_CHILDREN || depth == UCT_DEPTH)
+  if (node->visits.load(std::memory_order_relaxed) < UCT_WHEN_CREATE_CHILDREN || depth == UCT_DEPTH)
   {
     randomResult = playRandomGame(field, gen, possibleMoves);
   }
   else
   {
-    if (node->child.load() == nullptr)
+    if (node->child.load(std::memory_order_relaxed) == nullptr)
       createChildren(field, possibleMoves, node);
     uctNode* next = uctSelect(gen, node);
     if (next == nullptr)
     {
-      node->visits = numeric_limits<int>::max();
+      node->visits.store(numeric_limits<int>::max(), std::memory_order_relaxed);
       if (field->getScore(nextPlayer(field->getPlayer())) > 0)
-        node->wins = numeric_limits<int>::max();
+        node->wins.store(numeric_limits<int>::max(), std::memory_order_relaxed);
       if (field->getScore(playerRed) > 0)
         return playerRed;
       else if (field->getScore(playerBlack) > 0)
@@ -174,17 +174,17 @@ int playSimulation(Field* field, mt19937* gen, vector<int>* possibleMoves, uctNo
     if (field->getDeltaScore() < 0)
     {
       field->undoStep();
-      next->visits = numeric_limits<int>::max();
+      next->visits.store(numeric_limits<int>::max(), std::memory_order_relaxed);
       return playSimulation(field, gen, possibleMoves, node, depth);
     }
     randomResult = playSimulation(field, gen, possibleMoves, next, depth + 1);
     field->undoStep();
   }
-  node->visits++;
+  node->visits.fetch_add(1, std::memory_order_relaxed);
   if (randomResult == nextPlayer(field->getPlayer()))
-    node->wins++;
+    node->wins.fetch_add(1, std::memory_order_relaxed);
   else if (randomResult == -1)
-    node->draws++;
+    node->draws.fetch_add(1, std::memory_order_relaxed);
   return randomResult;
 }
 
@@ -192,7 +192,7 @@ int playSimulation(Field* field, mt19937* gen, vector<int>* possibleMoves, uctNo
 // n - start UCT node.
 void finalUctNode(uctNode* n)
 {
-  uctNode* child = n->child.load();
+  uctNode* child = n->child.load(std::memory_order_relaxed);
   if (child != nullptr)
     finalUctNode(child);
   if (n->sibling != nullptr)
@@ -298,7 +298,7 @@ void initUct(Field* field, UctRoot* root)
     {
       if (field->manhattan(startPos, pos) <= UCT_RADIUS)
       {
-        if (!root->movesField[pos])
+        if (!root->movesField[pos] && field->isPuttingAllowed(pos))
         {
           root->movesField[pos] = true;
           root->moves.push_back(pos);
@@ -325,32 +325,59 @@ void finalUctNodeExcept(uctNode* n, uctNode* except)
   if (n == except)
   {
     if (n->sibling != nullptr)
-      finalUctNodeExcept(n->sibling, except);
+      finalUctNode(n->sibling);
     n->sibling = nullptr;
   }
   else
   {
-    uctNode* child = n->child.load();
+    uctNode* child = n->child.load(std::memory_order_relaxed);
     if (child != nullptr)
-      finalUctNodeExcept(child, except);
+      finalUctNodeExcept(child, except); //TODO: finalUctNode
     if (n->sibling != nullptr)
       finalUctNodeExcept(n->sibling, except);
     delete n;
   }
 }
 
+void expandUctNode(uctNode* n, vector<int>* moves)
+{
+  uctNode* next = n->child.load(std::memory_order_relaxed);
+  if (next == nullptr)
+  {
+    if (n->visits.load(std::memory_order_relaxed) == numeric_limits<int>::max())
+    {
+      n->wins.store(0, std::memory_order_relaxed);
+      n->draws.store(0, std::memory_order_relaxed);
+      n->visits.store(0, std::memory_order_relaxed);
+    }
+    return;
+  }
+  while (next->sibling != nullptr)
+  {
+    expandUctNode(next, moves);
+    next = next->sibling;
+  }
+  expandUctNode(next, moves);
+  for (auto it = moves->begin(); it != moves->end(); it++)
+  {
+    next->sibling = new uctNode();
+    next->sibling->move = *it;
+    next = next->sibling;
+  }
+}
+
 bool updateUctStep(Field* field, UctRoot* root)
 {
   const vector<int>& pointsSeq = field->getPointsSeq();
-  int pos = pointsSeq[root->movesCount];
-  if (field->getPlayer(pos) != root->player)
+  int nextPos = pointsSeq[root->movesCount];
+  if (field->getPlayer(nextPos) != root->player)
   {
     clearUct(root, field->getLength());
     initUct(field, root);
     return false;
   }
   uctNode* next = root->node->child.load(std::memory_order_relaxed);
-  while (next != nullptr && next->move != pos)
+  while (next != nullptr && next->move != nextPos)
   {
     next = next->sibling;
   }
@@ -362,6 +389,26 @@ bool updateUctStep(Field* field, UctRoot* root)
   }
   finalUctNodeExcept(root->node, next);
   root->node = next;
+  vector<int> addedMoves;
+  field->wave(nextPos, [&, nextPos, field, root](int pos)->bool
+  {
+    if (field->manhattan(nextPos, pos) <= UCT_RADIUS)
+    {
+      if (!root->movesField[pos] && field->isPuttingAllowed(pos))
+      {
+        root->movesField[pos] = true;
+        root->moves.push_back(pos);
+	addedMoves.push_back(pos);
+      }
+      return true;
+    }
+    else
+    {
+      return false;
+    }
+  });
+  if (!addedMoves.empty())
+    expandUctNode(root->node, &addedMoves);
   root->movesCount++;
   root->player = nextPlayer(root->player);
   return root->movesCount < field->getMovesCount();

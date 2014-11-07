@@ -25,11 +25,11 @@ struct uctNode
   // Constructor.
   uctNode()
   {
-    wins = 0;
-    draws = 0;
-    visits = 0;
+    wins.store(0, memory_order_relaxed);
+    draws.store(0, memory_order_relaxed);
+    visits.store(0, memory_order_relaxed);
     move = 0;
-    child = nullptr;
+    child.store(nullptr, memory_order_relaxed);
     sibling = nullptr;
   }
 };
