@@ -398,7 +398,7 @@ bool updateUctStep(Field* field, UctRoot* root)
       {
         root->movesField[pos] = true;
         root->moves.push_back(pos);
-	addedMoves.push_back(pos);
+        addedMoves.push_back(pos);
       }
       return true;
     }
