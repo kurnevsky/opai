@@ -332,7 +332,7 @@ void finalUctNodeExcept(uctNode* n, uctNode* except)
   {
     uctNode* child = n->child.load(std::memory_order_relaxed);
     if (child != nullptr)
-      finalUctNodeExcept(child, except); //TODO: finalUctNode
+      finalUctNode(child);
     if (n->sibling != nullptr)
       finalUctNodeExcept(n->sibling, except);
     delete n;
@@ -387,7 +387,8 @@ bool updateUctStep(Field* field, UctRoot* root)
     initUct(field, root);
     return false;
   }
-  finalUctNodeExcept(root->node, next);
+  finalUctNodeExcept(root->node->child.load(std::memory_order_relaxed), next);
+  delete root->node;
   root->node = next;
   vector<int> addedMoves;
   field->wave(nextPos, [&, nextPos, field, root](int pos)->bool
