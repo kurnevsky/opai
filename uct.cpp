@@ -289,8 +289,8 @@ void initUct(Field* field, UctRoot* root)
 {
   root->node = new uctNode;
   root->player = field->getPlayer();
-  root->movesCount = field->getMovesCount();
   const vector<int>& pointsSeq = field->getPointsSeq();
+  root->pointsSeq.assign(pointsSeq.begin(), pointsSeq.end());
   for (auto it = pointsSeq.begin(); it != pointsSeq.end(); it++)
   {
     int startPos = *it;
@@ -369,7 +369,7 @@ void expandUctNode(uctNode* n, vector<int>* moves)
 bool updateUctStep(Field* field, UctRoot* root)
 {
   const vector<int>& pointsSeq = field->getPointsSeq();
-  int nextPos = pointsSeq[root->movesCount];
+  int nextPos = pointsSeq[root->pointsSeq.size()];
   if (field->getPlayer(nextPos) != root->player)
   {
     clearUct(root, field->getLength());
@@ -390,6 +390,18 @@ bool updateUctStep(Field* field, UctRoot* root)
   finalUctNodeExcept(root->node->child.load(std::memory_order_relaxed), next);
   delete root->node;
   root->node = next;
+  for (auto it = root->moves.begin(); it != root->moves.end();)
+  {
+    if (field->isPuttingAllowed(*it))
+    {
+      it++;
+    }
+    else
+    {
+      root->movesField[*it] = false;
+      root->moves.erase(it);
+    }
+  }
   vector<int> addedMoves;
   field->wave(nextPos, [&, nextPos, field, root](int pos)->bool
   {
@@ -410,20 +422,22 @@ bool updateUctStep(Field* field, UctRoot* root)
   });
   if (!addedMoves.empty())
     expandUctNode(root->node, &addedMoves);
-  root->movesCount++;
+  root->pointsSeq.push_back(nextPos);
   root->player = nextPlayer(root->player);
-  return root->movesCount < field->getMovesCount();
+  return root->pointsSeq.size() < pointsSeq.size();
 }
 
 void updateUct(Field* field, UctRoot* root)
 {
   int movesCount = field->getMovesCount();
-  if (movesCount < root->movesCount)
+  int uctMovesCount = static_cast<int>(root->pointsSeq.size());
+  const vector<int>& pointsSeq = field->getPointsSeq();
+  if (movesCount < uctMovesCount || !equal(root->pointsSeq.begin(), root->pointsSeq.end(), pointsSeq.begin()))
   {
     clearUct(root, field->getLength());
     initUct(field, root);
   }
-  else if (movesCount == root->movesCount)
+  else if (movesCount == uctMovesCount)
   {
     if (field->getPlayer() != root->player)
     {

@@ -40,8 +40,8 @@ struct UctRoot
   vector<int> moves;
   bool* movesField;
   int player;
-  int movesCount; //TODO: save moves chain instead of count only.
-  UctRoot(int length) : node(nullptr), player(-1), movesCount(0)
+  vector<int> pointsSeq;
+  UctRoot(int length) : node(nullptr), player(-1)
   {
     movesField = new bool[length];
     fill_n(movesField, length, false);
