@@ -8,7 +8,7 @@
 using namespace std;
 
 // Node of UCT tree.
-struct uctNode
+struct UctNode
 {
   // Number of wins of this node.
   atomic<int> wins;
@@ -19,11 +19,11 @@ struct uctNode
   // Position of move.
   int move;
   // Child node.
-  atomic<uctNode*> child;
+  atomic<UctNode*> child;
   // Sibling node.
-  uctNode* sibling;
+  UctNode* sibling;
   // Constructor.
-  uctNode()
+  UctNode()
   {
     wins.store(0, memory_order_relaxed);
     draws.store(0, memory_order_relaxed);
@@ -36,7 +36,7 @@ struct uctNode
 
 struct UctRoot
 {
-  uctNode* node;
+  UctNode* node;
   vector<int> moves;
   bool* movesField;
   int player;

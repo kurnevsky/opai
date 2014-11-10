@@ -47,7 +47,7 @@ int playRandomGame(Field* field, mt19937* gen, vector<int>* possibleMoves)
   return result;
 }
 
-void finalUctSiblings(uctNode* n)
+void finalUctSiblings(UctNode* n)
 {
   if (n->sibling != nullptr)
     finalUctSiblings(n->sibling);
@@ -58,15 +58,15 @@ void finalUctSiblings(uctNode* n)
 // field - field for creating children.
 // possibleMoves - allowed positions of moves.
 // node - UCT node for creating children.
-void createChildren(Field* field, vector<int>* possibleMoves, uctNode* node)
+void createChildren(Field* field, vector<int>* possibleMoves, UctNode* node)
 {
-  uctNode* children = nullptr;
-  uctNode* null = nullptr;
-  uctNode** curChild = &children;
+  UctNode* children = nullptr;
+  UctNode* null = nullptr;
+  UctNode** curChild = &children;
   for (auto i = possibleMoves->begin(); i < possibleMoves->end(); i++)
     if (field->isPuttingAllowed(*i))
     {
-      *curChild = new uctNode();
+      *curChild = new UctNode();
       (*curChild)->move = *i;
       curChild = &(*curChild)->sibling;
     }
@@ -80,7 +80,7 @@ void createChildren(Field* field, vector<int>* possibleMoves, uctNode* node)
 // parent - parent of UCT node.
 // node - node for calculating UCB estimate.
 // Returns UCB estimate.
-double ucb(uctNode* parent, uctNode* node)
+double ucb(UctNode* parent, UctNode* node)
 {
   int wins = node->wins.load(std::memory_order_relaxed);
   int draws = node->draws.load(std::memory_order_relaxed);
@@ -104,11 +104,11 @@ double ucb(uctNode* parent, uctNode* node)
 // gen - random number generator.
 // node - node to find.
 // Returns child with best UCB estimation.
-uctNode* uctSelect(mt19937* gen, uctNode* node)
+UctNode* uctSelect(mt19937* gen, UctNode* node)
 {
   double bestUct = 0, uctValue;
-  uctNode* result = nullptr;
-  uctNode* next = node->child.load(std::memory_order_relaxed);
+  UctNode* result = nullptr;
+  UctNode* next = node->child.load(std::memory_order_relaxed);
   while (next != nullptr)
   {
     int visits = next->visits.load(std::memory_order_relaxed);
@@ -146,7 +146,7 @@ uctNode* uctSelect(mt19937* gen, uctNode* node)
 // node - UCT node to play simulation.
 // depth - current depth of UCT simulation.
 // Returns number of winner, or -1 if draw.
-int playSimulation(Field* field, mt19937* gen, vector<int>* possibleMoves, uctNode* node, int depth)
+int playSimulation(Field* field, mt19937* gen, vector<int>* possibleMoves, UctNode* node, int depth)
 {
   int randomResult;
   if (node->visits.load(std::memory_order_relaxed) < UCT_WHEN_CREATE_CHILDREN || depth == UCT_DEPTH)
@@ -157,7 +157,7 @@ int playSimulation(Field* field, mt19937* gen, vector<int>* possibleMoves, uctNo
   {
     if (node->child.load(std::memory_order_relaxed) == nullptr)
       createChildren(field, possibleMoves, node);
-    uctNode* next = uctSelect(gen, node);
+    UctNode* next = uctSelect(gen, node);
     if (next == nullptr)
     {
       node->visits.store(numeric_limits<int>::max(), std::memory_order_relaxed);
@@ -190,9 +190,9 @@ int playSimulation(Field* field, mt19937* gen, vector<int>* possibleMoves, uctNo
 
 // Delete UCT tree.
 // n - start UCT node.
-void finalUctNode(uctNode* n)
+void finalUctNode(UctNode* n)
 {
-  uctNode* child = n->child.load(std::memory_order_relaxed);
+  UctNode* child = n->child.load(std::memory_order_relaxed);
   if (child != nullptr)
     finalUctNode(child);
   if (n->sibling != nullptr)
@@ -231,7 +231,7 @@ int uct(UctRoot* root, Field* field, mt19937_64* gen, int maxSimulations, bool* 
   }
   double bestUct = 0;
   int result = -1;
-  uctNode* next = root->node->child.load(std::memory_order_relaxed);
+  UctNode* next = root->node->child.load(std::memory_order_relaxed);
   while (next != nullptr)
   {
     if (next->visits != 0)
@@ -287,7 +287,7 @@ void clearUct(UctRoot* root, int length)
 
 void initUct(Field* field, UctRoot* root)
 {
-  root->node = new uctNode;
+  root->node = new UctNode;
   root->player = field->getPlayer();
   const vector<int>& pointsSeq = field->getPointsSeq();
   root->pointsSeq.assign(pointsSeq.begin(), pointsSeq.end());
@@ -320,7 +320,7 @@ UctRoot* initUct(Field* field)
   return root;
 }
 
-void finalUctNodeExcept(uctNode* n, uctNode* except)
+void finalUctNodeExcept(UctNode* n, UctNode* except)
 {
   if (n == except)
   {
@@ -330,7 +330,7 @@ void finalUctNodeExcept(uctNode* n, uctNode* except)
   }
   else
   {
-    uctNode* child = n->child.load(std::memory_order_relaxed);
+    UctNode* child = n->child.load(std::memory_order_relaxed);
     if (child != nullptr)
       finalUctNode(child);
     if (n->sibling != nullptr)
@@ -339,9 +339,9 @@ void finalUctNodeExcept(uctNode* n, uctNode* except)
   }
 }
 
-void expandUctNode(uctNode* n, vector<int>* moves)
+void expandUctNode(UctNode* n, vector<int>* moves)
 {
-  uctNode* next = n->child.load(std::memory_order_relaxed);
+  UctNode* next = n->child.load(std::memory_order_relaxed);
   if (next == nullptr)
   {
     if (n->visits.load(std::memory_order_relaxed) == numeric_limits<int>::max())
@@ -360,7 +360,7 @@ void expandUctNode(uctNode* n, vector<int>* moves)
   expandUctNode(next, moves);
   for (auto it = moves->begin(); it != moves->end(); it++)
   {
-    next->sibling = new uctNode();
+    next->sibling = new UctNode();
     next->sibling->move = *it;
     next = next->sibling;
   }
@@ -376,7 +376,7 @@ bool updateUctStep(Field* field, UctRoot* root)
     initUct(field, root);
     return false;
   }
-  uctNode* next = root->node->child.load(std::memory_order_relaxed);
+  UctNode* next = root->node->child.load(std::memory_order_relaxed);
   while (next != nullptr && next->move != nextPos)
   {
     next = next->sibling;
