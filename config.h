@@ -27,6 +27,12 @@
 // 1 - UCT1-tuned
 #define UCB_TYPE 1
 
+#define UCT_RED 0.45
+
+#define UCT_GREEN 0.5
+
+#define UCT_KOMI_INTERVAL 10
+
 // Способ поиска лучшего хода.
 // 0 - position estimate
 // 1 - minimax

@@ -23,14 +23,12 @@ struct UctNode
   // Sibling node.
   UctNode* sibling;
   // Constructor.
-  UctNode()
+  UctNode() : sibling(nullptr), move(0)
   {
     wins.store(0, memory_order_relaxed);
     draws.store(0, memory_order_relaxed);
     visits.store(0, memory_order_relaxed);
-    move = 0;
     child.store(nullptr, memory_order_relaxed);
-    sibling = nullptr;
   }
 };
 
@@ -41,7 +39,9 @@ struct UctRoot
   bool* movesField;
   int player;
   vector<int> pointsSeq;
-  UctRoot(int length) : node(nullptr), player(-1)
+  int komi;
+  int komiIter;
+  UctRoot(int length) : node(nullptr), player(-1), komi(0), komiIter(0)
   {
     movesField = new bool[length];
     fill_n(movesField, length, false);

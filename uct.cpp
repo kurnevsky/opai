@@ -18,8 +18,13 @@ using namespace boost;
 // gen - random number generator.
 // possibleMoves - allowed positions of moves.
 // Returns number of winner, or -1 if draw.
-int playRandomGame(Field* field, mt19937* gen, vector<int>* possibleMoves)
+int playRandomGame(Field* field, mt19937* gen, vector<int>* possibleMoves, int komi)
 {
+  int redKomi;
+  if (field->getPlayer() == playerRed)
+    redKomi = komi;
+  else
+    redKomi = -komi;
   vector<int> moves(possibleMoves->size());
   int putted = 0, result;
   moves[0] = (*possibleMoves)[0];
@@ -36,9 +41,9 @@ int playRandomGame(Field* field, mt19937* gen, vector<int>* possibleMoves)
       field->doUnsafeStep(*i);
       putted++;
     }
-  if (field->getScore(playerRed) > 0)
+  if (field->getScore(playerRed) > redKomi)
     result = playerRed;
-  else if (field->getScore(playerBlack) > 0)
+  else if (field->getScore(playerBlack) > -redKomi)
     result = playerBlack;
   else
     result = -1;
@@ -146,12 +151,12 @@ UctNode* uctSelect(mt19937* gen, UctNode* node)
 // node - UCT node to play simulation.
 // depth - current depth of UCT simulation.
 // Returns number of winner, or -1 if draw.
-int playSimulation(Field* field, mt19937* gen, vector<int>* possibleMoves, UctNode* node, int depth)
+int playSimulation(Field* field, mt19937* gen, vector<int>* possibleMoves, UctNode* node, int depth, int komi)
 {
   int randomResult;
   if (node->visits.load(std::memory_order_relaxed) < UCT_WHEN_CREATE_CHILDREN || depth == UCT_DEPTH)
   {
-    randomResult = playRandomGame(field, gen, possibleMoves);
+    randomResult = playRandomGame(field, gen, possibleMoves, komi);
   }
   else
   {
@@ -160,25 +165,30 @@ int playSimulation(Field* field, mt19937* gen, vector<int>* possibleMoves, UctNo
     UctNode* next = uctSelect(gen, node);
     if (next == nullptr)
     {
-      node->visits.store(numeric_limits<int>::max(), std::memory_order_relaxed);
-      if (field->getScore(nextPlayer(field->getPlayer())) > 0)
-        node->wins.store(numeric_limits<int>::max(), std::memory_order_relaxed);
-      if (field->getScore(playerRed) > 0)
-        return playerRed;
-      else if (field->getScore(playerBlack) > 0)
-        return playerBlack;
+      int redKomi;
+      if (field->getPlayer() == playerRed)
+        redKomi = komi;
       else
-        return -1;
+        redKomi = -komi;
+      if (field->getScore(playerRed) > redKomi)
+        randomResult = playerRed;
+      else if (field->getScore(playerBlack) > -redKomi)
+        randomResult = playerBlack;
+      else
+        randomResult = -1;
     }
-    field->doUnsafeStep(next->move);
-    if (field->getDeltaScore() < 0)
+    else
     {
+      field->doUnsafeStep(next->move);
+      if (field->getDeltaScore() < 0)
+      {
+        field->undoStep();
+        next->visits.store(numeric_limits<int>::max(), std::memory_order_relaxed);
+        return playSimulation(field, gen, possibleMoves, node, depth, komi);
+      }
+      randomResult = playSimulation(field, gen, possibleMoves, next, depth + 1, -komi);
       field->undoStep();
-      next->visits.store(numeric_limits<int>::max(), std::memory_order_relaxed);
-      return playSimulation(field, gen, possibleMoves, node, depth);
     }
-    randomResult = playSimulation(field, gen, possibleMoves, next, depth + 1);
-    field->undoStep();
   }
   node->visits.fetch_add(1, std::memory_order_relaxed);
   if (randomResult == nextPlayer(field->getPlayer()))
@@ -186,6 +196,33 @@ int playSimulation(Field* field, mt19937* gen, vector<int>* possibleMoves, UctNo
   else if (randomResult == -1)
     node->draws.fetch_add(1, std::memory_order_relaxed);
   return randomResult;
+}
+
+void playSimulation(Field* field, mt19937* gen, UctRoot* root, int& ratched)
+{
+  playSimulation(field, gen, &root->moves, root->node, 0, root->komi);
+  int visits = root->node->visits.load(std::memory_order_relaxed);
+  double winRate = (visits - root->node->wins.load(std::memory_order_relaxed) + root->node->draws.load(std::memory_order_relaxed) * UCT_DRAW_WEIGHT) / visits;
+  if ((winRate < UCT_RED || (winRate > UCT_GREEN && root->komi < ratched)) && visits - root->komiIter > root->komiIter / UCT_KOMI_INTERVAL)
+  {
+    #pragma omp critical
+    {
+      if (visits - root->komiIter > root->komiIter / UCT_KOMI_INTERVAL)
+      {
+        root->komiIter = visits;
+        if (winRate < UCT_RED)
+        {
+          if (root->komi > 0)
+            ratched = root->komi;
+          root->komi--;
+        }
+        else
+        {
+          root->komi++;
+        }
+      }
+    }
+  }
 }
 
 // Delete UCT tree.
@@ -208,6 +245,7 @@ void finalUctNode(UctNode* n)
 // Returns position of best move, or -1 if not found.
 int uct(UctRoot* root, Field* field, mt19937_64* gen, int maxSimulations, bool* needBreak)
 {
+  int ratched = numeric_limits<int>::max();
   #pragma omp parallel
   {
     Field* localField = new Field(*field);
@@ -218,13 +256,13 @@ int uct(UctRoot* root, Field* field, mt19937_64* gen, int maxSimulations, bool* 
     if (maxSimulations == numeric_limits<int>::max())
     {
       while (!*needBreak)
-        playSimulation(localField, localGen, &root->moves, root->node, 0);
+        playSimulation(localField, localGen, root, ratched);
     }
     else
     {
       #pragma omp for
       for (int i = 0; i < maxSimulations; i++)
-        playSimulation(localField, localGen, &root->moves, root->node, 0);
+        playSimulation(localField, localGen, root, ratched);
     }
     delete localGen;
     delete localField;
@@ -283,12 +321,15 @@ void clearUct(UctRoot* root, int length)
   root->moves.clear();
   fill_n(root->movesField, length, false);
   root->player = -1;
+  root->komi = 0;
+  root->komiIter = 0;
 }
 
 void initUct(Field* field, UctRoot* root)
 {
   root->node = new UctNode;
   root->player = field->getPlayer();
+  root->komi = field->getScore(root->player);
   const vector<int>& pointsSeq = field->getPointsSeq();
   root->pointsSeq.assign(pointsSeq.begin(), pointsSeq.end());
   for (auto it = pointsSeq.begin(); it != pointsSeq.end(); it++)
@@ -421,9 +462,11 @@ bool updateUctStep(Field* field, UctRoot* root)
     }
   });
   if (!addedMoves.empty())
-    expandUctNode(root->node, &addedMoves);
+    expandUctNode(next, &addedMoves);
   root->pointsSeq.push_back(nextPos);
   root->player = nextPlayer(root->player);
+  root->komi = -root->komi;
+  root->komiIter = next->visits.load(std::memory_order_relaxed);
   return root->pointsSeq.size() < pointsSeq.size();
 }
 
