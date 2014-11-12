@@ -203,7 +203,7 @@ void playSimulation(Field* field, mt19937* gen, UctRoot* root, int& ratched)
   playSimulation(field, gen, &root->moves, root->node, 0, root->komi);
   int visits = root->node->visits.load(std::memory_order_relaxed);
   double winRate = (visits - root->node->wins.load(std::memory_order_relaxed) + root->node->draws.load(std::memory_order_relaxed) * UCT_DRAW_WEIGHT) / visits;
-  if ((winRate < UCT_RED || (winRate > UCT_GREEN && root->komi < ratched)) && visits - root->komiIter > root->komiIter / UCT_KOMI_INTERVAL)
+  if ((winRate < UCT_RED || (winRate > UCT_GREEN && root->komi < ratched)) && visits - root->komiIter > root->komiIter / UCT_KOMI_INTERVAL && visits > UCT_KOMI_MIN_ITERATIONS)
   {
     #pragma omp critical
     {

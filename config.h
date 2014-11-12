@@ -33,6 +33,8 @@
 
 #define UCT_KOMI_INTERVAL 10
 
+#define UCT_KOMI_MIN_ITERATIONS 1000
+
 // Способ поиска лучшего хода.
 // 0 - position estimate
 // 1 - minimax
