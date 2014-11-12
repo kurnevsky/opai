@@ -1,0 +1,8 @@
+# make files:
+/CMakeCache.txt
+/CMakeFiles
+/Makefile
+/cmake_install.cmake
+
+# the executable itself
+/opai
