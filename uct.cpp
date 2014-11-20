@@ -204,9 +204,10 @@ int playSimulation(Field* field, mt19937* gen, vector<int>* possibleMoves, int* 
 void playSimulation(Field* field, mt19937* gen, UctRoot* root, int* moves, int& ratched)
 {
   playSimulation(field, gen, &root->moves, moves, root->node, 0, root->komi);
+#if DYNAMIC_KOMI == 1
   int visits = root->node->visits.load(std::memory_order_relaxed);
-  double winRate = (visits - root->node->wins.load(std::memory_order_relaxed) + root->node->draws.load(std::memory_order_relaxed) * UCT_DRAW_WEIGHT) / visits;
-  if (false)//((winRate < UCT_RED || (winRate > UCT_GREEN && root->komi < ratched)) && visits - root->komiIter > root->komiIter / UCT_KOMI_INTERVAL && visits > UCT_KOMI_MIN_ITERATIONS)
+  double winRate = 1 - (root->node->wins.load(std::memory_order_relaxed) + root->node->draws.load(std::memory_order_relaxed) * UCT_DRAW_WEIGHT) / visits;
+  if ((winRate < UCT_RED || (winRate > UCT_GREEN && root->komi < ratched)) && visits - root->komiIter > root->komiIter / UCT_KOMI_INTERVAL && visits > UCT_KOMI_MIN_ITERATIONS)
   {
     #pragma omp critical
     {
@@ -226,6 +227,7 @@ void playSimulation(Field* field, mt19937* gen, UctRoot* root, int* moves, int& 
       }
     }
   }
+#endif
 }
 
 // Delete UCT tree.
@@ -281,6 +283,7 @@ int uct(UctRoot* root, Field* field, mt19937_64* gen, int maxSimulations, bool* 
     {
       double uctValue = ucb(root->node, next);
       if (uctValue > bestUct)
+      {
         bestUct = uctValue;
         result = next->move;
       }

@@ -27,6 +27,8 @@
 // 1 - UCT1-tuned
 #define UCB_TYPE 1
 
+#define DYNAMIC_KOMI 0
+
 #define UCT_RED 0.45
 
 #define UCT_GREEN 0.5
