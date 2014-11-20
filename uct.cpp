@@ -18,29 +18,32 @@ using namespace boost;
 // gen - random number generator.
 // possibleMoves - allowed positions of moves.
 // Returns number of winner, or -1 if draw.
-int playRandomGame(Field* field, mt19937* gen, vector<int>* possibleMoves, int komi)
+int playRandomGame(Field* field, mt19937* gen, vector<int>* possibleMoves, int* moves, int komi)
 {
   int redKomi;
   if (field->getPlayer() == playerRed)
     redKomi = komi;
   else
     redKomi = -komi;
-  vector<int> moves(possibleMoves->size());
   int putted = 0, result;
   moves[0] = (*possibleMoves)[0];
-  for (size_t i = 1; i < possibleMoves->size(); i++)
+  int size = static_cast<int>(possibleMoves->size());
+  for (int i = 1; i < size; i++)
   {
-    uniform_int_distribution<size_t> dist(0, i);
-    size_t j = dist(*gen);
+    uniform_int_distribution<int> dist(0, i);
+    int j = dist(*gen);
     moves[i] = moves[j];
     moves[j] = (*possibleMoves)[i];
   }
-  for (auto i = moves.begin(); i < moves.end(); i++)
-    if (field->isPuttingAllowed(*i))
+  for (int i = 0; i < size; i++)
+  {
+    int pos = moves[i];
+    if (field->isPuttingAllowed(pos) && !field->isInEmptyBase(pos))
     {
-      field->doUnsafeStep(*i);
+      field->doUnsafeStep(pos);
       putted++;
     }
+  }
   if (field->getScore(playerRed) > redKomi)
     result = playerRed;
   else if (field->getScore(playerBlack) > -redKomi)
@@ -151,12 +154,12 @@ UctNode* uctSelect(mt19937* gen, UctNode* node)
 // node - UCT node to play simulation.
 // depth - current depth of UCT simulation.
 // Returns number of winner, or -1 if draw.
-int playSimulation(Field* field, mt19937* gen, vector<int>* possibleMoves, UctNode* node, int depth, int komi)
+int playSimulation(Field* field, mt19937* gen, vector<int>* possibleMoves, int* moves, UctNode* node, int depth, int komi)
 {
   int randomResult;
   if (node->visits.load(std::memory_order_relaxed) < UCT_WHEN_CREATE_CHILDREN || depth == UCT_DEPTH)
   {
-    randomResult = playRandomGame(field, gen, possibleMoves, komi);
+    randomResult = playRandomGame(field, gen, possibleMoves, moves, komi);
   }
   else
   {
@@ -184,9 +187,9 @@ int playSimulation(Field* field, mt19937* gen, vector<int>* possibleMoves, UctNo
       {
         field->undoStep();
         next->visits.store(numeric_limits<int>::max(), std::memory_order_relaxed);
-        return playSimulation(field, gen, possibleMoves, node, depth, komi);
+        return playSimulation(field, gen, possibleMoves, moves, node, depth, komi);
       }
-      randomResult = playSimulation(field, gen, possibleMoves, next, depth + 1, -komi);
+      randomResult = playSimulation(field, gen, possibleMoves, moves, next, depth + 1, -komi);
       field->undoStep();
     }
   }
@@ -198,12 +201,12 @@ int playSimulation(Field* field, mt19937* gen, vector<int>* possibleMoves, UctNo
   return randomResult;
 }
 
-void playSimulation(Field* field, mt19937* gen, UctRoot* root, int& ratched)
+void playSimulation(Field* field, mt19937* gen, UctRoot* root, int* moves, int& ratched)
 {
-  playSimulation(field, gen, &root->moves, root->node, 0, root->komi);
+  playSimulation(field, gen, &root->moves, moves, root->node, 0, root->komi);
   int visits = root->node->visits.load(std::memory_order_relaxed);
   double winRate = (visits - root->node->wins.load(std::memory_order_relaxed) + root->node->draws.load(std::memory_order_relaxed) * UCT_DRAW_WEIGHT) / visits;
-  if ((winRate < UCT_RED || (winRate > UCT_GREEN && root->komi < ratched)) && visits - root->komiIter > root->komiIter / UCT_KOMI_INTERVAL && visits > UCT_KOMI_MIN_ITERATIONS)
+  if (false)//((winRate < UCT_RED || (winRate > UCT_GREEN && root->komi < ratched)) && visits - root->komiIter > root->komiIter / UCT_KOMI_INTERVAL && visits > UCT_KOMI_MIN_ITERATIONS)
   {
     #pragma omp critical
     {
@@ -249,6 +252,7 @@ int uct(UctRoot* root, Field* field, mt19937_64* gen, int maxSimulations, bool* 
   #pragma omp parallel
   {
     Field* localField = new Field(*field);
+    int* moves = new int[root->moves.size()];
     uniform_int_distribution<int> localDist(numeric_limits<int>::min(), numeric_limits<int>::max());
     mt19937* localGen;
     #pragma omp critical
@@ -256,15 +260,16 @@ int uct(UctRoot* root, Field* field, mt19937_64* gen, int maxSimulations, bool* 
     if (maxSimulations == numeric_limits<int>::max())
     {
       while (!*needBreak)
-        playSimulation(localField, localGen, root, ratched);
+        playSimulation(localField, localGen, root, moves, ratched);
     }
     else
     {
       #pragma omp for
       for (int i = 0; i < maxSimulations; i++)
-        playSimulation(localField, localGen, root, ratched);
+        playSimulation(localField, localGen, root, moves, ratched);
     }
     delete localGen;
+    delete[] moves;
     delete localField;
   }
   double bestUct = 0;
@@ -276,7 +281,6 @@ int uct(UctRoot* root, Field* field, mt19937_64* gen, int maxSimulations, bool* 
     {
       double uctValue = ucb(root->node, next);
       if (uctValue > bestUct)
-      {
         bestUct = uctValue;
         result = next->move;
       }
