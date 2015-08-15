@@ -1,3 +1,5 @@
+Deprecated in favor of opai-rust!
+
 Installation instructions for Linux (debian as an example):
 
 * install build tools:
